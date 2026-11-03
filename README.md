@@ -26,9 +26,9 @@ Project art is rendered from CSS in `src/app.js` and `styles.css`. It is explana
 
 ## Replacing the portrait
 
-The optimized `assets/img/mayura.webp` is used for the page. The original PNG is retained in the source workspace at `assets/img/mayura.png`; the hosted project uses the optimized WebP. Update `person.portrait` in `src/content.js` to replace the display image with another owner-approved asset. The portrait is presented as a studio photograph with its grey background; the fallback monogram appears if the image cannot load.
+The hero uses `assets/img/mayura-cutout.webp`, an identity-preserving transparent cutout prepared from the owner's supplied portrait with subtle natural retouching. The high-resolution transparent master is `assets/img/mayura-cutout.png`. The original portrait files remain in the source workspace as `assets/img/mayura.png` and `assets/img/mayura.webp`. Update `person.portrait` in `src/content.js` to use another owner-approved asset. The fallback monogram appears if the selected image cannot load.
 
-The original portrait is about 2.8 MB and the WebP display copy is about 82 KB at the same 1086 × 1448 dimensions. The source workspace retains the original PNG; the published GitHub tree contains the WebP display copy.
+The transparent WebP is about 164 KB at 1086 x 1448 with alpha preserved. The source portrait and cutout PNG remain available in the workspace.
 
 ## Controls
 
