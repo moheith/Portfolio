@@ -468,8 +468,26 @@ function drawIntroSelectionFrame(rect, role, duration = 420, agent = null) {
   const width = Math.max(18, right - left);
   const height = Math.max(18, bottom - top);
   const drawDuration = Math.min(180, Math.max(120, Math.round(Math.min(duration, 440) * .36)));
+  const nextArea = width * height;
+  $$('.intro-selection-frame:not(.is-releasing)', frames).forEach((existing) => {
+    const [oldLeft, oldTop, oldWidth, oldHeight] = (existing.dataset.bounds || '').split(',').map(Number);
+    if (![oldLeft, oldTop, oldWidth, oldHeight].every(Number.isFinite)) return;
+    const overlapWidth = Math.max(0, Math.min(right, oldLeft + oldWidth) - Math.max(left, oldLeft));
+    const overlapHeight = Math.max(0, Math.min(bottom, oldTop + oldHeight) - Math.max(top, oldTop));
+    const overlap = overlapWidth * overlapHeight / Math.max(1, Math.min(nextArea, oldWidth * oldHeight));
+    if (overlap > .2) {
+      existing.classList.add('is-releasing');
+      scheduleIntroAction(() => existing.remove(), 110);
+    }
+  });
   Object.assign(frame.style, { left: `${left}px`, top: `${top}px`, width: '0px', height: '0px' });
+  frame.dataset.bounds = `${left},${top},${width},${height}`;
   frames.append(frame);
+  const visibleFrames = $$('.intro-selection-frame:not(.is-releasing)', frames);
+  visibleFrames.slice(0, Math.max(0, visibleFrames.length - 6)).forEach((oldest) => {
+    oldest.classList.add('is-releasing');
+    scheduleIntroAction(() => oldest.remove(), 110);
+  });
   const expand = frame.animate([
     { width: '0px', height: '0px', opacity: .72 },
     { width: `${width}px`, height: `${height}px`, opacity: 1 }
