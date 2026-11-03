@@ -15,6 +15,8 @@ let modalKeyHandler = null;
 let paletteItems = [];
 let paletteSelected = 0;
 let introTimer = null;
+let introFailSafe = null;
+let swarmHideTimer = null;
 let toastTimer = null;
 let introAudio = null;
 let introSound = false;
@@ -255,8 +257,14 @@ function initScroll() {
   }, { rootMargin: '-35% 0px -50% 0px', threshold: 0 });
   sections.forEach((section) => observer.observe(section));
   let introProgrammaticScroll = false;
-  window.addEventListener('scroll', () => { setProgress(); if (introActive && !introProgrammaticScroll && performance.now() - introStart > 2500) finishIntro(); }, { passive: true });
-  chapterLinks.forEach((link) => link.addEventListener('click', () => { if (introActive) finishIntro(); }));
+  window.addEventListener('scroll', () => {
+    setProgress();
+    if (introActive && !introProgrammaticScroll && introTour && performance.now() - introStart > 900) {
+      introTour = false;
+      $('.hud-tour').textContent = 'TOUR OFF';
+    }
+  }, { passive: true });
+  chapterLinks.forEach((link) => link.addEventListener('click', () => { if (introActive) { introTour = false; $('.hud-tour').textContent = 'TOUR OFF'; } }));
   window.addEventListener('resize', setProgress, { passive: true });
   setProgress();
   document.addEventListener('portfolio:tour-scroll', (event) => {
@@ -288,8 +296,14 @@ function initVisuals() {
     }, { passive: true });
     const follow = () => { rx += (mx - rx) * .16; ry += (my - ry) * .16; ring.style.left = `${rx}px`; ring.style.top = `${ry}px`; requestAnimationFrame(follow); };
     requestAnimationFrame(follow);
-    document.addEventListener('pointerover', (event) => { if (event.target.closest('.project-card')) ring.classList.add('view'); else ring.classList.remove('view'); });
-    document.addEventListener('pointerover', (event) => { if (event.target.closest('#copy-email,.contact-email')) ring.classList.add('view'); });
+    document.addEventListener('pointerover', (event) => {
+      const target = event.target;
+      ring.classList.toggle('copy', Boolean(target.closest('#copy-email,.contact-email')));
+      ring.classList.toggle('view', Boolean(target.closest('.project-card')) && !target.closest('#copy-email,.contact-email'));
+    });
+    const dragTrack = $('#project-track');
+    dragTrack.addEventListener('pointerdown', () => ring.classList.add('drag'));
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((type) => dragTrack.addEventListener(type, () => ring.classList.remove('drag')));
     document.addEventListener('pointerleave', () => { dot.style.opacity = '0'; ring.style.opacity = '0'; });
     document.addEventListener('pointerenter', () => { dot.style.opacity = '1'; ring.style.opacity = '1'; });
     $$('.magnetic').forEach((button) => button.addEventListener('pointermove', (event) => {
@@ -456,6 +470,8 @@ function renderIntroStep(index, total) {
 function finishIntro() {
   if (!introActive) return;
   introActive = false; clearInterval(introTimer); introTimer = null;
+  clearTimeout(introFailSafe); introFailSafe = null;
+  clearTimeout(swarmHideTimer); swarmHideTimer = null;
   const swarm = $('#swarm'); swarm.classList.add('done');
   $('.hud-state').innerHTML = '<i></i> BUILD COMPLETE';
   $('.hud-progress').textContent = `${String(layerElements().length).padStart(2, '0')} / ${String(layerElements().length).padStart(2, '0')} LAYERS`;
@@ -470,7 +486,7 @@ function finishIntro() {
   requestAnimationFrame(orbit);
   sessionStorage.setItem('mohieth-swarm-seen', '1');
   $('#build-replay').hidden = false;
-  setTimeout(() => { swarm.classList.remove('active'); }, 6500);
+  swarmHideTimer = setTimeout(() => { swarm.classList.remove('active'); swarmHideTimer = null; }, 6500);
 }
 
 function startIntro(force = false) {
@@ -478,6 +494,8 @@ function startIntro(force = false) {
   if (!force && sessionStorage.getItem('mohieth-swarm-seen')) { $('#build-replay').hidden = false; return; }
   const swarm = $('#swarm'); const layers = layerElements();
   if (!layers.length) return;
+  clearTimeout(swarmHideTimer); swarmHideTimer = null;
+  clearTimeout(introFailSafe); introFailSafe = null;
   clearInterval(introTimer); introActive = true; introStart = performance.now(); introTour = true; introSpeed = 1;
   swarm.classList.remove('done'); swarm.classList.add('active');
   $('.agents').innerHTML = Array.from({ length: innerWidth <= 640 ? 8 : 8 }, (_, index) => `<span class="agent" aria-hidden="true" style="color:${introColors[index]}">↗</span>`).join('');
@@ -491,8 +509,7 @@ function startIntro(force = false) {
     renderIntroStep(index, layers.length);
   }, introStepDelay());
   // Fail-safe for stalled timers, a hidden tab, or unexpected runtime failures.
-  const failSafe = setTimeout(() => { if (introActive) finishIntro(); }, 56000);
-  swarm.dataset.failSafe = String(failSafe);
+  introFailSafe = setTimeout(() => { if (introActive) finishIntro(); }, 56000);
   $('#build-replay').hidden = true;
 }
 
