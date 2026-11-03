@@ -1213,14 +1213,14 @@ function startIntro(force = false) {
   if (!layers.length) return;
   clearTimeout(swarmHideTimer); swarmHideTimer = null;
   clearTimeout(introPreludeTimer); clearTimeout(introFailSafe); clearTimeout(introTimer);
-  introActive = true; introStart = performance.now(); introTour = true; introSpeed = 2;
+  introActive = true; introStart = performance.now(); introTour = true; introSpeed = 3;
   document.body.classList.add('build-intro-active');
   swarm.classList.remove('done'); swarm.classList.add('active', 'prelude');
   const openingCount = 2;
   introPeakAgentCount = openingCount;
   $('.agents').innerHTML = Array.from({ length: openingCount }, (_, index) => agentMarkup(index)).join('');
   $('.hud-agents').textContent = `${String(openingCount).padStart(2, '0')} AGENTS`; $('.hud-progress').textContent = `00 / ${String(layers.length).padStart(2, '0')} LAYERS`;
-  $('.hud-meter i').style.width = '0%'; $('.hud-state').innerHTML = '<i></i> SCANNING PAGE\u2026'; $('.hud-skip').hidden = false; $('.hud-replay').hidden = true; $('.hud-live').hidden = true; $('.hud-skip').textContent = 'SKIP INTRO \u00d7'; $('.hud-speed').textContent = '2\u00d7'; $('.hud-tour').textContent = 'TOUR ON';
+  $('.hud-meter i').style.width = '0%'; $('.hud-state').innerHTML = '<i></i> SCANNING PAGE\u2026'; $('.hud-skip').hidden = false; $('.hud-replay').hidden = true; $('.hud-live').hidden = true; $('.hud-skip').textContent = 'SKIP INTRO \u00d7'; $('.hud-speed').textContent = '3\u00d7'; $('.hud-tour').textContent = 'TOUR ON';
   setAgentsAt(innerWidth / 2, innerHeight / 2);
   introPreludeTimer = setTimeout(() => {
     if (!introActive) return;
@@ -1237,7 +1237,7 @@ function initSwarm() {
   $('.hud-replay').addEventListener('click', () => startIntro(true));
   $('#build-replay').addEventListener('click', () => startIntro(true));
   $('.hud-tour').addEventListener('click', (event) => { introTour = !introTour; event.currentTarget.textContent = introTour ? 'TOUR ON' : 'TOUR OFF'; });
-  $('.hud-speed').addEventListener('click', (event) => { const speeds = [1, 2, 4, .5]; introSpeed = speeds[(speeds.indexOf(introSpeed) + 1) % speeds.length]; event.currentTarget.textContent = `${introSpeed}\u00d7`; });
+  $('.hud-speed').addEventListener('click', (event) => { const speeds = [1, 2, 3, 4, .5]; introSpeed = speeds[(speeds.indexOf(introSpeed) + 1) % speeds.length]; event.currentTarget.textContent = `${introSpeed}\u00d7`; });
   $('.hud-sound').addEventListener('click', async (event) => {
     introSound = !introSound; event.currentTarget.textContent = `SOUND ${introSound ? 'ON' : 'OFF'}`;
     if (introSound && !introAudio) { const AudioContextClass = window.AudioContext || window.webkitAudioContext; if (AudioContextClass) { introAudio = new AudioContextClass(); await introAudio.resume(); } else { introSound = false; event.currentTarget.textContent = 'SOUND OFF'; announce('Web Audio is unavailable'); } }
