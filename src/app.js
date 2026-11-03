@@ -1094,6 +1094,11 @@ function runIntroBatch() {
       target = Math.max(0, Math.min(document.documentElement.scrollHeight - innerHeight,
         scrollY + rect.top - introSafeViewport().safeTop));
     }
+    if (target !== null && target > scrollY) {
+      const maxScroll = Math.max(0, document.documentElement.scrollHeight - innerHeight);
+      const scrollStep = Math.min(innerHeight * .32, Math.max(160, innerHeight * .28));
+      target = Math.min(maxScroll, Math.max(target, scrollY + scrollStep));
+    }
     if (target !== null && scrollIntroToUnit(next, target)) return;
     visible.push(next);
   }
