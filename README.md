@@ -26,7 +26,7 @@ Project art is rendered from CSS in `src/app.js` and `styles.css`. It is explana
 
 ## Replacing the portrait
 
-The optimized `assets/img/mayura.webp` is used for the page; the original PNG remains at `assets/img/mayura.png`. Update `person.portrait` in `src/content.js` to replace the display image with another owner-approved asset. The portrait is presented as a studio photograph with its grey background; the fallback monogram appears if the image cannot load.
+The optimized `assets/img/mayura.webp` is used for the page. The original PNG is retained in the source workspace at `assets/img/mayura.png`; the hosted project uses the optimized WebP. Update `person.portrait` in `src/content.js` to replace the display image with another owner-approved asset. The portrait is presented as a studio photograph with its grey background; the fallback monogram appears if the image cannot load.
 
 The original portrait is about 2.8 MB and the WebP display copy is about 82 KB at the same 1086 × 1448 dimensions. The original is kept in the assets folder for future edits.
 
