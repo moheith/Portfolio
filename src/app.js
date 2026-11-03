@@ -419,8 +419,8 @@ function initPreferences() {
 }
 
 const introColors = ['#5eead4', '#fb923c', '#ffffff', '#a78bfa', '#7dd3fc', '#fda4af', '#fcd34d', '#86efac'];
-const introAgentTargets = { Home: 16, Work: 24, Stack: 22, 'Featured build': 26, About: 26, Process: 28, Journey: 26, Contact: 29, Footer: 18 };
-const introAgentFloors = { Home: 15, Work: 23, Stack: 20, 'Featured build': 22, About: 22, Process: 24, Journey: 22, Contact: 24, Footer: 14 };
+const introAgentTargets = { Home: 19, Work: 23, Stack: 24, 'Featured build': 24, About: 28, Process: 28, Journey: 29, Contact: 30, Footer: 30 };
+const introAgentFloors = { Home: 15, Work: 19, Stack: 22, 'Featured build': 22, About: 24, Process: 26, Journey: 27, Contact: 28, Footer: 28 };
 const introAgentRoles = ['writer', 'dragger', 'aligner', 'scout'];
 const introActionTimers = new Set();
 let introSectionRanges = new Map();
@@ -764,19 +764,11 @@ function scrollIntroTrackToUnit(unit, destination) {
   return true;
 }
 
-const introAgentIcons = {
-  writer: 'M5 19 17.5 6.5l3 3L8 22H5v-3ZM15.8 8.2l3 3M4 22h17',
-  dragger: 'M8 11V5.5a1.5 1.5 0 0 1 3 0V10 4.8a1.5 1.5 0 0 1 3 0V10 6.1a1.5 1.5 0 0 1 3 0v5.1l1.2-1.1a1.7 1.7 0 0 1 2.6 2.1l-3.1 5a4 4 0 0 1-3.4 1.9h-3a4 4 0 0 1-3.5-2l-3.2-5.2A1.7 1.7 0 0 1 9 10.2L11 12',
-  grabber: 'M6.2 11.5V8.8a1.5 1.5 0 0 1 3 0v2.1V7.8a1.5 1.5 0 0 1 3 0v3.1V8.2a1.5 1.5 0 0 1 3 0v3.2V9.6a1.5 1.5 0 0 1 3 0v4.7a5 5 0 0 1-5 5h-2.4a4.3 4.3 0 0 1-3.8-2.3l-2.2-3.8a1.5 1.5 0 0 1 2.5-1.7l1.5 1.7',
-  aligner: 'M12 3v18M3 12h18M12 3 9 6M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3',
-  scout: 'M4 2.8v17l4.8-4.5 3.1 6.1 2.6-1.3-3-6.2h6.9L4 2.8Z',
-  selecting: 'M4 2.8v17l4.8-4.5 3.1 6.1 2.6-1.3-3-6.2h6.9L4 2.8Z'
-};
+const introPointerIcon = 'M4 2.8v17l4.8-4.5 3.1 6.1 2.6-1.3-3-6.2h6.9L4 2.8Z';
 
 function agentIconMarkup(role, grabbing = false) {
-  const fill = role === 'scout' || role === 'selecting' ? 'currentColor' : 'none';
-  const icon = role === 'dragger' && grabbing ? introAgentIcons.grabber : introAgentIcons[role] || introAgentIcons.scout;
-  return `<svg viewBox="0 0 24 24" focusable="false"><path d="${icon}" fill="${fill}" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+  const fillOpacity = grabbing || role === 'selecting' ? 1 : role === 'writer' ? .86 : role === 'aligner' ? .8 : .93;
+  return `<svg viewBox="0 0 24 24" focusable="false"><path d="${introPointerIcon}" fill="currentColor" fill-opacity="${fillOpacity}" stroke="#11131a" stroke-width="1.65" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
 }
 
 function setAgentGrabState(agent, grabbing) {
@@ -1066,8 +1058,8 @@ function chooseIntroUnits(candidates, count) {
   const chosen = [seed];
   const groupSelector = '.project-card,.skill-group,.process-list li,.journey-row,.milestones article,.brief-form,.contact-links';
   const groupLimits = new Map([
-    ['project-card', 8], ['skill-group', 4], ['process-list li', 2], ['journey-row', 3],
-    ['milestones article', 3], ['brief-form', 10], ['contact-links', 10]
+    ['project-card', 16], ['skill-group', 10], ['process-list li', 3], ['journey-row', 4],
+    ['milestones article', 3], ['brief-form', 14], ['contact-links', 12]
   ]);
   const groupFor = (unit) => unit.element.closest(groupSelector);
   const groupLimit = (group) => {
@@ -1104,12 +1096,13 @@ function chooseIntroUnits(candidates, count) {
 
 function introBatchScrollOpportunity(pending, visible, desiredCount) {
   const currentCount = chooseIntroUnits(visible, desiredCount).length;
-  if (currentCount >= 4 || !visible.length || !introTour) return null;
+  if (currentCount >= Math.max(4, Math.ceil(desiredCount * .55)) || !visible.length || !introTour) return null;
   const { safeTop, safeBottom } = introSafeViewport();
-  let minDelta = -220;
-  let maxDelta = 220;
+  let minDelta = -260;
+  let maxDelta = 260;
   visible.forEach((unit) => {
     const rect = introUnitRect(unit);
+    if (rect.width < 48 || rect.height < 18) return;
     const threshold = Math.max(8, rect.height * .68);
     minDelta = Math.max(minDelta, rect.top - safeBottom + threshold);
     maxDelta = Math.min(maxDelta, rect.bottom - safeTop - threshold);
@@ -1165,7 +1158,7 @@ function animateIntroTyping(element, agent, workDuration, task) {
   const textLength = segmented ? (element.textContent || '').trim().length / Math.max(1, lineCount) : (targets[0].textContent || '').trim().length;
   const selectionDuration = Math.min(520, Math.max(320, textLength * 6));
   const selectionMove = task.showFrame !== false
-    ? drawIntroSelectionFrame(lineRect, 'writer', selectionDuration + 180, agent) : 0;
+    ? drawIntroSelectionFrame(lineRect, 'writer', selectionDuration + 700, agent) : 0;
 
   const revealTargets = !segmented || task.segmentOrder === 0 ? targets : [];
   revealTargets.forEach((target, index) => {
@@ -1201,7 +1194,7 @@ function animateIntroTask(task, agent, workDuration) {
     return;
   }
   const selectionMove = task.showFrame !== false
-    ? drawIntroSelectionFrame(rect, role, role === 'dragger' ? 620 : 540, agent) : 0;
+    ? drawIntroSelectionFrame(rect, role, role === 'dragger' ? 1450 : 1250, agent) : 0;
   const point = (x, y, rotation = 0) => ({ x: rect.left + rect.width * x, y: rect.top + rect.height * y, rotation });
   const paths = {
     dragger: [point(.12, .16, -15), point(.54, .52, 8), point(.84, .78, 0)],
@@ -1256,7 +1249,7 @@ function runIntroBatch() {
   const first = visible[0];
   const section = first.element.closest('[data-section]')?.dataset.section || 'Footer';
   $('.swarm-layer').classList.toggle('lower-page-mode', section === 'Contact' || section === 'Footer');
-  const desiredCount = Math.min(innerWidth <= 640 ? 10 : 29, introAgentCountForStep(first.firstLayerIndex, section));
+  const desiredCount = Math.min(innerWidth <= 640 ? 10 : 30, introAgentCountForStep(first.firstLayerIndex, section));
   const gatherTarget = introBatchScrollOpportunity(pending, visible, desiredCount);
   if (gatherTarget !== null && scrollIntroToUnit(first, gatherTarget)) return;
   const selectedUnits = chooseIntroUnits(visible, Math.max(1, desiredCount));
@@ -1298,7 +1291,7 @@ function runIntroBatch() {
     oscillator.connect(gain); gain.connect(introAudio.destination); oscillator.start(); oscillator.stop(introAudio.currentTime + .045);
   }
 
-  const batchDelay = Math.max((250 + tasks.length * 3.5) / introSpeed, introWorkUntil - performance.now() + 64);
+  const batchDelay = Math.max((250 + tasks.length * 3.5) / introSpeed, introWorkUntil - performance.now() + 800);
   introTimer = setTimeout(() => {
     if (!introActive) return;
     tasks.forEach((task) => {
@@ -1368,20 +1361,20 @@ function startIntro(force = false) {
   if (!layers.length) return;
   clearTimeout(swarmHideTimer); swarmHideTimer = null;
   clearTimeout(introPreludeTimer); clearTimeout(introFailSafe); clearTimeout(introTimer);
-  introActive = true; introStart = performance.now(); introTour = true; introSpeed = 4;
+  introActive = true; introStart = performance.now(); introTour = true; introSpeed = 1;
   document.body.classList.add('build-intro-active');
   swarm.classList.remove('done'); swarm.classList.add('active', 'prelude');
-  const openingCount = 2;
+  const openingCount = innerWidth <= 640 ? 10 : 15;
   introPeakAgentCount = openingCount;
   $('.agents').innerHTML = Array.from({ length: openingCount }, (_, index) => agentMarkup(index)).join('');
   $('.hud-agents').textContent = `${String(openingCount).padStart(2, '0')} AGENTS`; $('.hud-progress').textContent = `00 / ${String(layers.length).padStart(2, '0')} LAYERS`;
-  $('.hud-meter i').style.width = '0%'; $('.hud-state').innerHTML = '<i></i> SCANNING PAGE\u2026'; $('.hud-skip').hidden = false; $('.hud-replay').hidden = true; $('.hud-live').hidden = true; $('.hud-skip').textContent = 'SKIP INTRO \u00d7'; $('.hud-speed').textContent = '4\u00d7'; $('.hud-tour').textContent = 'TOUR ON';
-  setAgentsAt(innerWidth / 2, innerHeight / 2);
+  $('.hud-meter i').style.width = '0%'; $('.hud-state').innerHTML = '<i></i> SCANNING PAGE\u2026'; $('.hud-skip').hidden = false; $('.hud-replay').hidden = true; $('.hud-live').hidden = true; $('.hud-skip').textContent = 'SKIP INTRO \u00d7'; $('.hud-speed').textContent = '1\u00d7'; $('.hud-tour').textContent = 'TOUR ON';
+  setAgentsAt(innerWidth / 2, innerHeight / 2, true);
   introPreludeTimer = setTimeout(() => {
     if (!introActive) return;
     swarm.classList.remove('prelude');
     runIntroBatch();
-  }, 500);
+  }, 900);
   introFailSafe = setTimeout(() => { if (introActive) finishIntro(false); }, 130000);
   $('#build-replay').hidden = true;
 }
@@ -1392,7 +1385,7 @@ function initSwarm() {
   $('.hud-replay').addEventListener('click', () => startIntro(true));
   $('#build-replay').addEventListener('click', () => startIntro(true));
   $('.hud-tour').addEventListener('click', (event) => { introTour = !introTour; event.currentTarget.textContent = introTour ? 'TOUR ON' : 'TOUR OFF'; });
-  $('.hud-speed').addEventListener('click', (event) => { const speeds = [4, 3, 2, 1, .5]; introSpeed = speeds[(speeds.indexOf(introSpeed) + 1) % speeds.length]; event.currentTarget.textContent = `${introSpeed}\u00d7`; });
+  $('.hud-speed').addEventListener('click', (event) => { const speeds = [.5, 1, 2, 4]; introSpeed = speeds[(speeds.indexOf(introSpeed) + 1) % speeds.length]; event.currentTarget.textContent = `${introSpeed}\u00d7`; });
   $('.hud-sound').addEventListener('click', async (event) => {
     introSound = !introSound; event.currentTarget.textContent = `SOUND ${introSound ? 'ON' : 'OFF'}`;
     if (introSound && !introAudio) { const AudioContextClass = window.AudioContext || window.webkitAudioContext; if (AudioContextClass) { introAudio = new AudioContextClass(); await introAudio.resume(); } else { introSound = false; event.currentTarget.textContent = 'SOUND OFF'; announce('Web Audio is unavailable'); } }
