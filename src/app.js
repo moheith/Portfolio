@@ -419,8 +419,8 @@ function initPreferences() {
 }
 
 const introColors = ['#5eead4', '#fb923c', '#ffffff', '#a78bfa', '#7dd3fc', '#fda4af', '#fcd34d', '#86efac'];
-const introAgentTargets = { Home: 16, Work: 24, Stack: 16, 'Featured build': 24, About: 24, Process: 22, Journey: 22, Contact: 28, Footer: 12 };
-const introAgentFloors = { Home: 9, Work: 13, Stack: 7, 'Featured build': 13, About: 12, Process: 12, Journey: 10, Contact: 14, Footer: 5 };
+const introAgentTargets = { Home: 16, Work: 24, Stack: 22, 'Featured build': 26, About: 26, Process: 28, Journey: 26, Contact: 29, Footer: 18 };
+const introAgentFloors = { Home: 15, Work: 18, Stack: 16, 'Featured build': 18, About: 18, Process: 18, Journey: 16, Contact: 20, Footer: 12 };
 const introAgentRoles = ['writer', 'dragger', 'aligner', 'scout'];
 const introActionTimers = new Set();
 let introSectionRanges = new Map();
