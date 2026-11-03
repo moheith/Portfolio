@@ -420,7 +420,7 @@ function initPreferences() {
 
 const introColors = ['#5eead4', '#fb923c', '#ffffff', '#a78bfa', '#7dd3fc', '#fda4af', '#fcd34d', '#86efac'];
 const introAgentTargets = { Home: 16, Work: 24, Stack: 22, 'Featured build': 26, About: 26, Process: 28, Journey: 26, Contact: 29, Footer: 18 };
-const introAgentFloors = { Home: 15, Work: 18, Stack: 16, 'Featured build': 18, About: 18, Process: 18, Journey: 16, Contact: 20, Footer: 12 };
+const introAgentFloors = { Home: 15, Work: 23, Stack: 20, 'Featured build': 22, About: 22, Process: 24, Journey: 22, Contact: 24, Footer: 14 };
 const introAgentRoles = ['writer', 'dragger', 'aligner', 'scout'];
 const introActionTimers = new Set();
 let introSectionRanges = new Map();
@@ -525,7 +525,7 @@ function cacheIntroSectionRanges(layers) {
 function cacheIntroSceneUnits(layers) {
   const selector = [
     '.hero-topline', '.hero-open', '.hero-copy .script', '.hero-copy h1', '.hero-role', '.hero-intro', '.hero-actions .button', '.hero-actions .location',
-    '.hero-portrait', '.aside-statement', '.hero-stats > div > strong', '.hero-stats > div > span', '.exploring-label', '.exploring', '.hero-aside .text-button', '.hero-bottom > *',
+    '.aside-statement', '.hero-stats > div > strong', '.hero-stats > div > span', '.exploring-label', '.exploring', '.hero-aside .text-button', '.hero-bottom > *',
     '.work-heading .eyebrow', '.work-heading h2', '.work-heading .section-intro', '.work-toolbar .filter', '.work-toolbar .search-box',
     '.project-card-top > *', '.project-card h3', '.project-card p', '.project-stack > span', '.card-links > *', '.carousel-footer > *',
     '.stack-strip', '.stack-tile', '.featured-copy .eyebrow', '.featured-copy h2', '.featured-copy > p:not(.eyebrow)', '.featured-copy .button',
@@ -538,7 +538,7 @@ function cacheIntroSceneUnits(layers) {
     '.brief-form .form-heading', '.brief-form label', '.brief-form .form-note', '.brief-form > button', '.site-footer > *'
   ].join(',');
   const aliases = [
-    ['.project-card', '.project-art .art-kicker'], ['.carousel-shell', '.project-track .project-art .art-kicker'], ['.project-art', '.art-kicker'], ['.stack-strip', '.stack-tile'],
+    ['.hero-portrait', 'img'], ['.project-card', '.project-art .art-kicker'], ['.carousel-shell', '.project-track .project-art .art-kicker'], ['.project-art', '.art-kicker'], ['.stack-strip', '.stack-tile'],
     ['.work-toolbar', '.work-toolbar .filter'], ['.about-bio', '.about-bio > p'], ['.skills-panel', '.skills-top'],
     ['.process-quote', '.process-quote > p'], ['.journey-row', '.journey-row h3'], ['.milestones article', '.milestones article > strong'],
     ['.contact-kicker', '.contact-kicker > .eyebrow'], ['.contact-actions', '.contact-actions > *'], ['.social-links', '.social-links > *'],
@@ -547,7 +547,8 @@ function cacheIntroSceneUnits(layers) {
   const targetForLayer = (layer) => {
     const alias = aliases.find(([wrapper]) => layer.matches(wrapper));
     const aliasTarget = alias ? layer.querySelector(alias[1]) : null;
-    return aliasTarget || layer.closest(selector) || layer;
+    const portraitImage = layer.matches('.portrait-index') ? layer.closest('.hero-portrait')?.querySelector('img') : null;
+    return aliasTarget || portraitImage || layer.closest(selector) || layer;
   };
   const grouped = new Map();
   layers.forEach((layer, index) => {
@@ -573,13 +574,13 @@ function cacheIntroSceneUnits(layers) {
     if (rect.width < 18 || rect.height < 10 || getComputedStyle(element).display === 'none') return;
     grouped.set(element, { element, layers: [], firstLayerIndex: artIndex });
   });
-  introSceneUnits = [...grouped.values()].flatMap((unit) => {
+  let sceneUnits = [...grouped.values()].flatMap((unit) => {
     const element = unit.element;
     const text = (element.textContent || '').trim();
     if (!element.matches('p,h1,h2,h3,.hero-role,.contact-email') || text.length < 35) return [unit];
     const lines = introTextLineRects(element);
     if (lines.length < 2) return [unit];
-    const segmentLines = lines.length > 2 ? [0, lines.length - 1] : lines.map((_, index) => index);
+    const segmentLines = lines.map((_, index) => index);
     return segmentLines.map((lineIndex, segmentIndex) => ({
       ...unit,
       layers: segmentIndex === 0 ? unit.layers : [],
@@ -588,6 +589,35 @@ function cacheIntroSceneUnits(layers) {
       segmentCount: segmentLines.length
     }));
   }).sort((a, b) => a.firstLayerIndex - b.firstLayerIndex || (a.segmentIndex ?? 0) - (b.segmentIndex ?? 0));
+  const stackStripUnit = sceneUnits.find((unit) => unit.element.matches('.stack-strip'));
+  const firstStackTile = sceneUnits.find((unit) => unit.element.matches('.stack-tile') && unit.element.closest('.stack-strip'));
+  if (stackStripUnit && firstStackTile) {
+    firstStackTile.layers.push(...stackStripUnit.layers);
+    firstStackTile.firstLayerIndex = Math.min(firstStackTile.firstLayerIndex, stackStripUnit.firstLayerIndex);
+    sceneUnits = sceneUnits.filter((unit) => unit !== stackStripUnit);
+  }
+  const stackTiles = new Map();
+  introSceneUnits = sceneUnits.filter((unit) => {
+    if (!unit.element.matches('.stack-tile')) return true;
+    const key = (unit.element.textContent || '').trim().toLowerCase();
+    const visibleWidth = (element) => {
+      const rect = element.getBoundingClientRect();
+      return Math.max(0, Math.min(innerWidth, rect.right) - Math.max(0, rect.left));
+    };
+    const existing = stackTiles.get(key);
+    if (!existing) {
+      stackTiles.set(key, { unit, visibleWidth: visibleWidth(unit.element) });
+      return true;
+    }
+    existing.unit.layers.push(...unit.layers);
+    existing.unit.firstLayerIndex = Math.min(existing.unit.firstLayerIndex, unit.firstLayerIndex);
+    const width = visibleWidth(unit.element);
+    if (width > existing.visibleWidth) {
+      existing.unit.element = unit.element;
+      existing.visibleWidth = width;
+    }
+    return false;
+  });
   introCompletedUnits = new Set();
   introProcessedCount = 0;
   introBatchNumber = 0;
@@ -606,31 +636,55 @@ function introAgentCountForStep(index, section) {
 function introSafeViewport() {
   const headerHeight = $('.site-header')?.getBoundingClientRect().height || 0;
   const hudHeight = $('.swarm-hud')?.getBoundingClientRect().height || 44;
-  const safeTop = Math.max(70, headerHeight + 14);
-  const safeBottom = Math.max(safeTop + 180, innerHeight - hudHeight - 38);
+  const lowerPageMode = $('.swarm-layer')?.classList.contains('lower-page-mode');
+  const safeTop = lowerPageMode ? Math.max(70, headerHeight + hudHeight + 24) : Math.max(70, headerHeight + 14);
+  const safeBottom = lowerPageMode ? Math.max(safeTop + 180, innerHeight - 12) : Math.max(safeTop + 180, innerHeight - hudHeight - 22);
   return { safeTop, safeBottom };
 }
 
 function introScrollDestination(unit) {
   const rect = unit?.element ? introUnitRect(unit) : unit.getBoundingClientRect();
   const { safeTop, safeBottom } = introSafeViewport();
-  const documentTop = rect.top + scrollY;
+  const documentCenter = rect.top + scrollY + rect.height / 2;
+  const safeCenter = (safeTop + safeBottom) / 2;
   let target = scrollY;
-  if (rect.height > safeBottom - safeTop) {
-    target = documentTop + rect.height / 2 - (safeTop + safeBottom) / 2;
-  } else if (rect.top < safeTop) {
-    target = documentTop - safeTop;
-  } else if (rect.bottom > safeBottom) {
-    target = documentTop + rect.height - safeBottom;
+  if (rect.top < safeTop || rect.bottom > safeBottom) {
+    target = documentCenter - safeCenter;
   }
   target = Math.max(0, Math.min(document.documentElement.scrollHeight - innerHeight, target));
   return Math.abs(target - scrollY) > 28 ? target : null;
 }
 
-function introTrackScrollDestination(unit) {
+function introTrackScrollDestination(unit, pending = []) {
   const element = unit.element;
-  const track = element.closest('.project-track');
+  const projectTrack = element.closest('.project-track');
+  const marqueeTrack = element.closest('.marquee-track');
+  const track = projectTrack || (marqueeTrack ? marqueeTrack.closest('.marquee-window') : null);
   if (!track) return null;
+  if (marqueeTrack) {
+    const trackRect = track.getBoundingClientRect();
+    const group = [];
+    let left = Infinity;
+    let right = -Infinity;
+    const capacity = Math.max(1, track.clientWidth - 24);
+    const candidates = pending.filter((candidate) => candidate.element.closest('.marquee-track') === marqueeTrack)
+      .sort((a, b) => a.firstLayerIndex - b.firstLayerIndex);
+    candidates.forEach((candidate) => {
+      const rect = introUnitRect(candidate);
+      const nextLeft = Math.min(left, rect.left);
+      const nextRight = Math.max(right, rect.right);
+      if (group.length && nextRight - nextLeft > capacity) return;
+      group.push(candidate);
+      left = nextLeft;
+      right = nextRight;
+    });
+    if (!group.length) return null;
+    const groupCenter = (left + right) / 2;
+    const viewportCenter = trackRect.left + track.clientWidth / 2;
+    const target = Math.max(0, Math.min(track.scrollWidth - track.clientWidth,
+      track.scrollLeft + groupCenter - viewportCenter));
+    return Math.abs(target - track.scrollLeft) > 12 ? { track, target } : null;
+  }
   const rect = introUnitRect(unit);
   const trackRect = track.getBoundingClientRect();
   const inset = 12;
@@ -650,6 +704,7 @@ function cancelIntroScroll() {
 function scrollIntroToUnit(unit, target) {
   if (!unit || target === null || !introTour) return false;
   const sectionName = unit.element.closest('[data-section]')?.dataset.section || 'Footer';
+  $('.swarm-layer').classList.toggle('lower-page-mode', sectionName === 'Contact' || sectionName === 'Footer');
   $('.hud-state').innerHTML = `<i></i> MOVING TO ${sectionName.toUpperCase()}…`;
   const distance = Math.abs(target - scrollY);
   const fallbackDelay = Math.min(560, Math.max(250, 200 + distance * .2));
@@ -702,7 +757,7 @@ function scrollIntroTrackToUnit(unit, destination) {
     if (introActive) runIntroBatch();
   };
   introScrollCancel = cancel;
-  $('.hud-state').innerHTML = '<i></i> MOVING THROUGH BUILDS';
+  $('.hud-state').innerHTML = `<i></i> MOVING THROUGH ${unit.element.closest('.marquee-track') ? 'TOOLS' : 'BUILDS'}`;
   track.addEventListener('scrollend', finish, { once: true });
   fallbackTimer = setTimeout(finish, Math.min(520, Math.max(240, 190 + distance * .34)));
   track.scrollTo({ left: target, behavior: motionOff ? 'instant' : 'smooth' });
@@ -884,7 +939,7 @@ function layerElements() {
       && (element.tagName !== 'SPAN' || (hasText && !element.closest('.project-art')));
   };
   const targets = new Set($$(selector).filter(isVisible));
-  $$('.hero-portrait, .stack-strip, .process-quote, .contact-kicker, .contact-actions, .social-links, .site-footer, .project-art')
+  $$('.stack-strip, .process-quote, .contact-kicker, .contact-actions, .social-links, .site-footer, .project-art')
     .filter(isVisible)
     .forEach((element) => targets.add(element));
   return [...targets].sort((a, b) => a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1);
@@ -953,26 +1008,32 @@ function introTextTargets(element) {
 
 function introPreferredRole(element) {
   if (element.matches('.brief-form label')) return 'writer';
-  if (element.matches('.project-art,.hero-portrait,.system-node,.education-card,.poster-card,.milestones article,.hero-stats > div,.mock-game .pixel-sun,.mock-game .pixel-hill,.mock-mascot,.mock-chat > div,.learn-cards > div')) return 'dragger';
+  if (element.matches('img,.project-art,.hero-portrait,.system-node,.education-card,.poster-card,.milestones article,.hero-stats > div,.mock-game .pixel-sun,.mock-game .pixel-hill,.mock-mascot,.mock-chat > div,.learn-cards > div')) return 'dragger';
   if (element.matches('.stack-strip,.stack-tile,.skill-group .skill-tags span,.site-footer > *, .social-links > *, .hero-actions .button,.work-toolbar .filter,.contact-actions > *, .carousel-footer > *, .project-stack > span,.mock-top,.mock-wave,.mock-channel > small,.mock-server,.learn-head > span')) return 'aligner';
   if (element.matches('.system-top,.system-log > *, .process-list .step-number,.journey-row > span,.project-card-top > *, .art-kicker,.art-index,.mock-side > *, .mock-game > i,.mock-game > b,.mock-game > small,.mock-channel > b,.mock-channel > div,.mock-command,.learn-search,.learn-head > i,.mock-chat > small')) return 'scout';
   if (element.matches('.mock-code > span,.mock-chat > p,.mock-convo > div:first-child > p,.mock-convo > div:first-child > b,.learn-title,.learn-head > b')) return 'writer';
   return introTextTargets(element).length ? 'writer' : 'scout';
 }
 
-function introUnitVisible(unit) {
+function introUnitVisibleAtOffset(unit, scrollDelta = 0) {
   const rect = introUnitRect(unit);
   const { safeTop, safeBottom } = introSafeViewport();
-  const safeHeight = safeBottom - safeTop;
-  const track = unit.element.closest('.project-track');
+  const top = rect.top - scrollDelta;
+  const bottom = rect.bottom - scrollDelta;
+  const visibleHeight = Math.max(0, Math.min(bottom, safeBottom) - Math.max(top, safeTop));
+  const visibleRatio = visibleHeight / Math.max(1, rect.height);
+  const track = unit.element.closest('.project-track') || unit.element.closest('.marquee-window');
   if (track) {
     const trackRect = track.getBoundingClientRect();
     const visibleWidth = Math.max(0, Math.min(rect.right, trackRect.right) - Math.max(rect.left, trackRect.left));
     if (visibleWidth / Math.max(1, rect.width) < .72) return false;
   }
-  return rect.width >= 16 && rect.height >= 8 && rect.height <= safeHeight * .94
-    && rect.top >= safeTop - 2 && rect.bottom <= safeBottom + 2
+  return rect.width >= 16 && rect.height >= 8 && visibleHeight >= 8 && visibleRatio >= .68
     && rect.right > 4 && rect.left < innerWidth - 4;
+}
+
+function introUnitVisible(unit) {
+  return introUnitVisibleAtOffset(unit);
 }
 
 function introUnitsSeparated(unit, chosen) {
@@ -988,14 +1049,21 @@ function introUnitsSeparated(unit, chosen) {
     const distance = Math.hypot(rect.left + rect.width / 2 - otherRect.left - otherRect.width / 2,
       rect.top + rect.height / 2 - otherRect.top - otherRect.height / 2);
     const sameTextBlock = other.element === unit.element && Number.isInteger(unit.segmentIndex) && Number.isInteger(other.segmentIndex);
-    const minDistance = sameTextBlock ? 15 : 38;
+    const minDistance = sameTextBlock ? 8 : 24;
     return overlap / Math.max(1, Math.min(area, otherRect.width * otherRect.height)) < .22 && distance >= minDistance;
   });
 }
 
 function chooseIntroUnits(candidates, count) {
   if (!candidates.length) return [];
-  const chosen = [candidates[0]];
+  const mediaSeed = candidates.find((candidate) => candidate.element.matches('img,.poster-card'));
+  const seed = mediaSeed || candidates.reduce((best, candidate) => {
+    const rect = introUnitRect(candidate);
+    const area = rect.width * rect.height;
+    const bestRect = introUnitRect(best);
+    return area < bestRect.width * bestRect.height ? candidate : best;
+  });
+  const chosen = [seed];
   const groupSelector = '.project-card,.skill-group,.process-list li,.journey-row,.milestones article,.brief-form,.contact-links';
   const groupLimits = new Map([
     ['project-card', 8], ['skill-group', 4], ['process-list li', 2], ['journey-row', 3],
@@ -1032,6 +1100,40 @@ function chooseIntroUnits(candidates, count) {
     chosen.push(available[0]);
   }
   return chosen.sort((a, b) => a.firstLayerIndex - b.firstLayerIndex);
+}
+
+function introBatchScrollOpportunity(pending, visible, desiredCount) {
+  const currentCount = chooseIntroUnits(visible, desiredCount).length;
+  if (currentCount >= 4 || !visible.length || !introTour) return null;
+  const { safeTop, safeBottom } = introSafeViewport();
+  let minDelta = -220;
+  let maxDelta = 220;
+  visible.forEach((unit) => {
+    const rect = introUnitRect(unit);
+    const threshold = Math.max(8, rect.height * .68);
+    minDelta = Math.max(minDelta, rect.top - safeBottom + threshold);
+    maxDelta = Math.min(maxDelta, rect.bottom - safeTop - threshold);
+  });
+  if (minDelta > maxDelta) return null;
+
+  let bestDelta = 0;
+  let bestUnits = visible;
+  let bestCount = currentCount;
+  const firstDelta = Math.ceil(minDelta / 24) * 24;
+  for (let delta = firstDelta; delta <= maxDelta; delta += 24) {
+    if (Math.abs(delta) < 24) continue;
+    const candidates = pending.filter((unit) => introUnitVisibleAtOffset(unit, delta));
+    if (candidates.length <= bestCount) continue;
+    const count = chooseIntroUnits(candidates, desiredCount).length;
+    if (count > bestCount || (count === bestCount && Math.abs(delta) < Math.abs(bestDelta))) {
+      bestDelta = delta;
+      bestUnits = candidates;
+      bestCount = count;
+    }
+  }
+  const target = Math.max(0, Math.min(document.documentElement.scrollHeight - innerHeight, scrollY + bestDelta));
+  return bestCount >= Math.max(4, currentCount + 2) && bestUnits.length > visible.length && Math.abs(target - scrollY) > 28
+    ? target : null;
 }
 
 function animateAgentPath(agent, points, duration) {
@@ -1140,25 +1242,23 @@ function runIntroBatch() {
     const next = pending[0];
     const rect = introUnitRect(next);
     if (!introTour) { finishIntro(false); return; }
-    const trackDestination = introTrackScrollDestination(next);
+    const trackDestination = introTrackScrollDestination(next, pending);
     if (trackDestination && scrollIntroTrackToUnit(next, trackDestination)) return;
     let target = introScrollDestination(next);
     if (target === null && (rect.bottom <= 0 || rect.top >= innerHeight)) {
       target = Math.max(0, Math.min(document.documentElement.scrollHeight - innerHeight,
-        scrollY + rect.top - introSafeViewport().safeTop));
+        scrollY + rect.top + rect.height / 2 - (introSafeViewport().safeTop + introSafeViewport().safeBottom) / 2));
     }
-    if (target !== null && target > scrollY) {
-      const maxScroll = Math.max(0, document.documentElement.scrollHeight - innerHeight);
-      const scrollStep = Math.min(innerHeight * .32, Math.max(160, innerHeight * .28));
-      target = Math.min(maxScroll, Math.max(target, scrollY + scrollStep));
-    }
-    if (target !== null && scrollIntroToUnit(next, target)) return;
+    if (target !== null && Math.abs(target - scrollY) > 28 && scrollIntroToUnit(next, target)) return;
     visible.push(next);
   }
 
   const first = visible[0];
   const section = first.element.closest('[data-section]')?.dataset.section || 'Footer';
-  const desiredCount = Math.min(innerWidth <= 640 ? 10 : 28, introAgentCountForStep(first.firstLayerIndex, section));
+  $('.swarm-layer').classList.toggle('lower-page-mode', section === 'Contact' || section === 'Footer');
+  const desiredCount = Math.min(innerWidth <= 640 ? 10 : 29, introAgentCountForStep(first.firstLayerIndex, section));
+  const gatherTarget = introBatchScrollOpportunity(pending, visible, desiredCount);
+  if (gatherTarget !== null && scrollIntroToUnit(first, gatherTarget)) return;
   const selectedUnits = chooseIntroUnits(visible, Math.max(1, desiredCount));
   const roleOrder = [...introAgentRoles.slice(introBatchNumber % introAgentRoles.length), ...introAgentRoles.slice(0, introBatchNumber % introAgentRoles.length)];
   const assignments = selectedUnits.map((unit) => ({ unit, primary: true }));
@@ -1172,15 +1272,6 @@ function runIntroBatch() {
       segmentIndex: unit.segmentIndex, segmentOrder: unit.segmentOrder, segmentCount: unit.segmentCount,
       showFrame: primary, role: assignedRole, kind: assignedRole === 'writer' ? 'text' : introLayerKind(unit.element) };
   });
-  const taskRoles = new Set(tasks.map((task) => task.role));
-  const helperRoles = roleOrder.filter((role) => !taskRoles.has(role));
-  while (tasks.length < 4 && selectedUnits.length && helperRoles.length) {
-    const unit = selectedUnits[(tasks.length - assignments.length) % selectedUnits.length];
-    const role = helperRoles.shift();
-    tasks.push({ unit, element: unit.element, layers: [], firstLayerIndex: unit.firstLayerIndex,
-      segmentIndex: unit.segmentIndex, segmentOrder: unit.segmentOrder, segmentCount: unit.segmentCount,
-      showFrame: false, role, kind: role === 'writer' ? 'text' : introLayerKind(unit.element) });
-  }
   if (!tasks.length) { finishIntro(false); return; }
   ensureAgentCount(tasks.length);
   const agents = $$('.agent:not(.retiring)');
@@ -1207,7 +1298,7 @@ function runIntroBatch() {
     oscillator.connect(gain); gain.connect(introAudio.destination); oscillator.start(); oscillator.stop(introAudio.currentTime + .045);
   }
 
-  const batchDelay = (250 + tasks.length * 3.5) / introSpeed;
+  const batchDelay = Math.max((250 + tasks.length * 3.5) / introSpeed, introWorkUntil - performance.now() + 64);
   introTimer = setTimeout(() => {
     if (!introActive) return;
     tasks.forEach((task) => {
@@ -1241,7 +1332,7 @@ function finishIntro(timelineComplete = false) {
   $$('.build-drag-settle,.build-align-settle,.build-scan-settle').forEach((element) => {
     element.classList.remove('build-drag-settle', 'build-align-settle', 'build-scan-settle');
   });
-  const swarm = $('#swarm'); swarm.classList.remove('prelude');
+  const swarm = $('#swarm'); swarm.classList.remove('prelude', 'lower-page-mode');
   document.body.classList.remove('build-intro-active');
   sessionStorage.setItem('mohieth-swarm-seen', '1');
   $('#build-replay').hidden = false;
