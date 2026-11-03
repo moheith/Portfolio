@@ -19,7 +19,7 @@ export const SITE = {
     projectCountLabel: "10+ projects & experiments",
     intro: "I build thoughtful digital experiences — from AI-powered applications and developer tools to responsive websites and polished interfaces. I enjoy working across the stack, connecting ambitious ideas with practical engineering and design.",
     tagline: ["Curious by nature.", "Builder by choice."],
-    portrait: "assets/img/mayura.png",
+    portrait: "assets/img/mayura.webp",
     cvUrl: null,
     showreelUrl: null
   },

@@ -26,9 +26,9 @@ Project art is rendered from CSS in `src/app.js` and `styles.css`. It is explana
 
 ## Replacing the portrait
 
-Replace `assets/img/mayura.png` with the supplied portrait or another owner-approved image. Keep its path and dimensions in `index.html` in sync. The portrait is presented as a studio photograph with its grey background; the fallback monogram appears if the image cannot load.
+The optimized `assets/img/mayura.webp` is used for the page; the original PNG remains at `assets/img/mayura.png`. Update `person.portrait` in `src/content.js` to replace the display image with another owner-approved asset. The portrait is presented as a studio photograph with its grey background; the fallback monogram appears if the image cannot load.
 
-The supplied image is about 2.8 MB. For a production deployment, an owner-approved optimized WebP/AVIF variant can reduce transfer size while retaining the original image in the project folder.
+The original portrait is about 2.8 MB and the WebP display copy is about 82 KB at the same 1086 × 1448 dimensions. The original is kept in the assets folder for future edits.
 
 ## Controls
 

@@ -310,6 +310,7 @@ function initVisuals() {
   });
   $('#project-track').addEventListener('pointerleave', () => $$('.project-card').forEach((card) => { card.style.removeProperty('--tilt-x'); card.style.removeProperty('--tilt-y'); }));
   const portraitImage = $('.hero-portrait img');
+  portraitImage.src = SITE.person.portrait;
   portraitImage.addEventListener('error', () => { portraitImage.style.display = 'none'; $('.portrait-fallback').style.display = 'flex'; });
   if (portraitImage.complete && portraitImage.naturalWidth === 0) { portraitImage.style.display = 'none'; $('.portrait-fallback').style.display = 'flex'; }
   $$('.eyebrow').forEach((label) => { label.dataset.original = label.textContent; });
