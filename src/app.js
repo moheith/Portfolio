@@ -22,6 +22,7 @@ let introCompletedUnits = new Set();
 let introProcessedCount = 0;
 let introBatchNumber = 0;
 let introPeakAgentCount = 0;
+let introFinalSwarmStarted = false;
 let introPreludeTimer = null;
 let introFailSafe = null;
 let swarmHideTimer = null;
@@ -419,8 +420,8 @@ function initPreferences() {
 }
 
 const introColors = ['#5eead4', '#fb923c', '#ffffff', '#a78bfa', '#7dd3fc', '#fda4af', '#fcd34d', '#86efac'];
-const introAgentTargets = { Home: 19, Work: 23, Stack: 24, 'Featured build': 24, About: 28, Process: 28, Journey: 29, Contact: 30, Footer: 30 };
-const introAgentFloors = { Home: 15, Work: 19, Stack: 22, 'Featured build': 22, About: 24, Process: 26, Journey: 27, Contact: 28, Footer: 28 };
+const introAgentTargets = { Home: 19, Work: 23, Stack: 24, 'Featured build': 28, About: 28, Process: 28, Journey: 29, Contact: 30, Footer: 30 };
+const introAgentFloors = { Home: 15, Work: 23, Stack: 24, 'Featured build': 26, About: 28, Process: 28, Journey: 29, Contact: 30, Footer: 30 };
 const introAgentRoles = ['writer', 'dragger', 'aligner', 'scout'];
 const introActionTimers = new Set();
 let introSectionRanges = new Map();
@@ -534,13 +535,15 @@ function cacheIntroSceneUnits(layers) {
     '.process-heading .eyebrow', '.process-heading h2', '.process-heading .section-intro', '.process-list .step-number', '.process-list li h3', '.process-list li p', '.process-quote > span', '.process-quote > p', '.process-quote cite',
     '.journey .section-heading .eyebrow', '.journey .section-heading h2', '.journey .section-intro', '.journey-row > span', '.journey-row h3', '.journey-row p', '.journey-row button',
     '.milestones article > span', '.milestones article > strong', '.milestones article > p',
-    '.contact-kicker > *', '.contact h2', '.contact-intro', '.contact-email', '.contact-actions > *', '.social-links > *', '.poster-card',
+    '.contact-kicker > *', '.contact h2', '.contact-intro', '.contact-email', '.contact-actions > *', '.social-links > *',
+    '.poster-art > span', '.poster-art > b', '.poster-card > p',
     '.brief-form .form-heading', '.brief-form label', '.brief-form .form-note', '.brief-form > button', '.site-footer > *'
   ].join(',');
   const aliases = [
     ['.hero-portrait', 'img'], ['.project-card', '.project-art .art-kicker'], ['.carousel-shell', '.project-track .project-art .art-kicker'], ['.project-art', '.art-kicker'], ['.stack-strip', '.stack-tile'],
     ['.work-toolbar', '.work-toolbar .filter'], ['.about-bio', '.about-bio > p'], ['.skills-panel', '.skills-top'],
     ['.process-quote', '.process-quote > p'], ['.journey-row', '.journey-row h3'], ['.milestones article', '.milestones article > strong'],
+    ['.poster-card', '.poster-art > span'],
     ['.contact-kicker', '.contact-kicker > .eyebrow'], ['.contact-actions', '.contact-actions > *'], ['.social-links', '.social-links > *'],
     ['.site-footer', '.site-footer .wordmark']
   ];
@@ -562,7 +565,7 @@ function cacheIntroSceneUnits(layers) {
     '.project-art .art-kicker', '.project-art .art-index',
     '.mock-top', '.mock-side > *', '.mock-code > span', '.mock-game > i', '.mock-game > b', '.mock-game > small', '.mock-game .pixel-sun', '.mock-game .pixel-hill',
     '.mock-desktop-bar', '.mock-mascot', '.mock-chat > small', '.mock-chat > p', '.mock-chat > div', '.mock-wave',
-    '.mock-server', '.mock-channel > b', '.mock-channel > small', '.mock-channel > div', '.mock-convo > div:first-child > b', '.mock-convo > div:first-child > p', '.mock-command',
+    '.mock-server', '.mock-channel > b', '.mock-channel > small', '.mock-channel > div', '.mock-convo > div:first-child > b', '.mock-convo > div:first-child > p', '.mock-command', '.poster-art > i',
     '.learn-head > b', '.learn-head > span', '.learn-head > i', '.learn-title', '.learn-search', '.learn-cards > div'
   ].join(',');
   $$(illustrationTargets).forEach((element) => {
@@ -636,9 +639,8 @@ function introAgentCountForStep(index, section) {
 function introSafeViewport() {
   const headerHeight = $('.site-header')?.getBoundingClientRect().height || 0;
   const hudHeight = $('.swarm-hud')?.getBoundingClientRect().height || 44;
-  const lowerPageMode = $('.swarm-layer')?.classList.contains('lower-page-mode');
-  const safeTop = lowerPageMode ? Math.max(70, headerHeight + hudHeight + 24) : Math.max(70, headerHeight + 14);
-  const safeBottom = lowerPageMode ? Math.max(safeTop + 180, innerHeight - 12) : Math.max(safeTop + 180, innerHeight - hudHeight - 22);
+  const safeTop = Math.max(70, headerHeight + 14);
+  const safeBottom = Math.max(safeTop + 180, innerHeight - hudHeight - 22);
   return { safeTop, safeBottom };
 }
 
@@ -653,6 +655,20 @@ function introScrollDestination(unit) {
   }
   target = Math.max(0, Math.min(document.documentElement.scrollHeight - innerHeight, target));
   return Math.abs(target - scrollY) > 28 ? target : null;
+}
+
+function activateIntroFinalSwarm(showSelection = true) {
+  introFinalSwarmStarted = true;
+  ensureAgentCount(innerWidth <= 640 ? 10 : 30);
+  if (!showSelection) return null;
+  const target = [$('.poster-card'), $('.brief-form'), $('.contact h2')].find((element) => {
+    if (!element) return false;
+    const rect = element.getBoundingClientRect();
+    return rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth;
+  }) || null;
+  if (target) drawIntroSelectionFrame(target.getBoundingClientRect(), 'dragger', 1500);
+  gatherAgentsAround(target);
+  return target;
 }
 
 function introTrackScrollDestination(unit, pending = []) {
@@ -704,6 +720,14 @@ function cancelIntroScroll() {
 function scrollIntroToUnit(unit, target) {
   if (!unit || target === null || !introTour) return false;
   const sectionName = unit.element.closest('[data-section]')?.dataset.section || 'Footer';
+  const openingHold = 6200 - (performance.now() - introStart);
+  if (sectionName === 'Home' && openingHold > 0) {
+    $('.hud-state').innerHTML = '<i></i> FINISHING HOME…';
+    introTimer = setTimeout(() => { if (introActive) runIntroBatch(); }, openingHold);
+    return true;
+  }
+  const finalSection = sectionName === 'Contact' || sectionName === 'Footer';
+  if (finalSection) activateIntroFinalSwarm(false);
   $('.swarm-layer').classList.toggle('lower-page-mode', sectionName === 'Contact' || sectionName === 'Footer');
   $('.hud-state').innerHTML = `<i></i> MOVING TO ${sectionName.toUpperCase()}…`;
   const distance = Math.abs(target - scrollY);
@@ -724,7 +748,10 @@ function scrollIntroToUnit(unit, target) {
     if (settled) return;
     settled = true;
     cleanup();
-    if (introActive) runIntroBatch();
+    if (introActive) {
+      if (finalSection) activateIntroFinalSwarm(true);
+      runIntroBatch();
+    }
   };
   introScrollCancel = cancel;
   window.addEventListener('scrollend', finish, { once: true });
@@ -841,6 +868,26 @@ function setAgentsAt(x, y, orbit = false) {
     const angle = (Math.PI * 2 * index / Math.max(agents.length, 1)) + (performance.now() / (orbit ? 750 : 1600));
     const radius = orbit ? Math.min(78, Math.min(innerWidth, innerHeight) * .12) : 16 + (index % 5) * 9;
     setAgentPoint(agent, x + Math.cos(angle) * radius, y + Math.sin(angle) * radius, orbit ? (angle * 180 / Math.PI) + 90 : angle * 180 / Math.PI);
+  });
+}
+
+function gatherAgentsAround(element) {
+  const rect = element?.getBoundingClientRect();
+  const centerX = rect ? rect.left + rect.width / 2 : innerWidth * .72;
+  const centerY = rect ? rect.top + rect.height / 2 : innerHeight * .55;
+  const maxRadius = Math.min(112, Math.min(innerWidth, innerHeight) * .24);
+  const radii = [maxRadius * .4, maxRadius * .72, maxRadius];
+  const agents = $$('.agent:not(.retiring)');
+  const ringCount = Math.ceil(agents.length / radii.length);
+  agents.forEach((agent, index) => {
+    const ring = index % radii.length;
+    const slot = Math.floor(index / radii.length);
+    const angle = Math.PI * 2 * slot / ringCount + ring * .18;
+    animateAgentPath(agent, [{
+      x: centerX + Math.cos(angle) * radii[ring],
+      y: centerY + Math.sin(angle) * radii[ring],
+      rotation: angle * 180 / Math.PI + 90
+    }], 420 + (index % 5) * 70);
   });
 }
 
@@ -1224,6 +1271,9 @@ function runIntroBatch() {
   introTimer = null;
   const pending = introSceneUnits.filter((unit) => !introCompletedUnits.has(unit));
   if (!pending.length) { finishIntro(true); return; }
+  if (!introFinalSwarmStarted && introProcessedCount >= Math.ceil(introLayers.length * .92)) {
+    activateIntroFinalSwarm();
+  }
 
   const visible = pending.filter(introUnitVisible);
   if (!visible.length) {
@@ -1249,7 +1299,8 @@ function runIntroBatch() {
   const first = visible[0];
   const section = first.element.closest('[data-section]')?.dataset.section || 'Footer';
   $('.swarm-layer').classList.toggle('lower-page-mode', section === 'Contact' || section === 'Footer');
-  const desiredCount = Math.min(innerWidth <= 640 ? 10 : 30, introAgentCountForStep(first.firstLayerIndex, section));
+  const desiredCount = introFinalSwarmStarted ? (innerWidth <= 640 ? 10 : 30)
+    : Math.min(innerWidth <= 640 ? 10 : 30, introAgentCountForStep(first.firstLayerIndex, section));
   const gatherTarget = introBatchScrollOpportunity(pending, visible, desiredCount);
   if (gatherTarget !== null && scrollIntroToUnit(first, gatherTarget)) return;
   const selectedUnits = chooseIntroUnits(visible, Math.max(1, desiredCount));
@@ -1266,7 +1317,7 @@ function runIntroBatch() {
       showFrame: primary, role: assignedRole, kind: assignedRole === 'writer' ? 'text' : introLayerKind(unit.element) };
   });
   if (!tasks.length) { finishIntro(false); return; }
-  ensureAgentCount(tasks.length);
+  ensureAgentCount(Math.max(tasks.length, desiredCount));
   const agents = $$('.agent:not(.retiring)');
   const actionLabels = { writer: 'TYPE', dragger: 'MOVE', aligner: 'ALIGN', scout: 'SCAN' };
   const activeActions = [...new Set(tasks.map((task) => actionLabels[task.role]))];
@@ -1291,7 +1342,7 @@ function runIntroBatch() {
     oscillator.connect(gain); gain.connect(introAudio.destination); oscillator.start(); oscillator.stop(introAudio.currentTime + .045);
   }
 
-  const batchDelay = Math.max((250 + tasks.length * 3.5) / introSpeed, introWorkUntil - performance.now() + 800);
+  const batchDelay = Math.max((250 + tasks.length * 3.5) / introSpeed, introWorkUntil - performance.now() + 420);
   introTimer = setTimeout(() => {
     if (!introActive) return;
     tasks.forEach((task) => {
@@ -1336,15 +1387,23 @@ function finishIntro(timelineComplete = false) {
   }
   $('#build-replay').hidden = true;
   swarm.classList.add('done');
-  const finalAgentCount = innerWidth <= 640 ? 2 : 3;
+  const finalAgentCount = innerWidth <= 640 ? 10 : 30;
   ensureAgentCount(finalAgentCount);
+  introPeakAgentCount = Math.max(introPeakAgentCount, finalAgentCount);
+  const finalTargets = [$('.poster-card'), $('.brief-form'), $('.contact h2')].filter(Boolean);
+  const finalTarget = finalTargets.find((element) => {
+    const rect = element.getBoundingClientRect();
+    return rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth;
+  }) || null;
+  if (finalTarget) drawIntroSelectionFrame(finalTarget.getBoundingClientRect(), 'dragger', 3500);
+  gatherAgentsAround(finalTarget);
   $('.hud-progress').textContent = `${String(introLayers.length).padStart(2, '0')} / ${String(introLayers.length).padStart(2, '0')} LAYERS`;
   $('.hud-meter i').style.width = '100%';
   $('.hud-skip').hidden = true; $('.hud-replay').hidden = false;
   $('.hud-live').hidden = false;
   const duration = ((performance.now() - introStart) / 1000).toFixed(1);
   $('.hud-state').innerHTML = `<i></i> REBUILT BY ${String(Math.max(finalAgentCount, introPeakAgentCount)).padStart(2, '0')} AGENTS IN ${duration}S`;
-  swarmHideTimer = setTimeout(() => { swarm.classList.remove('active'); $('#build-replay').hidden = false; syncReplayButtonVisibility(); swarmHideTimer = null; }, 3100);
+  swarmHideTimer = setTimeout(() => { swarm.classList.remove('active'); $$('.intro-selection-frames').forEach((frames) => frames.remove()); $('#build-replay').hidden = false; syncReplayButtonVisibility(); swarmHideTimer = null; }, 3100);
 }
 
 function startIntro(force = false) {
@@ -1361,7 +1420,7 @@ function startIntro(force = false) {
   if (!layers.length) return;
   clearTimeout(swarmHideTimer); swarmHideTimer = null;
   clearTimeout(introPreludeTimer); clearTimeout(introFailSafe); clearTimeout(introTimer);
-  introActive = true; introStart = performance.now(); introTour = true; introSpeed = 1;
+  introActive = true; introStart = performance.now(); introTour = true; introSpeed = 1; introFinalSwarmStarted = false;
   document.body.classList.add('build-intro-active');
   swarm.classList.remove('done'); swarm.classList.add('active', 'prelude');
   const openingCount = innerWidth <= 640 ? 10 : 15;
@@ -1374,7 +1433,7 @@ function startIntro(force = false) {
     if (!introActive) return;
     swarm.classList.remove('prelude');
     runIntroBatch();
-  }, 900);
+  }, 1800);
   introFailSafe = setTimeout(() => { if (introActive) finishIntro(false); }, 130000);
   $('#build-replay').hidden = true;
 }
