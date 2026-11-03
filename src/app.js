@@ -446,8 +446,8 @@ function scheduleIntroAction(callback, delay) {
   return timer;
 }
 
-function drawIntroSelectionFrame(rect, role, duration = 420) {
-  if (!rect || rect.right <= 0 || rect.bottom <= 0 || rect.left >= innerWidth || rect.top >= innerHeight) return;
+function drawIntroSelectionFrame(rect, role, duration = 420, agent = null) {
+  if (!rect || rect.right <= 0 || rect.bottom <= 0 || rect.left >= innerWidth || rect.top >= innerHeight) return 0;
   const swarm = $('#swarm');
   let frames = $('.intro-selection-frames', swarm);
   if (!frames) {
@@ -458,17 +458,40 @@ function drawIntroSelectionFrame(rect, role, duration = 420) {
   }
   const frame = document.createElement('span');
   frame.className = `intro-selection-frame selection-${role}`;
+  frame.innerHTML = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']
+    .map((handle) => `<i class="intro-selection-handle ${handle}"></i>`).join('');
   const padding = 4;
   const left = Math.max(3, rect.left - padding);
   const top = Math.max(3, rect.top - padding);
   const right = Math.min(innerWidth - 3, rect.right + padding);
   const bottom = Math.min(innerHeight - 3, rect.bottom + padding);
-  Object.assign(frame.style, { left: `${left}px`, top: `${top}px`, width: `${Math.max(12, right - left)}px`, height: `${Math.max(12, bottom - top)}px` });
+  const width = Math.max(18, right - left);
+  const height = Math.max(18, bottom - top);
+  const drawDuration = Math.min(180, Math.max(120, Math.round(Math.min(duration, 440) * .36)));
+  Object.assign(frame.style, { left: `${left}px`, top: `${top}px`, width: '0px', height: '0px' });
   frames.append(frame);
+  const expand = frame.animate([
+    { width: '0px', height: '0px', opacity: .72 },
+    { width: `${width}px`, height: `${height}px`, opacity: 1 }
+  ], { duration: drawDuration, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' });
+  expand.onfinish = () => {
+    Object.assign(frame.style, { width: `${width}px`, height: `${height}px` });
+    frame.classList.add('is-settled');
+    expand.cancel();
+  };
+  if (agent) {
+    setAgentSelectionState(agent, true);
+    animateAgentPath(agent, [
+      { x: left, y: top, rotation: 0 },
+      { x: right, y: bottom, rotation: 0 }
+    ], drawDuration);
+    scheduleIntroAction(() => setAgentSelectionState(agent, false), drawDuration);
+  }
   scheduleIntroAction(() => {
     frame.classList.add('is-releasing');
     scheduleIntroAction(() => frame.remove(), 110);
   }, duration);
+  return drawDuration;
 }
 
 function cacheIntroSectionRanges(layers) {
@@ -673,11 +696,12 @@ const introAgentIcons = {
   dragger: 'M8 11V5.5a1.5 1.5 0 0 1 3 0V10 4.8a1.5 1.5 0 0 1 3 0V10 6.1a1.5 1.5 0 0 1 3 0v5.1l1.2-1.1a1.7 1.7 0 0 1 2.6 2.1l-3.1 5a4 4 0 0 1-3.4 1.9h-3a4 4 0 0 1-3.5-2l-3.2-5.2A1.7 1.7 0 0 1 9 10.2L11 12',
   grabber: 'M6.2 11.5V8.8a1.5 1.5 0 0 1 3 0v2.1V7.8a1.5 1.5 0 0 1 3 0v3.1V8.2a1.5 1.5 0 0 1 3 0v3.2V9.6a1.5 1.5 0 0 1 3 0v4.7a5 5 0 0 1-5 5h-2.4a4.3 4.3 0 0 1-3.8-2.3l-2.2-3.8a1.5 1.5 0 0 1 2.5-1.7l1.5 1.7',
   aligner: 'M12 3v18M3 12h18M12 3 9 6M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3',
-  scout: 'M4 2.8v17l4.8-4.5 3.1 6.1 2.6-1.3-3-6.2h6.9L4 2.8Z'
+  scout: 'M4 2.8v17l4.8-4.5 3.1 6.1 2.6-1.3-3-6.2h6.9L4 2.8Z',
+  selecting: 'M4 2.8v17l4.8-4.5 3.1 6.1 2.6-1.3-3-6.2h6.9L4 2.8Z'
 };
 
 function agentIconMarkup(role, grabbing = false) {
-  const fill = role === 'scout' ? 'currentColor' : 'none';
+  const fill = role === 'scout' || role === 'selecting' ? 'currentColor' : 'none';
   const icon = role === 'dragger' && grabbing ? introAgentIcons.grabber : introAgentIcons[role] || introAgentIcons.scout;
   return `<svg viewBox="0 0 24 24" focusable="false"><path d="${icon}" fill="${fill}" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
 }
@@ -686,6 +710,13 @@ function setAgentGrabState(agent, grabbing) {
   if (!agent?.classList.contains('mode-dragger')) return;
   agent.classList.toggle('is-grabbing', grabbing);
   agent.innerHTML = agentIconMarkup('dragger', grabbing);
+}
+
+function setAgentSelectionState(agent, selecting) {
+  if (!agent) return;
+  const role = [...agent.classList].find((className) => className.startsWith('mode-'))?.slice(5) || 'scout';
+  agent.classList.toggle('is-selecting', selecting);
+  agent.innerHTML = agentIconMarkup(selecting ? 'selecting' : role, role === 'dragger' && agent.classList.contains('is-grabbing'));
 }
 
 function agentMarkup(index) {
@@ -1013,13 +1044,14 @@ function animateIntroTyping(element, agent, workDuration, task) {
   const lineCount = segmented ? introTextLineRects(element).length : 1;
   const textLength = segmented ? (element.textContent || '').trim().length / Math.max(1, lineCount) : (targets[0].textContent || '').trim().length;
   const selectionDuration = Math.min(520, Math.max(320, textLength * 6));
-  if (task.showFrame !== false) drawIntroSelectionFrame(lineRect, 'writer', selectionDuration + 180);
+  const selectionMove = task.showFrame !== false
+    ? drawIntroSelectionFrame(lineRect, 'writer', selectionDuration + 180, agent) : 0;
 
   const revealTargets = !segmented || task.segmentOrder === 0 ? targets : [];
   revealTargets.forEach((target, index) => {
     const textLength = (target.textContent || '').trim().length;
     const duration = Math.min(560, Math.max(360, textLength * 5));
-    const delay = index * 45;
+    const delay = selectionMove + index * 45;
     target.style.setProperty('--typing-duration', `${duration}ms`);
     target.style.setProperty('--typing-delay', `${delay}ms`);
     target.style.setProperty('--typing-steps', `${Math.min(48, Math.max(8, textLength))}`);
@@ -1038,7 +1070,7 @@ function animateIntroTyping(element, agent, workDuration, task) {
   const points = [0, .28, .56, .82, 1].map((progress) => ({
     x: lineRect.left + 4 + Math.max(0, lineRect.width - 8) * progress, y, rotation: -18
   }));
-  animateAgentPath(agent, points, Math.min(workDuration + 180, selectionDuration));
+  scheduleIntroAction(() => animateAgentPath(agent, points, Math.min(workDuration + 180, selectionDuration)), selectionMove);
 }
 
 function animateIntroTask(task, agent, workDuration) {
@@ -1048,26 +1080,29 @@ function animateIntroTask(task, agent, workDuration) {
     animateIntroTyping(element, agent, workDuration, task);
     return;
   }
-  if (task.showFrame !== false) drawIntroSelectionFrame(rect, role, role === 'dragger' ? 440 : 360);
+  const selectionMove = task.showFrame !== false
+    ? drawIntroSelectionFrame(rect, role, role === 'dragger' ? 620 : 540, agent) : 0;
   const point = (x, y, rotation = 0) => ({ x: rect.left + rect.width * x, y: rect.top + rect.height * y, rotation });
-  const motion = role === 'dragger' ? ['build-drag-settle', 440]
-    : role === 'aligner' ? ['build-align-settle', 280] : role === 'scout' ? ['build-scan-settle', 360] : null;
-  if (motion) {
-    element.classList.remove(motion[0]);
-    void element.offsetWidth;
-    element.classList.add(motion[0]);
-    scheduleIntroAction(() => element.classList.remove(motion[0]), motion[1]);
-  }
-  if (role === 'dragger') {
-    setAgentGrabState(agent, true);
-    scheduleIntroAction(() => setAgentGrabState(agent, false), 380);
-  }
   const paths = {
     dragger: [point(.12, .16, -15), point(.54, .52, 8), point(.84, .78, 0)],
     aligner: [point(.08, .18, 0), point(.91, .18, 0), point(.91, .82, 90)],
     scout: [point(.08, .34, 0), point(.9, .34, 0), point(.08, .68, 0), point(.9, .68, 0)]
   };
-  animateAgentPath(agent, paths[role], Math.min(workDuration + 140, role === 'scout' ? 300 : 360));
+  scheduleIntroAction(() => {
+    const motion = role === 'dragger' ? ['build-drag-settle', 440]
+      : role === 'aligner' ? ['build-align-settle', 280] : role === 'scout' ? ['build-scan-settle', 360] : null;
+    if (motion) {
+      element.classList.remove(motion[0]);
+      void element.offsetWidth;
+      element.classList.add(motion[0]);
+      scheduleIntroAction(() => element.classList.remove(motion[0]), motion[1]);
+    }
+    if (role === 'dragger') {
+      setAgentGrabState(agent, true);
+      scheduleIntroAction(() => setAgentGrabState(agent, false), 380);
+    }
+    animateAgentPath(agent, paths[role], Math.min(workDuration + 140, role === 'scout' ? 300 : 360));
+  }, selectionMove);
 }
 
 function runIntroBatch() {
@@ -1142,8 +1177,9 @@ function runIntroBatch() {
     setAgentRole(agent, task.role, index + introBatchNumber);
     flyAgentsTo(rect, task.kind, textRect, 120 / introSpeed, [agent]);
     const actionDelay = 105 / introSpeed;
-    const actionLength = task.role === 'writer' ? Math.min(700, Math.max(480, (task.element.textContent || '').trim().length * 5 + 160))
-      : task.role === 'dragger' ? 440 : task.role === 'aligner' ? 280 : 360;
+    const selectionLength = 140;
+    const actionLength = selectionLength + (task.role === 'writer' ? Math.min(700, Math.max(480, (task.element.textContent || '').trim().length * 5 + 160))
+      : task.role === 'dragger' ? 440 : task.role === 'aligner' ? 280 : 360);
     introWorkUntil = Math.max(introWorkUntil, performance.now() + actionDelay + actionLength);
     scheduleIntroAction(() => animateIntroTask(task, agent, workDuration), actionDelay);
   });
