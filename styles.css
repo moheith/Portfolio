@@ -85,16 +85,16 @@ body.build-intro-active .stack-strip .marquee-track{animation-play-state:paused}
 /* Active work stays attached to the page: text gets a native range highlight,
    while the hand and its target move together during a drag. */
 .intro-selection-frames{position:absolute;inset:0;overflow:hidden;z-index:2;pointer-events:none}
-.intro-selection-frame{position:absolute;box-sizing:border-box;border:1px solid var(--selection-color);border-radius:2px;background:transparent;box-shadow:0 0 0 1px rgba(7,7,10,.72),0 0 9px var(--selection-glow);animation:intro-select-in .16s ease-out both;pointer-events:none}
+.intro-selection-frame{position:absolute;box-sizing:border-box;border:1px solid var(--selection-color);border-radius:2px;background:transparent;box-shadow:0 0 0 1px rgba(7,7,10,.72),0 0 9px var(--selection-glow);animation:intro-select-in var(--intro-select-in-duration,.16s) ease-out both;pointer-events:none}
 .selection-writer{--selection-color:#7dbaff;--selection-glow:rgba(74,157,255,.32)}
 .selection-dragger{--selection-color:#7dbaff;--selection-glow:rgba(74,157,255,.32)}
 .selection-aligner{--selection-color:#7dbaff;--selection-glow:rgba(74,157,255,.32)}
 .selection-scout{--selection-color:#7dbaff;--selection-glow:rgba(74,157,255,.32)}
-.intro-selection-frame.is-releasing{animation:intro-select-out .11s ease-in both}
+.intro-selection-frame.is-releasing{animation:intro-select-out var(--intro-select-out-duration,.11s) ease-in both}
 @keyframes intro-select-in{from{clip-path:inset(0 100% 0 0);opacity:.35}to{clip-path:inset(0);opacity:.95}}
 @keyframes intro-select-out{to{opacity:0;transform:scale(.985)}}
 .build-typing{animation:typing-reveal var(--typing-duration,.5s) steps(var(--typing-steps,18),end) var(--typing-delay,0ms) both}
-.agent.is-grabbing svg{transform:rotate(-17deg) scale(.9);transform-origin:center;transition:transform .12s ease-out}
+.agent.is-grabbing svg{transform:rotate(-17deg) scale(.9);transform-origin:center;transition:transform var(--intro-grab-duration,.12s) ease-out}
 .build-drag-settle{animation:drag-settle .44s cubic-bezier(.22,1,.36,1)}
 @keyframes drag-settle{0%,12%{transform:translate3d(0,0,0) scale(1);filter:drop-shadow(0 5px 8px rgba(251,146,60,.12))}48%{transform:translate3d(34px,-5px,0) scale(.985);filter:drop-shadow(0 12px 15px rgba(251,146,60,.35))}72%{transform:translate3d(23px,3px,0) scale(.99);filter:drop-shadow(0 7px 10px rgba(251,146,60,.2))}100%{transform:translate3d(0,0,0) scale(1);filter:none}}
 .build-scan-settle{animation:scan-pulse .36s ease-out}
@@ -102,7 +102,7 @@ body.build-intro-active .stack-strip .marquee-track{animation-play-state:paused}
 
 /* Object selection uses a draggable outline and resize points, not a text highlight. */
 .intro-selection-frame{border-width:1px;border-radius:0;box-shadow:0 0 0 1px rgba(7,7,10,.88),0 0 12px var(--selection-glow)}
-.intro-selection-handle{position:absolute;width:6px;height:6px;border:1px solid var(--selection-color);border-radius:1px;background:#f8fafc;box-shadow:0 0 0 1px rgba(7,7,10,.82);opacity:0;transform:scale(.72);transition:opacity .1s ease,transform .1s ease}
+.intro-selection-handle{position:absolute;width:6px;height:6px;border:1px solid var(--selection-color);border-radius:1px;background:#f8fafc;box-shadow:0 0 0 1px rgba(7,7,10,.82);opacity:0;transform:scale(.72);transition:opacity var(--intro-handle-duration,.1s) ease,transform var(--intro-handle-duration,.1s) ease}
 .intro-selection-handle.nw{left:-4px;top:-4px}.intro-selection-handle.n{left:calc(50% - 3px);top:-4px}.intro-selection-handle.ne{right:-4px;top:-4px}.intro-selection-handle.e{right:-4px;top:calc(50% - 3px)}.intro-selection-handle.se{right:-4px;bottom:-4px}.intro-selection-handle.s{left:calc(50% - 3px);bottom:-4px}.intro-selection-handle.sw{left:-4px;bottom:-4px}.intro-selection-handle.w{left:-4px;top:calc(50% - 3px)}
 .intro-selection-frame.is-settled .intro-selection-handle{opacity:1;transform:scale(1)}
 .intro-selection-frame.is-releasing .intro-selection-handle{opacity:0;transform:scale(.72)}

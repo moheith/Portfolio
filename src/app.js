@@ -24,6 +24,7 @@ let introBatchNumber = 0;
 let introPeakAgentCount = 0;
 let introFinalSwarmStarted = false;
 let introPreludeTimer = null;
+let introPreludeDue = 0;
 let introFailSafe = null;
 let swarmHideTimer = null;
 let toastTimer = null;
@@ -438,6 +439,10 @@ function clearIntroEffects() {
   });
 }
 
+function introDuration(duration) {
+  return Math.max(16, Math.round(duration / introSpeed));
+}
+
 function scheduleIntroAction(callback, delay) {
   const timer = setTimeout(() => {
     introActionTimers.delete(timer);
@@ -468,7 +473,8 @@ function drawIntroSelectionFrame(rect, role, duration = 420, agent = null) {
   const bottom = Math.min(innerHeight - 3, rect.bottom + padding);
   const width = Math.max(18, right - left);
   const height = Math.max(18, bottom - top);
-  const drawDuration = Math.min(180, Math.max(120, Math.round(Math.min(duration, 440) * .36)));
+  const visibleDuration = introDuration(duration);
+  const drawDuration = introDuration(Math.min(180, Math.max(120, Math.round(Math.min(duration, 440) * .36))));
   const nextArea = width * height;
   $$('.intro-selection-frame:not(.is-releasing)', frames).forEach((existing) => {
     const [oldLeft, oldTop, oldWidth, oldHeight] = (existing.dataset.bounds || '').split(',').map(Number);
@@ -478,16 +484,19 @@ function drawIntroSelectionFrame(rect, role, duration = 420, agent = null) {
     const overlap = overlapWidth * overlapHeight / Math.max(1, Math.min(nextArea, oldWidth * oldHeight));
     if (overlap > .2) {
       existing.classList.add('is-releasing');
-      scheduleIntroAction(() => existing.remove(), 110);
+      scheduleIntroAction(() => existing.remove(), introDuration(110));
     }
   });
   Object.assign(frame.style, { left: `${left}px`, top: `${top}px`, width: '0px', height: '0px' });
+  frame.style.setProperty('--intro-select-in-duration', `${introDuration(160)}ms`);
+  frame.style.setProperty('--intro-select-out-duration', `${introDuration(110)}ms`);
+  frame.style.setProperty('--intro-handle-duration', `${introDuration(100)}ms`);
   frame.dataset.bounds = `${left},${top},${width},${height}`;
   frames.append(frame);
   const visibleFrames = $$('.intro-selection-frame:not(.is-releasing)', frames);
   visibleFrames.slice(0, Math.max(0, visibleFrames.length - 6)).forEach((oldest) => {
     oldest.classList.add('is-releasing');
-    scheduleIntroAction(() => oldest.remove(), 110);
+    scheduleIntroAction(() => oldest.remove(), introDuration(110));
   });
   const expand = frame.animate([
     { width: '0px', height: '0px', opacity: .72 },
@@ -508,8 +517,8 @@ function drawIntroSelectionFrame(rect, role, duration = 420, agent = null) {
   }
   scheduleIntroAction(() => {
     frame.classList.add('is-releasing');
-    scheduleIntroAction(() => frame.remove(), 110);
-  }, duration);
+    scheduleIntroAction(() => frame.remove(), introDuration(110));
+  }, visibleDuration);
   return drawDuration;
 }
 
@@ -720,8 +729,8 @@ function cancelIntroScroll() {
 function scrollIntroToUnit(unit, target) {
   if (!unit || target === null || !introTour) return false;
   const sectionName = unit.element.closest('[data-section]')?.dataset.section || 'Footer';
-  const openingHold = 6200 - (performance.now() - introStart);
-  if (sectionName === 'Home' && openingHold > 0) {
+  const openingHold = introDuration(6200 - (performance.now() - introStart));
+  if (sectionName === 'Home' && openingHold > 24) {
     $('.hud-state').innerHTML = '<i></i> FINISHING HOME…';
     introTimer = setTimeout(() => { if (introActive) runIntroBatch(); }, openingHold);
     return true;
@@ -731,12 +740,13 @@ function scrollIntroToUnit(unit, target) {
   $('.swarm-layer').classList.toggle('lower-page-mode', sectionName === 'Contact' || sectionName === 'Footer');
   $('.hud-state').innerHTML = `<i></i> MOVING TO ${sectionName.toUpperCase()}…`;
   const distance = Math.abs(target - scrollY);
-  const fallbackDelay = Math.min(560, Math.max(250, 200 + distance * .2));
+  const scrollDuration = introDuration(Math.min(820, Math.max(240, 220 + distance * .09)));
+  const startY = scrollY;
+  const startTime = performance.now();
   let settled = false;
-  let fallbackTimer = null;
+  let scrollFrame = 0;
   const cleanup = () => {
-    clearTimeout(fallbackTimer);
-    window.removeEventListener('scrollend', finish);
+    cancelAnimationFrame(scrollFrame);
     if (introScrollCancel === cancel) introScrollCancel = null;
   };
   const cancel = () => {
@@ -754,9 +764,18 @@ function scrollIntroToUnit(unit, target) {
     }
   };
   introScrollCancel = cancel;
-  window.addEventListener('scrollend', finish, { once: true });
-  fallbackTimer = setTimeout(finish, fallbackDelay);
-  window.scrollTo({ top: target, behavior: motionOff ? 'instant' : 'smooth' });
+  const scrollStep = (now) => {
+    if (!introActive) { cancel(); return; }
+    const progress = Math.min(1, (now - startTime) / scrollDuration);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    window.scrollTo({ top: startY + (target - startY) * eased, behavior: 'instant' });
+    if (progress < 1) scrollFrame = requestAnimationFrame(scrollStep);
+    else {
+      window.scrollTo({ top: target, behavior: 'instant' });
+      finish();
+    }
+  };
+  scrollFrame = requestAnimationFrame(scrollStep);
   return true;
 }
 
@@ -764,11 +783,13 @@ function scrollIntroTrackToUnit(unit, destination) {
   const { track, target } = destination;
   if (!unit || !track || target === null) return false;
   const distance = Math.abs(target - track.scrollLeft);
+  const scrollDuration = introDuration(Math.min(760, Math.max(220, 190 + distance * .34)));
+  const startLeft = track.scrollLeft;
+  const startTime = performance.now();
   let settled = false;
-  let fallbackTimer = null;
+  let scrollFrame = 0;
   const cleanup = () => {
-    clearTimeout(fallbackTimer);
-    track.removeEventListener('scrollend', finish);
+    cancelAnimationFrame(scrollFrame);
     if (introScrollCancel === cancel) introScrollCancel = null;
   };
   const cancel = () => {
@@ -785,9 +806,18 @@ function scrollIntroTrackToUnit(unit, destination) {
   };
   introScrollCancel = cancel;
   $('.hud-state').innerHTML = `<i></i> MOVING THROUGH ${unit.element.closest('.marquee-track') ? 'TOOLS' : 'BUILDS'}`;
-  track.addEventListener('scrollend', finish, { once: true });
-  fallbackTimer = setTimeout(finish, Math.min(520, Math.max(240, 190 + distance * .34)));
-  track.scrollTo({ left: target, behavior: motionOff ? 'instant' : 'smooth' });
+  const scrollStep = (now) => {
+    if (!introActive) { cancel(); return; }
+    const progress = Math.min(1, (now - startTime) / scrollDuration);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    track.scrollTo({ left: startLeft + (target - startLeft) * eased, behavior: 'instant' });
+    if (progress < 1) scrollFrame = requestAnimationFrame(scrollStep);
+    else {
+      track.scrollTo({ left: target, behavior: 'instant' });
+      finish();
+    }
+  };
+  scrollFrame = requestAnimationFrame(scrollStep);
   return true;
 }
 
@@ -801,6 +831,8 @@ function agentIconMarkup(role, grabbing = false) {
 function setAgentGrabState(agent, grabbing) {
   if (!agent?.classList.contains('mode-dragger')) return;
   agent.classList.toggle('is-grabbing', grabbing);
+  if (grabbing) agent.style.setProperty('--intro-grab-duration', `${introDuration(120)}ms`);
+  else agent.style.removeProperty('--intro-grab-duration');
   agent.innerHTML = agentIconMarkup('dragger', grabbing);
 }
 
@@ -954,7 +986,7 @@ function flyAgentsTo(rect, kind, textRect = null, moveDuration = 240, agentGroup
       { transform: `translate3d(${from.x}px,${from.y}px,0) rotate(${startRotation}deg) scale(${agent._fresh ? .7 : 1})`, opacity: agent._fresh ? .25 : 1 },
       { transform: `translate3d(${controlX}px,${controlY}px,0) rotate(${(startRotation + endRotation) / 2}deg)`, offset: .55, opacity: 1 },
       { transform: endTransform, opacity: 1 }
-    ], { duration: Math.min(480, Math.max(135, moveDuration * 1.5)) + (index % 4) * 18, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' });
+    ], { duration: introDuration(Math.min(480, Math.max(135, moveDuration * 1.5) + (index % 4) * 18)), easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' });
     agent._fresh = false;
     agent._point = { x: toX, y: toY };
     animation.onfinish = () => {
@@ -1204,14 +1236,15 @@ function animateIntroTyping(element, agent, workDuration, task) {
   const lineCount = segmented ? introTextLineRects(element).length : 1;
   const textLength = segmented ? (element.textContent || '').trim().length / Math.max(1, lineCount) : (targets[0].textContent || '').trim().length;
   const selectionDuration = Math.min(520, Math.max(320, textLength * 6));
+  const scaledSelectionDuration = introDuration(selectionDuration);
   const selectionMove = task.showFrame !== false
     ? drawIntroSelectionFrame(lineRect, 'writer', selectionDuration + 700, agent) : 0;
 
   const revealTargets = !segmented || task.segmentOrder === 0 ? targets : [];
   revealTargets.forEach((target, index) => {
     const textLength = (target.textContent || '').trim().length;
-    const duration = Math.min(560, Math.max(360, textLength * 5));
-    const delay = selectionMove + index * 45;
+    const duration = introDuration(Math.min(560, Math.max(360, textLength * 5)));
+    const delay = selectionMove + introDuration(index * 45);
     target.style.setProperty('--typing-duration', `${duration}ms`);
     target.style.setProperty('--typing-delay', `${delay}ms`);
     target.style.setProperty('--typing-steps', `${Math.min(48, Math.max(8, textLength))}`);
@@ -1223,14 +1256,14 @@ function animateIntroTyping(element, agent, workDuration, task) {
       target.style.removeProperty('--typing-duration');
       target.style.removeProperty('--typing-delay');
       target.style.removeProperty('--typing-steps');
-    }, delay + duration + 120);
+    }, delay + duration + introDuration(120));
   });
 
   const y = lineRect.top + Math.min(lineRect.height * .68, 20);
   const points = [0, .28, .56, .82, 1].map((progress) => ({
     x: lineRect.left + 4 + Math.max(0, lineRect.width - 8) * progress, y, rotation: -18
   }));
-  scheduleIntroAction(() => animateAgentPath(agent, points, Math.min(workDuration + 180, selectionDuration)), selectionMove);
+  scheduleIntroAction(() => animateAgentPath(agent, points, Math.min(workDuration + introDuration(180), scaledSelectionDuration)), selectionMove);
 }
 
 function animateIntroTask(task, agent, workDuration) {
@@ -1255,13 +1288,17 @@ function animateIntroTask(task, agent, workDuration) {
       element.classList.remove(motion[0]);
       void element.offsetWidth;
       element.classList.add(motion[0]);
-      scheduleIntroAction(() => element.classList.remove(motion[0]), motion[1]);
+      element.style.animationDuration = `${introDuration(motion[1])}ms`;
+      scheduleIntroAction(() => {
+        element.classList.remove(motion[0]);
+        element.style.removeProperty('animation-duration');
+      }, introDuration(motion[1]));
     }
     if (role === 'dragger') {
       setAgentGrabState(agent, true);
-      scheduleIntroAction(() => setAgentGrabState(agent, false), 380);
+      scheduleIntroAction(() => setAgentGrabState(agent, false), introDuration(380));
     }
-    animateAgentPath(agent, paths[role], Math.min(workDuration + 140, role === 'scout' ? 300 : 360));
+    animateAgentPath(agent, paths[role], Math.min(workDuration + introDuration(140), introDuration(role === 'scout' ? 300 : 360)));
   }, selectionMove);
 }
 
@@ -1322,16 +1359,16 @@ function runIntroBatch() {
   const actionLabels = { writer: 'TYPE', dragger: 'MOVE', aligner: 'ALIGN', scout: 'SCAN' };
   const activeActions = [...new Set(tasks.map((task) => actionLabels[task.role]))];
   $('.hud-state').innerHTML = `<i></i> ${activeActions.join(' \u00b7 ')}`;
-  const workDuration = 360 / introSpeed;
+  const workDuration = introDuration(360);
   tasks.forEach((task, index) => {
     const agent = agents[index];
     const rect = introUnitRect(task.unit);
     const textRect = task.role === 'writer' ? rect : introTextTargets(task.element)[0]?.getBoundingClientRect() || null;
     setAgentRole(agent, task.role, index + introBatchNumber);
-    flyAgentsTo(rect, task.kind, textRect, 120 / introSpeed, [agent]);
-    const actionDelay = 105 / introSpeed;
-    const selectionLength = 140;
-    const actionLength = selectionLength + (task.role === 'writer' ? Math.min(700, Math.max(480, (task.element.textContent || '').trim().length * 5 + 160))
+    flyAgentsTo(rect, task.kind, textRect, 120, [agent]);
+    const actionDelay = introDuration(105);
+    const selectionLength = introDuration(140);
+    const actionLength = selectionLength + introDuration(task.role === 'writer' ? Math.min(700, Math.max(480, (task.element.textContent || '').trim().length * 5 + 160))
       : task.role === 'dragger' ? 440 : task.role === 'aligner' ? 280 : 360);
     introWorkUntil = Math.max(introWorkUntil, performance.now() + actionDelay + actionLength);
     scheduleIntroAction(() => animateIntroTask(task, agent, workDuration), actionDelay);
@@ -1342,7 +1379,7 @@ function runIntroBatch() {
     oscillator.connect(gain); gain.connect(introAudio.destination); oscillator.start(); oscillator.stop(introAudio.currentTime + .045);
   }
 
-  const batchDelay = Math.max((250 + tasks.length * 3.5) / introSpeed, introWorkUntil - performance.now() + 420);
+  const batchDelay = Math.max(introDuration(250 + tasks.length * 3.5), introWorkUntil - performance.now() + introDuration(420));
   introTimer = setTimeout(() => {
     if (!introActive) return;
     tasks.forEach((task) => {
@@ -1368,7 +1405,7 @@ function finishIntro(timelineComplete = false) {
   if (!introActive) return;
   cancelIntroScroll();
   introActive = false; clearTimeout(introTimer); introTimer = null;
-  clearTimeout(introPreludeTimer); introPreludeTimer = null;
+  clearTimeout(introPreludeTimer); introPreludeTimer = null; introPreludeDue = 0;
   clearTimeout(introFailSafe); introFailSafe = null;
   clearTimeout(swarmHideTimer); swarmHideTimer = null;
   clearIntroEffects();
@@ -1406,6 +1443,21 @@ function finishIntro(timelineComplete = false) {
   swarmHideTimer = setTimeout(() => { swarm.classList.remove('active'); $$('.intro-selection-frames').forEach((frames) => frames.remove()); $('#build-replay').hidden = false; syncReplayButtonVisibility(); swarmHideTimer = null; }, 3100);
 }
 
+function runIntroAfterPrelude() {
+  introPreludeTimer = null;
+  introPreludeDue = 0;
+  if (!introActive) return;
+  $('#swarm').classList.remove('prelude');
+  runIntroBatch();
+}
+
+function scheduleIntroPrelude(remaining = 1800) {
+  clearTimeout(introPreludeTimer);
+  const delay = introDuration(remaining);
+  introPreludeDue = performance.now() + delay;
+  introPreludeTimer = setTimeout(runIntroAfterPrelude, delay);
+}
+
 function startIntro(force = false) {
   if (motionOff) { $('#build-replay').hidden = false; syncReplayButtonVisibility(); return; }
   if (!force && sessionStorage.getItem('mohieth-swarm-seen')) { $('#build-replay').hidden = false; syncReplayButtonVisibility(); return; }
@@ -1419,7 +1471,7 @@ function startIntro(force = false) {
   cacheIntroSceneUnits(layers);
   if (!layers.length) return;
   clearTimeout(swarmHideTimer); swarmHideTimer = null;
-  clearTimeout(introPreludeTimer); clearTimeout(introFailSafe); clearTimeout(introTimer);
+  clearTimeout(introPreludeTimer); introPreludeDue = 0; clearTimeout(introFailSafe); clearTimeout(introTimer);
   introActive = true; introStart = performance.now(); introTour = true; introSpeed = 1; introFinalSwarmStarted = false;
   document.body.classList.add('build-intro-active');
   swarm.classList.remove('done'); swarm.classList.add('active', 'prelude');
@@ -1429,11 +1481,7 @@ function startIntro(force = false) {
   $('.hud-agents').textContent = `${String(openingCount).padStart(2, '0')} AGENTS`; $('.hud-progress').textContent = `00 / ${String(layers.length).padStart(2, '0')} LAYERS`;
   $('.hud-meter i').style.width = '0%'; $('.hud-state').innerHTML = '<i></i> SCANNING PAGE\u2026'; $('.hud-skip').hidden = false; $('.hud-replay').hidden = true; $('.hud-live').hidden = true; $('.hud-skip').textContent = 'SKIP INTRO \u00d7'; $('.hud-speed').textContent = '1\u00d7'; $('.hud-tour').textContent = 'TOUR ON';
   setAgentsAt(innerWidth / 2, innerHeight / 2, true);
-  introPreludeTimer = setTimeout(() => {
-    if (!introActive) return;
-    swarm.classList.remove('prelude');
-    runIntroBatch();
-  }, 1800);
+  scheduleIntroPrelude(1800);
   introFailSafe = setTimeout(() => { if (introActive) finishIntro(false); }, 130000);
   $('#build-replay').hidden = true;
 }
@@ -1444,7 +1492,14 @@ function initSwarm() {
   $('.hud-replay').addEventListener('click', () => startIntro(true));
   $('#build-replay').addEventListener('click', () => startIntro(true));
   $('.hud-tour').addEventListener('click', (event) => { introTour = !introTour; event.currentTarget.textContent = introTour ? 'TOUR ON' : 'TOUR OFF'; });
-  $('.hud-speed').addEventListener('click', (event) => { const speeds = [.5, 1, 2, 4]; introSpeed = speeds[(speeds.indexOf(introSpeed) + 1) % speeds.length]; event.currentTarget.textContent = `${introSpeed}\u00d7`; });
+  $('.hud-speed').addEventListener('click', (event) => {
+    const speeds = [.5, 1, 2, 4];
+    const inPrelude = introActive && $('#swarm').classList.contains('prelude');
+    const remainingPrelude = inPrelude ? Math.max(0, introPreludeDue - performance.now()) * introSpeed : 0;
+    introSpeed = speeds[(speeds.indexOf(introSpeed) + 1) % speeds.length];
+    event.currentTarget.textContent = `${introSpeed}\u00d7`;
+    if (inPrelude) scheduleIntroPrelude(remainingPrelude);
+  });
   $('.hud-sound').addEventListener('click', async (event) => {
     introSound = !introSound; event.currentTarget.textContent = `SOUND ${introSound ? 'ON' : 'OFF'}`;
     if (introSound && !introAudio) { const AudioContextClass = window.AudioContext || window.webkitAudioContext; if (AudioContextClass) { introAudio = new AudioContextClass(); await introAudio.resume(); } else { introSound = false; event.currentTarget.textContent = 'SOUND OFF'; announce('Web Audio is unavailable'); } }
