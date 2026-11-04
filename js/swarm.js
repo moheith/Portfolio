@@ -156,12 +156,12 @@
     const L0 = S.layers, n = L0.length;
     while (S.firstFree < n && L0[S.firstFree].claimed) S.firstFree++;
     if (S.firstFree >= n) return null;
-    const lo = scrollY - 90, hi = scrollY + innerHeight * 0.98, starving = S.t - (S.lastClaim || 0) > 1600;
+    const lo = scrollY - 90, hi = scrollY + innerHeight + 60;
     let best = null, bestScore = 1e12, seen = 0;
     for (let k = S.firstFree; k < n && seen < 44; k++) {
       const L = L0[k]; if (L.claimed) continue;
       const top = L.fixed ? scrollY + L.y : L.y;
-      if (!starving && top > hi) break;                    // below the visible window: wait for the tour to scroll there
+      if (top > hi) break; // never claim offscreen layers: wait for camera to arrive
       seen++;
       const v = vr(L); const score = (top - lo) * 1 + Math.hypot(v.x - a.x, v.y - a.y) * 0.32 + L.k * 0.01;
       if (score < bestScore) { bestScore = score; best = L; }
@@ -500,11 +500,17 @@
   function tourStep(dt) {
     if (S.stop) return; let target = null;
     if (S.tourOverride) target = S.tourOverride();
-    else if (S.tour && !S.userScrolled) { const L = S.layers[S.firstFree]; if (L) target = (L.fixed ? 0 : L.y) - innerHeight * 0.34; }
+    else if (S.tour && !S.userScrolled) {
+      // Guide camera by first unbuilt layer: keeps camera steady at top until hero layers finish
+      let idx = 0, n = S.layers.length;
+      while (idx < n && (S.layers[idx].done || S.layers[idx].fixed)) idx++;
+      const L = S.layers[idx];
+      if (L) target = Math.max(0, L.y - innerHeight * 0.38);
+    }
     if (target == null) return;
     const max = document.documentElement.scrollHeight - innerHeight; target = clamp(target, 0, Math.max(0, max));
     const d = target - scrollY; if (Math.abs(d) < 0.6) return;
-    const step = clamp(d * (1 - Math.exp(-dt / 520)), -1.2 * dt, 1.2 * dt); window.scrollTo(0, scrollY + step);
+    const step = clamp(d * (1 - Math.exp(-dt / 480)), -1.1 * dt, 1.1 * dt); window.scrollTo(0, scrollY + step);
   }
 
   function orbitStep(dt) {
@@ -573,6 +579,7 @@
   }
 
   async function finale(run) {
+    document.querySelectorAll('.sw-box, .sw-pre, .sw-sweep, .sw-swatches, .sw-ripple').forEach((e) => e.remove());
     S.doneSeconds = Math.round(S.real / 100) / 10;                          // wall-clock seconds from the first frame to the last layer
     while (S.agents.length < S.cfg.maxAgents) spawn(true);                   // the last agents always arrive before "Rebuilt by 30 agents"
     emit('agents', S.agents.length);
