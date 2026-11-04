@@ -1,118 +1,152 @@
-/* js/cursor.js — custom site cursor (dot + ring), magnetic buttons, letter-roll link hover, RGB-split glitch.
-   Cursor.enable() is called only by startSite(); before that the normal OS cursor is used. Plain rAF maths, no gsap needed. */
-(function () {
+/* js/cursor.js — Site cursor + magnetic pull + letter-roll */
+(() => {
   'use strict';
-  const $ = (s, r = document) => r.querySelector(s);
-  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-  const building = () => window.Swarm && Swarm.state === 'building';
-  const motionOff = () => document.documentElement.dataset.motion === 'off';
-  const canHover = () => matchMedia('(hover:hover) and (pointer:fine)').matches;
 
-  const LABELS = { view: 'VIEW', open: 'OPEN', drag: 'DRAG', close: '×' };
-  const MAGNETIC = '.btn, .nav__link, .nav__talk, .nav__motion, .footer__link, .footer__top, .cta__circle, .hero__demo-btn, .slider__btn, .brief__icon, .accent-dot, .poster__btn, .work__all, .journey__resume, .hl__link';
-  const ROLL = '.nav__link, .nav__talk, .footer__link, .work__all, .hl__link, .journey__resume';
+  let enabled = false;
+  let rafId = null;
+  let mouseX = -100, mouseY = -100;
+  let ringX = -100, ringY = -100;
+  let currentLabel = '';
 
-  let dot, ring, label, on = false, x = -100, y = -100, rx = -100, ry = -100, state = '';
-  let mags = [], magRaf = 0, lastMouse = null;
+  const dot = () => document.getElementById('cursorDot');
+  const ring = () => document.getElementById('cursorRing');
+  const ringSpan = () => ring() ? ring().querySelector('span') : null;
 
-  function setState(s) {
-    if (s === state) return; state = s;
-    if (s) { ring.dataset.state = s; label.textContent = LABELS[s] || ''; } else { delete ring.dataset.state; label.textContent = ''; }
-  }
-
-  function stateFor(t) {
-    if (!t || !t.closest) return '';
-    const el = t.closest('[data-cursor], input, textarea');
-    if (!el) return '';
-    if (el.matches('input, textarea')) return 'text';
-    return el.dataset.cursor || '';
-  }
-
-  const Cursor = {
-    /* elements opt in with data-cursor="view|open|drag|close" */
-    tag() {
-      $$('.card__link').forEach((e) => { e.dataset.cursor = 'view'; });
-      $$('.hero__demo, .poster').forEach((e) => { e.dataset.cursor = 'open'; });
-      $$('.work__slider, .raw__stage').forEach((e) => { e.dataset.cursor = 'drag'; });
-      $$('.cinema__close').forEach((e) => { e.dataset.cursor = 'close'; });
+  const SiteCursor = {
+    init() {
+      // Intentionally do nothing visible before intro completes
     },
+
     enable() {
-      Cursor.refreshRoll(); Cursor.initGlitch();
-      if (on || !canHover() || motionOff()) return;
-      on = true;
-      dot = document.createElement('div'); dot.className = 'cur-dot'; dot.setAttribute('aria-hidden', 'true');
-      ring = document.createElement('div'); ring.className = 'cur-ring'; ring.setAttribute('aria-hidden', 'true');
-      label = document.createElement('span'); ring.appendChild(label);
-      document.body.append(dot, ring);
-      Cursor.tag();
+      if (enabled) return;
+      if (window.matchMedia && window.matchMedia('(hover: none)').matches) return;
+      if (document.documentElement.getAttribute('data-motion') === 'off') return;
+
+      enabled = true;
       document.documentElement.classList.add('has-cursor');
-      window.addEventListener('mousemove', (e) => {
-        x = e.clientX; y = e.clientY; lastMouse = e;
-        dot.style.transform = `translate3d(${x}px,${y}px,0)`;
-        setState(stateFor(e.target));
-        Cursor.magnet(e);
-      }, { passive: true });
-      document.addEventListener('mouseleave', () => { dot.style.opacity = 0; ring.style.opacity = 0; });
-      document.addEventListener('mouseenter', () => { dot.style.opacity = ''; ring.style.opacity = ''; });
-      const loop = () => {
-        rx += (x - rx) * 0.18; ry += (y - ry) * 0.18;
-        ring.style.transform = `translate3d(${rx}px,${ry}px,0)`;
-        requestAnimationFrame(loop);
+
+      const onMouseMove = (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        const d = dot();
+        if (d) {
+          d.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
+        }
       };
-      requestAnimationFrame(loop);
-      // the OS cursor comes back while the swarm builds again (replay)
-      document.addEventListener('swarmstate', (e) => { document.documentElement.classList.toggle('has-cursor', e.detail !== 'building' && !motionOff()); });
+
+      const loop = () => {
+        if (!enabled) return;
+        ringX += (mouseX - ringX) * 0.18;
+        ringY += (mouseY - ringY) * 0.18;
+        const r = ring();
+        if (r) {
+          r.style.transform = `translate3d(${ringX}px, ${ringY}px, 0)`;
+        }
+        rafId = requestAnimationFrame(loop);
+      };
+
+      window.addEventListener('mousemove', onMouseMove, { passive: true });
+      rafId = requestAnimationFrame(loop);
+
+      // Context labels
+      document.addEventListener('mouseover', (e) => {
+        if (!enabled) return;
+        const card = e.target.closest('.card');
+        const openLink = e.target.closest('a[href^="http"], .hero__live, .poster__btn, .cta');
+        const dragArea = e.target.closest('.slider, .compare');
+        const closeBtn = e.target.closest('.modal__close');
+
+        const r = ring();
+        const span = ringSpan();
+        if (!r || !span) return;
+
+        if (card) {
+          currentLabel = 'VIEW';
+          r.style.width = '80px';
+          r.style.height = '80px';
+          r.style.margin = '-40px 0 0 -40px';
+          r.style.background = 'rgba(255, 59, 48, .2)';
+          r.style.borderColor = 'var(--red)';
+          span.textContent = currentLabel;
+          span.style.opacity = '1';
+        } else if (openLink) {
+          currentLabel = 'OPEN';
+          r.style.width = '56px';
+          r.style.height = '56px';
+          r.style.margin = '-28px 0 0 -28px';
+          r.style.background = 'rgba(255, 59, 48, .15)';
+          r.style.borderColor = 'var(--red)';
+          span.textContent = currentLabel;
+          span.style.opacity = '1';
+        } else if (dragArea) {
+          currentLabel = 'DRAG';
+          r.style.width = '56px';
+          r.style.height = '56px';
+          r.style.margin = '-28px 0 0 -28px';
+          r.style.background = 'rgba(47, 140, 255, .2)';
+          r.style.borderColor = 'var(--blue)';
+          span.textContent = currentLabel;
+          span.style.opacity = '1';
+        } else if (closeBtn) {
+          currentLabel = '✕';
+          r.style.width = '44px';
+          r.style.height = '44px';
+          r.style.margin = '-22px 0 0 -22px';
+          r.style.background = 'rgba(255, 59, 48, .3)';
+          r.style.borderColor = 'var(--red)';
+          span.textContent = currentLabel;
+          span.style.opacity = '1';
+        } else {
+          currentLabel = '';
+          r.style.width = '36px';
+          r.style.height = '36px';
+          r.style.margin = '-18px 0 0 -18px';
+          r.style.background = 'transparent';
+          r.style.borderColor = 'rgba(255, 255, 255, .5)';
+          span.textContent = '';
+          span.style.opacity = '0';
+        }
+      });
+
+      this.setupMagnetics();
+      this.setupLetterRoll();
     },
-    refresh() { if (on) Cursor.tag(); },
-    /* ---------- magnetic buttons: pulled up to 10px toward the pointer inside a 90px radius ---------- */
-    magnet(e) {
-      if (!canHover() || motionOff() || building()) return;
-      if (magRaf) return;
-      magRaf = requestAnimationFrame(() => {
-        magRaf = 0;
-        if (!mags.length) mags = $$(MAGNETIC);
-        mags.forEach((el) => {
-          if (!el.isConnected) return;
-          const r = el.getBoundingClientRect();
-          // undo our own offset so the centre is stable
-          const ox = parseFloat(el.dataset.mx || 0), oy = parseFloat(el.dataset.my || 0);
-          const cx = r.left + r.width / 2 - ox, cy = r.top + r.height / 2 - oy;
-          const dx = e.clientX - cx, dy = e.clientY - cy, d = Math.hypot(dx, dy);
-          const reach = 90 + Math.max(r.width, r.height) / 2;
-          let nx = 0, ny = 0;
-          if (d < reach) { const f = (1 - d / reach) * 0.4; nx = Math.max(-10, Math.min(10, dx * f)); ny = Math.max(-10, Math.min(10, dy * f)); }
-          if (Math.abs(nx - ox) > 0.05 || Math.abs(ny - oy) > 0.05 || (nx === 0 && ox !== 0)) {
-            el.dataset.mx = nx.toFixed(2); el.dataset.my = ny.toFixed(2);
-            el.style.translate = nx || ny ? `${nx.toFixed(1)}px ${ny.toFixed(1)}px` : '';
-            el.style.transition = 'translate .25s var(--ease)';
+
+    disable() {
+      enabled = false;
+      document.documentElement.classList.remove('has-cursor');
+      if (rafId) cancelAnimationFrame(rafId);
+    },
+
+    setupMagnetics() {
+      const magneticTargets = [...document.querySelectorAll('.btn, .nav__links a, .footer__social a, .cta, .poster__btn')];
+      magneticTargets.forEach((btn) => {
+        btn.addEventListener('mousemove', (e) => {
+          if (!enabled) return;
+          const rect = btn.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          const dist = Math.hypot(e.clientX - centerX, e.clientY - centerY);
+          if (dist < 90) {
+            const pullX = ((e.clientX - centerX) / 90) * 8;
+            const pullY = ((e.clientY - centerY) / 90) * 8;
+            btn.style.transform = `translate3d(${pullX}px, ${pullY}px, 0)`;
           }
         });
-      });
-    },
-    /* ---------- letter-roll hover (wraps letters AFTER the build; textContent stays identical) ---------- */
-    refreshRoll() {
-      if (building() || motionOff() || !canHover()) return;
-      $$(ROLL).forEach((el) => {
-        if (el.querySelector('.roll-l')) return;
-        const txt = el.textContent; if (!txt) return;
-        const frag = document.createDocumentFragment();
-        [...txt].forEach((ch, i) => {
-          const w = document.createElement('span'); w.className = 'roll-l'; w.style.whiteSpace = 'pre';
-          const g = document.createElement('i'); g.dataset.c = ch; g.style.setProperty('--i', i); g.textContent = ch;
-          w.appendChild(g); frag.appendChild(w);
+        btn.addEventListener('mouseleave', () => {
+          btn.style.transform = 'translate3d(0, 0, 0)';
         });
-        el.textContent = ''; el.appendChild(frag);
       });
     },
-    /* ---------- RGB-split glitch on display headings (220 ms) ---------- */
-    initGlitch() {
-      if (Cursor._glitch) return; Cursor._glitch = true;
-      document.addEventListener('mouseover', (e) => {
-        const h = e.target.closest && e.target.closest('.h2-display .h2-line, .hero__name span, .h2-bold');
-        if (!h || h.classList.contains('glitch-on') || motionOff() || building() || h.dataset.full === undefined) return;
-        h.classList.add('glitch-on'); setTimeout(() => h.classList.remove('glitch-on'), 240);
+
+    setupLetterRoll() {
+      // Nav links letter-roll hover
+      const links = document.querySelectorAll('.nav__links a > span');
+      links.forEach(span => {
+        span.setAttribute('data-text', span.textContent);
       });
     }
   };
-  window.Cursor = Cursor;
+
+  window.SiteCursor = SiteCursor;
 })();

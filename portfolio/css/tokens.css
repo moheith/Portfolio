@@ -1,102 +1,29 @@
-:root {
+/* css/tokens.css — design tokens only. Every colour/size used anywhere else comes from here. */
+:root{
   /* surfaces */
-  --bg: #07070a;
-  --bg-2: #0d0d11;
-  --surface: #121216;
-  --surface-2: #18181e;
-  --line: rgba(255, 255, 255, .07);
-  --line-strong: rgba(255, 255, 255, .16);
-
+  --bg:#07070a; --bg-2:#0d0d11; --surface:#121216; --surface-2:#18181e;
+  --line:rgba(255,255,255,.07); --line-strong:rgba(255,255,255,.16);
   /* text */
-  --text: #f5f5f7;
-  --text-2: rgba(245, 245, 247, .78);
-  --muted: #9a9aa6;
-  --dim: #6b6b76;
-
-  /* brand reds */
-  --red: #ff3b30;           /* hero giant word top, big stat numerals */
-  --red-deep: #c8231f;      /* gradient middle */
-  --accent: #ff4d5a;        /* coral-red for accent headline words ("THE PROOF.", "TO REAL.", "DESIGN THAT FEELS.") */
-  --btn: #ef4337;           /* CTA buttons */
-  --maroon: #2a0a12;        /* highlights panel glow */
-  --violet: #a893ff;        /* Yulya violet, used in the UI mock and as an accent preset */
-
-  /* agent / build-UI blues (only used by the swarm overlay) */
-  --blue: #2f8cff;
-  --blue-pill: #0d99ff;
-  --blue-fill: rgba(70, 95, 130, .85);
-  --guide: #ff4d2d;         /* red snap-guide lines, like Figma smart guides */
-  --hud-bg: rgba(16, 18, 22, .92);
-
-  /* agent cursor colours (cycle through them) */
-  --a1: #5eead4;
-  --a2: #fb923c;
-  --a3: #ffffff;
-  --a4: #a78bfa;
-  --a5: #7dd3fc;
-  --a6: #fda4af;
-  --a7: #fcd34d;
-  --a8: #86efac;
-
-  /* typography */
-  --f-display: 'Anton', 'Bebas Neue', Impact, sans-serif;
-  --f-body: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
-  --f-script: 'Nothing You Could Do', 'Caveat', cursive;
-  --f-mono: 'IBM Plex Mono', SFMono-Regular, Consolas, monospace;
-
+  --text:#f5f5f7; --text-2:rgba(245,245,247,.78); --muted:#9a9aa6; --dim:#6b6b76;
+  /* brand reds (the accent switcher in the footer rewrites --red --accent --btn --guide at runtime) */
+  --red:#ff3b30;           /* hero giant word (top), big stat numerals, spines, handles */
+  --red-deep:#c8231f;      /* gradient middle */
+  --accent:#ff4d5a;        /* coral accent word on the 2nd line of statement headings */
+  --btn:#ef4337;           /* CTA buttons */
+  --maroon:#2a0a12;        /* proof panel glow */
+  /* swarm / build-UI colours (only the overlay uses these) */
+  --blue:#2f8cff; --blue-pill:#0d99ff; --blue-fill:rgba(70,95,130,.85);
+  --guide:#ff4d2d;         /* red snap-guide lines + red outlines for cards/logos */
+  --hud-bg:rgba(16,18,22,.92);
+  --a1:#5eead4; --a2:#fb923c; --a3:#ffffff; --a4:#a78bfa; --a5:#7dd3fc; --a6:#fda4af; --a7:#fcd34d; --a8:#86efac;
+  /* type */
+  --f-display:'Anton','Bebas Neue',Impact,'Arial Narrow',sans-serif;
+  --f-body:'Plus Jakarta Sans','Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-ui:'Inter',system-ui,sans-serif;
+  --f-script:'Nothing You Could Do','Caveat',cursive;
   /* layout */
-  --nav-h: 64px;
-  --pad: clamp(20px, 4vw, 64px);
-  --maxw: 1440px;
-  --ease: cubic-bezier(.22, 1, .36, 1);
-  --ease-io: cubic-bezier(.65, 0, .35, 1);
-
+  --nav-h:64px; --pad:clamp(20px,4vw,64px); --maxw:1440px;
+  --ease:cubic-bezier(.22,1,.36,1); --ease-io:cubic-bezier(.65,0,.35,1);
   /* z-index scale */
-  --z-hero-word: 1;
-  --z-hero-photo: 2;
-  --z-hero-text: 3;
-  --z-nav: 50;
-  --z-modal: 80;
-  --z-swarm: 9999;
-}
-
-/* Theme accent colour presets (Persisted via localStorage) */
-:root[data-accent="violet"],
-body.accent-violet {
-  --red: #a893ff;
-  --red-deep: #7c62ee;
-  --accent: #bba8ff;
-  --btn: #9074ff;
-  --guide: #a893ff;
-  --maroon: #1e1338;
-}
-
-:root[data-accent="blue"],
-body.accent-blue {
-  --red: #3b82ff;
-  --red-deep: #1d4ed8;
-  --accent: #60a5fa;
-  --btn: #2563eb;
-  --guide: #3b82ff;
-  --maroon: #0c1a36;
-}
-
-:root[data-accent="amber"],
-body.accent-amber {
-  --red: #f59e0b;
-  --red-deep: #d97706;
-  --accent: #fbbf24;
-  --btn: #e68a00;
-  --guide: #f59e0b;
-  --maroon: #2c1a04;
-}
-
-:root[data-accent="red"],
-body.accent-red {
-  --red: #ff3b30;
-  --red-deep: #c8231f;
-  --accent: #ff4d5a;
-  --btn: #ef4337;
-  --guide: #ff4d2d;
-  --maroon: #2a0a12;
+  --z-hero-word:1; --z-hero-photo:2; --z-hero-text:3; --z-grain:40; --z-nav:50; --z-playhead:45; --z-modal:80; --z-palette:90; --z-cursor:95; --z-swarm:9999;
 }

@@ -1,251 +1,65 @@
-/* js/main.js — Boot Sequence, Hydration, Swarm Start, and startSite() Controller */
-
-(function () {
+/* js/main.js — boot order + swarm integration. Every module call is guarded, so a missing/failed module can never leave the page invisible. */
+(() => {
   'use strict';
+  const html = document.documentElement;
+  const q = new URLSearchParams(location.search);
+  const call = (obj, fn, ...args) => { try { const o = window[obj]; if (o && typeof o[fn] === 'function') return o[fn](...args); } catch (e) { console.error(`[${obj}.${fn}]`, e); } };
+  const small = () => matchMedia('(max-width: 640px)').matches;
+  /* deep links (#proof, #work/yulya …) skip the intro so a shared link lands on content; ?swarm=off also skips; ?swarmForce keeps it */
+  const skipIntro = () => html.getAttribute('data-motion') === 'off' || q.get('swarm') === 'off' ||
+    (!!location.hash && !['#', '#home'].includes(location.hash) && !q.has('swarmForce'));
+  let introHow = null;
 
-  let siteStarted = false;
+  /* runs exactly once when the intro is finished ('live'), aborted ('abort') or never ran ('skip') */
+  function afterIntro(how) {
+    if (introHow) return; introHow = how;
+    html.classList.remove('is-building'); html.classList.add('is-ready');
+    call('Scroll', 'start');                       // Lenis start (it was stopped during the intro)
+    call('SiteCursor', 'enable');                  // custom red cursor + magnetic buttons
+    call('Hero', 'afterIntro', how);               // mouse parallax + spotlight
+    call('Marquee', 'init');                       // clones the logo row ONLY now, then starts the infinite scroll
+    call('Reveals', how === 'live' ? 'initQuiet' : 'init');          // 'live': everything was already seen, so nothing is re-hidden
+    call('Extras', 'afterIntro', how);             // live stats, idle companions, clock, command palette hint
+    window.dispatchEvent(new CustomEvent('portfolio:ready', { detail: { how } }));
+    if (location.hash && how !== 'live') call('Scroll', 'toHash', location.hash, true);
+  }
 
-  /* Helper wait */
-  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-  /* =====================================================================
-     1. Hydration ([data-c] content bindings and [CONTENT.links] mapping)
-  ===================================================================== */
-  function hydrate() {
-    if (!window.CONTENT) return;
-
-    // Resolve dotted path in CONTENT
-    const resolvePath = (path) => {
-      const parts = path.split('.');
-      let cur = window.CONTENT;
-      for (const part of parts) {
-        if (cur === undefined || cur === null) return undefined;
-        cur = cur[part];
-      }
-      return cur;
-    };
-
-    const elements = document.querySelectorAll('[data-c]');
-    elements.forEach((el) => {
-      const path = el.getAttribute('data-c');
-      const val = resolvePath(path);
-      if (val !== undefined && typeof val !== 'object') {
-        const prefix = el.getAttribute('data-c-prefix') || '';
-        const suffix = el.getAttribute('data-c-suffix') || '';
-        const isUpper = el.hasAttribute('data-c-upper');
-        const strVal = String(val);
-        const finalText = prefix + (isUpper ? strVal.toUpperCase() : strVal) + suffix;
-
-        el.textContent = finalText;
-        if (el.dataset.full !== undefined) {
-          el.dataset.full = finalText;
-        }
-      }
+  /* small per-layer flourishes that fire the instant an agent finishes a layer */
+  function wireSwarm() {
+    Swarm.on('end', afterIntro);
+    Swarm.on('layer', (el) => {
+      if (el.matches('[data-count]')) call('Hero', 'countUp', el);                // 4+ / 10+ / 8 count up from 0 the moment they appear
+      if (el.id === 'compare') call('Compare', 'demo');                           // wireframe <-> final auto demo
+      if (el.matches('.step__node')) el.classList.add('is-lit');                  // process nodes light up as they are dropped in
+      if (el.matches('.hero__pulse,.hero__dot')) el.classList.add('is-live');
     });
-
-    // Hydrate dynamic links
-    if (window.CONTENT.links) {
-      const L = window.CONTENT.links;
-      const ghLinks = document.querySelectorAll('a[href*="github.com/moheith"]');
-      ghLinks.forEach((a) => { if (L.github) a.href = L.github; });
-
-      const igLinks = document.querySelectorAll('a[href*="instagram.com"]');
-      igLinks.forEach((a) => { if (L.instagram) a.href = L.instagram; });
-
-      const waLinks = document.querySelectorAll('a[href*="wa.me"]');
-      waLinks.forEach((a) => {
-        if (L.whatsapp) {
-          const currentHref = a.getAttribute('href');
-          if (currentHref && currentHref.includes('?text=')) {
-            const query = currentHref.split('?text=')[1];
-            a.href = `https://wa.me/${L.whatsapp}?text=${query}`;
-          } else {
-            a.href = `https://wa.me/${L.whatsapp}`;
-          }
-        }
-      });
-    }
+    Swarm.on('section', (name) => { if (name === 'proof') call('Hero', 'laurel'); });   // laurel branches draw in when the proof section commits
   }
 
-  /* =====================================================================
-     Reveals & Eyebrow Text Scramble (Part 7.4 / 10.1)
-  ===================================================================== */
-  const Reveals = {
-    init() {
-      // Rule: Never hide an element that is already on screen
-      const viewportBottom = window.scrollY + window.innerHeight;
-
-      // Text Scramble on eyebrows when they enter viewport
-      const scrambleChars = '▮#/_\\<>[]~+=*';
-      const eyebrows = document.querySelectorAll('.eyebrow');
-
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              const el = entry.target;
-              observer.unobserve(el);
-
-              // Don't scramble if motion is off
-              if (
-                document.documentElement.getAttribute('data-motion') === 'off' ||
-                window.matchMedia('(prefers-reduced-motion: reduce)').matches
-              ) {
-                return;
-              }
-
-              const original = el.textContent;
-              const duration = 500;
-              const startTime = performance.now();
-
-              const scrambleLoop = (now) => {
-                const elapsed = now - startTime;
-                const progress = Math.min(1, elapsed / duration);
-                const revealIdx = Math.floor(progress * original.length);
-
-                let result = original.slice(0, revealIdx);
-                for (let i = revealIdx; i < original.length; i++) {
-                  if (original[i] === ' ' || original[i] === '/') {
-                    result += original[i];
-                  } else {
-                    result += scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
-                  }
-                }
-                el.textContent = result;
-
-                if (progress < 1) {
-                  requestAnimationFrame(scrambleLoop);
-                } else {
-                  el.textContent = original;
-                }
-              };
-
-              requestAnimationFrame(scrambleLoop);
-            }
-          });
-        },
-        { threshold: 0.2 }
-      );
-
-      eyebrows.forEach((el) => {
-        const rect = el.getBoundingClientRect();
-        const top = rect.top + window.scrollY;
-        // Only observe if below current viewport
-        if (top > viewportBottom) {
-          observer.observe(el);
-        }
-      });
-    },
-  };
-
-  /* =====================================================================
-     startSite(): Idempotent, runs once when Swarm reaches finale or is skipped
-  ===================================================================== */
-  function startSite() {
-    if (siteStarted) return;
-    siteStarted = true;
-
-    // 1. Start smooth scrolling
-    if (window.Scroll) {
-      window.Scroll.start();
-    }
-
-    // 2. Enable Custom Site Cursor
-    if (window.Cursor) {
-      window.Cursor.enable();
-    }
-
-    // 3. Count up stat numbers
-    if (window.Hero) {
-      window.Hero.startCounters();
-      window.Hero.init();
-    }
-
-    // 4. Init Journey and reveals
-    if (window.Journey) {
-      window.Journey.init();
-    }
-    Reveals.init();
-
-    // 5. Refresh ScrollTrigger if loaded
-    if (window.ScrollTrigger) {
-      window.ScrollTrigger.refresh();
-    }
-
-    // If URL has section hash, scroll to it smoothly
-    const hash = window.location.hash;
-    if (hash && hash.length > 1 && !hash.startsWith('#work/') && window.Scroll) {
-      setTimeout(() => {
-        window.Scroll.to(hash);
-      }, 400);
-    }
+  async function decodeHero() {
+    const img = document.getElementById('heroImg'); if (!img) return;
+    try { await Promise.race([img.decode(), new Promise((r) => setTimeout(r, 1500))]); } catch (e) { /* fallback SVG is shown by hero.js onerror */ }
   }
 
-  /* =====================================================================
-     BOOT SEQUENCE (Part 10.1)
-  ===================================================================== */
-  document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Hydrate content bindings BEFORE swarm measures text
-    hydrate();
-
-    // 2. Build remaining project cards, tabs, search, modal
-    if (window.Work) {
-      window.Work.init();
-    }
-
-    // 3. Build UI mocks in Raw vs Real comparison slider
-    if (window.Compare) {
-      window.Compare.build();
-    }
-
-    // 4. Initialize static widgets: clock, accent restore, motion, toasts
-    if (window.Extras) {
-      window.Extras.initStatic();
-    }
-
-    // 5. Await font loading (max 1.5s timeout)
+  async function boot() {
     try {
-      await Promise.race([
-        document.fonts ? document.fonts.ready : Promise.resolve(),
-        wait(1500),
-      ]);
-    } catch (_) {}
+      Render.all();                                                  // 1. cards, logos, highlights, timeline … (with data-layer tags)
+      call('Hero', 'init');                                          // 2. fitText + static layout (needs fonts: re-run on fonts.ready)
+      call('Work', 'init'); call('Compare', 'init'); call('Journey', 'init');
+      call('Scroll', 'init'); call('SiteCursor', 'init'); call('Extras', 'init');
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => call('Hero', 'fit'));
+    } catch (e) { console.error('[boot]', e); }
 
-    // 6. Scale giant word dynamically (must be measured at final font size)
-    if (window.Hero) {
-      window.Hero.fitText();
-    }
+    if (skipIntro() || !window.Swarm) { afterIntro('skip'); return; }
+    window.__swarmStarted = true;
+    call('Scroll', 'stop');                                          // Lenis off; the swarm drives window.scrollTo itself
+    wireSwarm();
+    await decodeHero();
+    const cfg = { initial: CONTENT.meta.initial, speed: +q.get('swarmSpeed') || 1 };
+    if (small()) Object.assign(cfg, { startAgents: 8, maxAgents: 12, joins: [[6, 9], [17, 10], [31, 11], [48, 12]] });
+    try { await Swarm.start(cfg); } catch (e) { console.error('[swarm]', e); afterIntro('abort'); }
+  }
 
-    // 7. Initialize scroll controller (calls lenis.stop() immediately)
-    if (window.Scroll) {
-      window.Scroll.init();
-    }
-
-    // 8. Determine if intro should be skipped
-    const isMotionOff =
-      localStorage.getItem('motion') === 'off' ||
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
-      window.location.search.includes('intro=off');
-
-    // 9. Listen for swarm completion
-    document.addEventListener('swarmstate', (e) => {
-      if (e.detail === 'finale' || e.detail === 'live') {
-        startSite();
-      }
-    });
-
-    if (window.Swarm) {
-      if (isMotionOff) {
-        window.Swarm.finishAll();
-        startSite();
-      } else {
-        window.Swarm.start();
-      }
-    } else {
-      startSite();
-    }
-  });
-
-  window.startSite = startSite;
-  window.Reveals = Reveals;
+  window.PortfolioBoot = { afterIntro, replay: () => { introHow = null; call('Scroll', 'stop'); Swarm.replay(); } };
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', boot) : boot();
 })();

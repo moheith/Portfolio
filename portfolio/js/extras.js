@@ -1,125 +1,29 @@
-/* js/extras.js — Command Palette, Mini Terminal, Web Audio Sound, Live Clock, GitHub Stats, Accent Switcher, Idle Companions, Easter Eggs & Contact Utilities */
-
-(function () {
+/* js/extras.js — palette, sound hint, accent switcher, idle companions, live stats, clock, easter eggs, toast */
+(() => {
   'use strict';
 
-  let audioCtx = null;
-  let soundEnabled = false;
-
-  /* =====================================================================
-     1. WEB AUDIO SYNTHESIZER (SwarmSound)
-  ===================================================================== */
-  const SwarmSound = {
-    set(on) {
-      soundEnabled = Boolean(on);
-      if (soundEnabled && !audioCtx) {
-        try {
-          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-          if (AudioContextClass) {
-            audioCtx = new AudioContextClass();
-          }
-        } catch (e) {
-          console.warn('[sound] Web Audio not available', e);
-        }
-      }
-      if (audioCtx && audioCtx.state === 'suspended' && soundEnabled) {
-        audioCtx.resume();
-      }
-
-      // Update speaker buttons in HUD
-      document.querySelectorAll('[data-act="sound"]').forEach((btn) => {
-        btn.setAttribute('aria-pressed', soundEnabled ? 'true' : 'false');
-        btn.textContent = soundEnabled ? '🔊' : '🔇';
-      });
-    },
-
-    tick(ch) {
-      if (!soundEnabled || !audioCtx) return;
-      // Play tick only on space or text end
-      if (ch !== ' ' && ch !== undefined) return;
-      try {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(1800, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.025, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.012);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.012);
-      } catch (_) {}
-    },
-
-    whoosh() {
-      if (!soundEnabled || !audioCtx) return;
-      try {
-        const bufferSize = audioCtx.sampleRate * 0.25;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = Math.random() * 2 - 1;
-        }
-        const noise = audioCtx.createBufferSource();
-        noise.buffer = buffer;
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(400, audioCtx.currentTime);
-        filter.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.25);
-        const gain = audioCtx.createGain();
-        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(audioCtx.destination);
-        noise.start();
-      } catch (_) {}
-    },
-
-    chime() {
-      if (!soundEnabled || !audioCtx) return;
-      try {
-        // Two-note soft chime (C6 -> G6)
-        [1046.5, 1567.98].forEach((freq, idx) => {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.14);
-          gain.gain.setValueAtTime(0.05, audioCtx.currentTime + idx * 0.14);
-          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.14 + 0.6);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(audioCtx.currentTime + idx * 0.14);
-          osc.stop(audioCtx.currentTime + idx * 0.14 + 0.6);
-        });
-      } catch (_) {}
-    },
+  let toastTimer = null;
+  const ACCENT_PRESETS = {
+    crimson: { red: '#ff3b30', redDeep: '#c8231f', accent: '#ff4d5a', btn: '#ef4337', guide: '#ff4d2d' },
+    blue:    { red: '#3b82ff', redDeep: '#2563eb', accent: '#60a5fa', btn: '#2563eb', guide: '#38bdf8' },
+    violet:  { red: '#8b5cf6', redDeep: '#7c3aed', accent: '#a78bfa', btn: '#7c3aed', guide: '#c084fc' },
+    amber:   { red: '#f59e0b', redDeep: '#d97706', accent: '#fbbf24', btn: '#d97706', guide: '#fcd34d' }
   };
-  window.SwarmSound = SwarmSound;
 
-  /* =====================================================================
-     2. EXTRAS CONTROLLER
-  ===================================================================== */
   const Extras = {
-    initStatic() {
-      this.initClock();
-      this.initAccent();
-      this.initMotionToggle();
-      this.initCopyEmail();
-      this.initCVLinks();
-      this.initQuickBrief();
-      this.initTerminalLoop();
-      this.initCommandPalette();
-      this.initMiniTerminal();
-      this.initIdleCompanions();
-      this.initKonamiAndReplay();
-      this.initGitHubStats();
-      this.initHeadingGlitch();
+    init() {
+      this.setupToastContainer();
+      this.setupMotionToggle();
+      this.setupAccentSwitcher();
+      this.setupCvLinks();
+      this.setupQuickBrief();
+      this.setupEmailCopy();
+      this.setupClock();
+      this.setupCommandPalette();
+      this.setupKeyboardShortcuts();
+      this.setupGlitchText();
     },
 
-    /* =====================================================================
-       Toast Notifications
-    ===================================================================== */
     toast(msg) {
       let toastEl = document.getElementById('toast');
       if (!toastEl) {
@@ -130,187 +34,120 @@
       }
       toastEl.textContent = msg;
       toastEl.classList.add('is-show');
-      clearTimeout(toastEl._timer);
-      toastEl._timer = setTimeout(() => {
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
         toastEl.classList.remove('is-show');
-      }, 3000);
+      }, 2400);
     },
 
-    /* =====================================================================
-       Live Clock: Bengaluru IST, updates [data-clock] text & dataset.full
-    ===================================================================== */
-    initClock() {
-      const update = () => {
-        const now = new Date();
-        const options = {
-          timeZone: 'Asia/Kolkata',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        };
-        const timeStr = new Intl.DateTimeFormat('en-GB', options).format(now);
-        const fullText = `Bengaluru · ${timeStr} IST`;
+    setupToastContainer() {
+      if (!document.getElementById('toast')) {
+        const t = document.createElement('div');
+        t.id = 'toast';
+        t.className = 'toast';
+        document.body.appendChild(t);
+      }
+    },
 
-        document.querySelectorAll('[data-clock]').forEach((el) => {
-          el.textContent = fullText;
-          el.dataset.full = fullText;
+    setupMotionToggle() {
+      const btn = document.getElementById('motionToggle');
+      if (!btn) return;
+
+      const updateUI = (isOff) => {
+        btn.setAttribute('aria-pressed', isOff ? 'true' : 'false');
+        const txt = btn.querySelector('[data-layer="text"]') || btn.querySelector('span:last-child');
+        if (txt) txt.textContent = isOff ? 'Motion on' : 'Motion off';
+      };
+
+      const isCurrentOff = document.documentElement.getAttribute('data-motion') === 'off';
+      updateUI(isCurrentOff);
+
+      btn.addEventListener('click', () => {
+        const isOff = document.documentElement.getAttribute('data-motion') === 'off';
+        if (isOff) {
+          document.documentElement.removeAttribute('data-motion');
+          localStorage.setItem('motion', 'on');
+          updateUI(false);
+          this.toast('Motion on — reload to replay the intro');
+        } else {
+          document.documentElement.setAttribute('data-motion', 'off');
+          localStorage.setItem('motion', 'off');
+          updateUI(true);
+          if (window.Swarm && window.Swarm.state !== 'live') {
+            window.Swarm.abort();
+          }
+          this.toast('Motion off');
+        }
+      });
+    },
+
+    setupAccentSwitcher() {
+      const dots = document.querySelectorAll('.accent-dot');
+      const hexMap = {
+        '#ff3b30': 'crimson',
+        '#3b82ff': 'blue',
+        '#8b5cf6': 'violet',
+        '#ffb020': 'amber'
+      };
+
+      const applyAccent = (val) => {
+        const key = hexMap[val] || val || 'crimson';
+        const p = ACCENT_PRESETS[key] || ACCENT_PRESETS.crimson;
+        const root = document.documentElement;
+        root.style.setProperty('--red', p.red);
+        root.style.setProperty('--red-deep', p.redDeep);
+        root.style.setProperty('--accent', p.accent);
+        root.style.setProperty('--btn', p.btn);
+        root.style.setProperty('--guide', p.guide);
+        localStorage.setItem('accent', val);
+
+        dots.forEach(d => {
+          const acc = d.getAttribute('data-accent');
+          d.classList.toggle('is-active', acc === val || hexMap[acc] === key);
         });
       };
 
-      update();
-      setInterval(update, 30000);
-    },
-
-    /* =====================================================================
-       Accent Switcher (Red, Violet, Blue, Amber)
-    ===================================================================== */
-    initAccent() {
-      const accents = {
-        red: { red: '#ff3b30', accent: '#ff4d5a', btn: '#ff3b30', guide: '#ff3b30', maroon: '#7a141e' },
-        violet: { red: '#a893ff', accent: '#c4b5fd', btn: '#8b5cf6', guide: '#a893ff', maroon: '#4c1d95' },
-        blue: { red: '#3b82ff', accent: '#60a5fa', btn: '#2563eb', guide: '#3b82ff', maroon: '#1e3a8a' },
-        amber: { red: '#ffb020', accent: '#fcd34d', btn: '#d97706', guide: '#ffb020', maroon: '#78350f' },
-      };
-
-      const setAccent = (name) => {
-        const theme = accents[name] || accents.red;
-        const root = document.documentElement;
-        root.style.setProperty('--red', theme.red);
-        root.style.setProperty('--accent', theme.accent);
-        root.style.setProperty('--btn', theme.btn);
-        root.style.setProperty('--guide', theme.guide);
-        root.style.setProperty('--maroon', theme.maroon);
-        localStorage.setItem('mayura_accent', name);
-      };
-
-      const saved = localStorage.getItem('mayura_accent') || 'red';
-      setAccent(saved);
-
-      document.querySelectorAll('.accent-dot').forEach((dot) => {
-        dot.addEventListener('click', () => {
-          const acc = dot.getAttribute('data-accent');
-          setAccent(acc);
-          Extras.toast(`Accent set to ${acc}`);
+      dots.forEach(d => {
+        d.addEventListener('click', () => {
+          const acc = d.getAttribute('data-accent');
+          applyAccent(acc);
         });
       });
 
-      this.setAccent = setAccent;
+      const saved = localStorage.getItem('accent') || '#ff3b30';
+      applyAccent(saved);
     },
 
-    /* =====================================================================
-       Motion-off Toggle
-    ===================================================================== */
-    initMotionToggle() {
-      const toggleBtn = document.querySelector('.nav__motion');
-      const root = document.documentElement;
+    setupCvLinks() {
+      const links = document.querySelectorAll('#cvLink, #resumeLink, a[href$=".pdf"]');
+      links.forEach(l => {
+        l.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.toast('CV coming soon');
+        });
+      });
+    },
 
-      const setMotion = (isOff) => {
-        if (isOff) {
-          root.setAttribute('data-motion', 'off');
-          localStorage.setItem('motion', 'off');
-        } else {
-          root.removeAttribute('data-motion');
-          localStorage.setItem('motion', 'on');
-        }
+    setupQuickBrief() {
+      const form = document.getElementById('briefForm') || document.querySelector('.brief');
+      const input = document.getElementById('briefInput') || document.querySelector('.brief input');
+      const sendBtn = document.getElementById('briefSend') || document.querySelector('.brief__send');
+
+      const submit = () => {
+        const val = input ? input.value.trim() : '';
+        const msg = encodeURIComponent(`${CONTENT.meta.waMessage}${val}`);
+        const url = `https://wa.me/${CONTENT.meta.whatsapp}?text=${msg}`;
+        window.open(url, '_blank', 'noopener');
       };
 
-      const savedMotion = localStorage.getItem('motion');
-      if (savedMotion === 'off' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        setMotion(true);
-      } else {
-        setMotion(false);
-      }
-
-      if (toggleBtn) {
-        toggleBtn.addEventListener('click', () => {
-          const isCurrentlyOff = root.getAttribute('data-motion') === 'off';
-          setMotion(!isCurrentlyOff);
-          Extras.toast(isCurrentlyOff ? 'Motion enabled' : 'Motion reduced');
-        });
-      }
-    },
-
-    /* =====================================================================
-       Copy Email & Feedback Toast
-    ===================================================================== */
-    initCopyEmail() {
-      document.querySelectorAll('[data-copy-email]').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
-          if (e.button === 0 && !e.ctrlKey && !e.metaKey) {
+      if (input) {
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
             e.preventDefault();
-            const email = 'moheithmayura@gmail.com';
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-              navigator.clipboard.writeText(email).then(() => {
-                Extras.toast('Email copied ✓');
-              });
-            } else {
-              Extras.toast('moheithmayura@gmail.com');
-            }
+            submit();
           }
         });
-      });
-    },
-
-    /* =====================================================================
-       CV & Resume Placeholders
-    ===================================================================== */
-    initCVLinks() {
-      const checkAndDownload = (e, msg) => {
-        const href = e.currentTarget.getAttribute('href');
-        if (!href || href === '#' || window.location.protocol === 'file:') {
-          e.preventDefault();
-          Extras.toast(msg);
-          return;
-        }
-
-        e.preventDefault();
-        fetch(href, { method: 'HEAD' })
-          .then((res) => {
-            if (res.ok) {
-              window.open(href, '_blank');
-            } else {
-              Extras.toast(msg);
-            }
-          })
-          .catch(() => {
-            Extras.toast(msg);
-          });
-      };
-
-      const cvLink = document.querySelector('.hero__cv');
-      if (cvLink) {
-        cvLink.addEventListener('click', (e) => checkAndDownload(e, 'CV coming soon'));
       }
-
-      const resumeLink = document.querySelector('.journey__resume');
-      if (resumeLink) {
-        resumeLink.addEventListener('click', (e) => checkAndDownload(e, 'Resume coming soon'));
-      }
-    },
-
-    /* =====================================================================
-       Quick Brief Form (WhatsApp Dispatch)
-    ===================================================================== */
-    initQuickBrief() {
-      const briefForm = document.getElementById('brief');
-      if (!briefForm) return;
-
-      const input = briefForm.querySelector('input');
-      const submit = () => {
-        const text = input ? input.value.trim() : '';
-        const phone = '918660227877';
-        const url = text
-          ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
-          : `https://wa.me/${phone}`;
-        window.open(url, '_blank', 'noopener,noreferrer');
-      };
-
-      briefForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        submit();
-      });
-
-      const sendBtn = briefForm.querySelector('[data-layer-id="ct.brief.icon.3"]');
       if (sendBtn) {
         sendBtn.addEventListener('click', (e) => {
           e.preventDefault();
@@ -319,505 +156,298 @@
       }
     },
 
-    /* =====================================================================
-       Contact Poster Card Typing Loop (Part 6.8)
-    ===================================================================== */
-    initTerminalLoop() {
-      const term = document.querySelector('.poster__term');
-      if (!term) return;
-
-      const lines = [
-        ['$ whoami', 'mayura — full stack dev & designer'],
-        ['$ ls projects/', 'yulya  studio  desktop-ai-companion'],
-        ['$ ./ship --now', '🚀 shipped to production'],
-      ];
-
-      let lineIdx = 0;
-      setInterval(() => {
-        const item = lines[lineIdx % lines.length];
-        lineIdx++;
-        const p1 = document.querySelector('[data-layer-id="ct.card.term.1"]');
-        const p2 = document.querySelector('[data-layer-id="ct.card.term.2"]');
-        const p3 = document.querySelector('[data-layer-id="ct.card.term.3"]');
-        if (p1 && p2 && p3 && (!window.Swarm || window.Swarm.state === 'finale' || window.Swarm.state === 'live')) {
-          p1.textContent = item[0];
-          p2.textContent = item[1];
-          p3.textContent = '$ ./ship --now';
-        }
-      }, 4000);
-    },
-
-    /* =====================================================================
-       RGB Glitch Effect on Headings
-    ===================================================================== */
-    initHeadingGlitch() {
-      document.querySelectorAll('.h2-display, .h2-bold').forEach((h) => {
-        h.classList.add('glitch-text');
-        h.setAttribute('data-text', h.textContent.trim());
-      });
-    },
-
-    /* =====================================================================
-       3. COMMAND PALETTE (Ctrl+K / /)
-    ===================================================================== */
-    initCommandPalette() {
-      let backdrop = document.querySelector('.palette-backdrop');
-      if (!backdrop) {
-        backdrop = document.createElement('div');
-        backdrop.className = 'palette-backdrop';
-        backdrop.innerHTML = `
-          <div class="palette-dialog" role="dialog" aria-modal="true" aria-label="Command Palette">
-            <div class="palette-input-wrap">
-              <span class="palette-input-icon">⌕</span>
-              <input class="palette-input" type="text" placeholder="Type a command or search..." autocomplete="off">
-              <span class="palette-esc-badge">ESC</span>
-            </div>
-            <div class="palette-list" role="listbox"></div>
-          </div>
-        `;
-        document.body.appendChild(backdrop);
+    setupEmailCopy() {
+      const emailRow = document.getElementById('emailRow') || document.querySelector('a[href^="mailto:"]');
+      if (emailRow) {
+        emailRow.addEventListener('click', (e) => {
+          if (e.ctrlKey || e.metaKey || e.button === 1) return;
+          e.preventDefault();
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(CONTENT.meta.email).then(() => {
+              this.toast('Email copied ✓');
+            }).catch(() => {
+              location.href = `mailto:${CONTENT.meta.email}`;
+            });
+          } else {
+            location.href = `mailto:${CONTENT.meta.email}`;
+          }
+        });
       }
+    },
 
-      const input = backdrop.querySelector('.palette-input');
-      const list = backdrop.querySelector('.palette-list');
+    setupClock() {
+      const clockEl = document.getElementById('clock');
+      const update = () => {
+        if (!clockEl) return;
+        try {
+          const now = new Date();
+          const fmt = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'Asia/Kolkata',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }).format(now);
+          clockEl.textContent = `Bengaluru · ${fmt} IST`;
+        } catch (e) {
+          clockEl.textContent = 'Bengaluru · 17:04 IST';
+        }
+      };
+      update();
+      setInterval(update, 30000);
+    },
 
-      const commands = [
-        { label: 'Go to Selected Work', icon: '01', action: () => window.Scroll.to('#work') },
-        { label: 'Go to Highlights & Proof', icon: '02', action: () => window.Scroll.to('#highlights') },
-        { label: 'Go to Behind The Screen', icon: '03', action: () => window.Scroll.to('#about') },
-        { label: 'Go to The Journey', icon: '04', action: () => window.Scroll.to('#journey') },
-        { label: 'Go to Contact', icon: '05', action: () => window.Scroll.to('#contact') },
-        { label: 'Open Terminal Drawer', icon: '$_', action: () => Extras.openTerminal() },
-        { label: 'Download CV', icon: '↓', action: () => Extras.toast('CV coming soon') },
-        { label: 'Copy Email Address', icon: '✉', action: () => { navigator.clipboard.writeText('moheithmayura@gmail.com'); Extras.toast('Email copied ✓'); } },
-        { label: 'Open WhatsApp', icon: '↗', action: () => window.open('https://wa.me/918660227877', '_blank') },
-        { label: 'Open GitHub Profile', icon: '↗', action: () => window.open('https://github.com/moheith', '_blank') },
-        { label: 'Toggle Sound Effects', icon: '🔊', action: () => SwarmSound.set(!soundEnabled) },
-        { label: 'Replay Page Rebuild Intro', icon: '↺', action: () => { if (window.Swarm) { window.Swarm.reset(); window.Swarm.start(); } } },
-        { label: 'Theme: Red Accent', icon: '●', action: () => Extras.setAccent('red') },
-        { label: 'Theme: Violet Accent', icon: '●', action: () => Extras.setAccent('violet') },
-        { label: 'Theme: Blue Accent', icon: '●', action: () => Extras.setAccent('blue') },
-        { label: 'Theme: Amber Accent', icon: '●', action: () => Extras.setAccent('amber') },
+    setupCommandPalette() {
+      const palette = document.getElementById('palette');
+      if (!palette) return;
+
+      palette.innerHTML = `
+        <div class="palette__box" role="dialog" aria-modal="true" aria-label="Command palette">
+          <div class="palette__header">
+            <span class="palette__prompt">&gt;</span>
+            <input class="palette__input" type="text" placeholder="Type a command or jump to..." autofocus autocomplete="off">
+          </div>
+          <ul class="palette__list"></ul>
+          <div class="palette__footer">
+            <span>↑↓ to navigate</span>
+            <span>↵ to select</span>
+            <span>ESC to close</span>
+          </div>
+        </div>
+      `;
+
+      const input = palette.querySelector('.palette__input');
+      const list = palette.querySelector('.palette__list');
+
+      const actions = [
+        { label: 'Jump to Hero', sub: 'Section', run: () => window.Scroll && Scroll.to('#home') },
+        { label: 'Jump to Selected Work', sub: 'Section', run: () => window.Scroll && Scroll.to('#work') },
+        { label: 'Jump to Proof of Work', sub: 'Section', run: () => window.Scroll && Scroll.to('#proof') },
+        { label: 'Jump to From Sketch to Shipped', sub: 'Section', run: () => window.Scroll && Scroll.to('#raw') },
+        { label: 'Jump to Behind the Code', sub: 'Section', run: () => window.Scroll && Scroll.to('#about') },
+        { label: 'Jump to The Journey', sub: 'Section', run: () => window.Scroll && Scroll.to('#journey') },
+        { label: 'Jump to Contact', sub: 'Section', run: () => window.Scroll && Scroll.to('#contact') },
+        { label: 'Open GitHub Profile', sub: 'Link', run: () => window.open(CONTENT.meta.links.github, '_blank', 'noopener') },
+        { label: 'Open Hugging Face', sub: 'Link', run: () => window.open(CONTENT.meta.links.huggingface, '_blank', 'noopener') },
+        { label: 'Open Ollama Library', sub: 'Link', run: () => window.open(CONTENT.meta.links.ollama, '_blank', 'noopener') },
+        { label: 'Open Instagram', sub: 'Link', run: () => window.open(CONTENT.meta.links.instagram, '_blank', 'noopener') },
+        { label: 'Open LinkedIn', sub: 'Link', run: () => window.open(CONTENT.meta.links.linkedin, '_blank', 'noopener') },
+        { label: 'Open X (Twitter)', sub: 'Link', run: () => window.open(CONTENT.meta.links.x, '_blank', 'noopener') },
+        { label: 'Copy Email Address', sub: 'Action', run: () => { navigator.clipboard.writeText(CONTENT.meta.email); Extras.toast('Email copied ✓'); } },
+        { label: 'Download CV', sub: 'Action', run: () => Extras.toast('CV coming soon') },
+        { label: 'Replay Agent Swarm Rebuild', sub: 'Action', run: () => window.PortfolioBoot && PortfolioBoot.replay() },
+        { label: 'Switch Accent: Crimson', sub: 'Theme', run: () => this.switchAccent('crimson') },
+        { label: 'Switch Accent: Electric Blue', sub: 'Theme', run: () => this.switchAccent('blue') },
+        { label: 'Switch Accent: Violet', sub: 'Theme', run: () => this.switchAccent('violet') },
+        { label: 'Switch Accent: Amber', sub: 'Theme', run: () => this.switchAccent('amber') }
       ];
 
-      const render = (query = '') => {
-        list.innerHTML = '';
-        const q = query.toLowerCase().trim();
-        const filtered = commands.filter((c) => c.label.toLowerCase().includes(q));
+      // Add projects
+      CONTENT.projects.forEach(p => {
+        actions.push({
+          label: `Project: ${p.title}`,
+          sub: p.stack,
+          run: () => {
+            window.Scroll && Scroll.to('#work');
+            setTimeout(() => window.Work && Work.open(p.slug), 100);
+          }
+        });
+      });
 
-        if (!filtered.length) {
-          list.innerHTML = `<div style="padding:16px;text-align:center;color:var(--dim);font-size:12px">No commands found</div>`;
-          return;
-        }
+      let selectedIndex = 0;
+      let filteredActions = [...actions];
 
-        filtered.forEach((cmd, idx) => {
-          const item = document.createElement('div');
-          item.className = `palette-item ${idx === 0 ? 'is-selected' : ''}`;
-          item.innerHTML = `
-            <div class="palette-item-left">
-              <span class="palette-item-icon">${cmd.icon}</span>
-              <span>${cmd.label}</span>
-            </div>
-            <span class="palette-item-badge">↵ Jump</span>
-          `;
+      const renderList = () => {
+        list.innerHTML = filteredActions.map((a, i) => `
+          <li class="palette__item${i === selectedIndex ? ' is-active' : ''}" data-idx="${i}">
+            <span>${Render.esc(a.label)}</span>
+            <span class="palette__item-sub">${Render.esc(a.sub)}</span>
+          </li>
+        `).join('');
+
+        list.querySelectorAll('.palette__item').forEach(item => {
           item.addEventListener('click', () => {
-            close();
-            cmd.action();
+            const idx = +item.getAttribute('data-idx');
+            if (filteredActions[idx]) {
+              filteredActions[idx].run();
+              close();
+            }
           });
-          list.appendChild(item);
         });
       };
 
       const open = () => {
-        backdrop.classList.add('is-open');
+        palette.classList.add('is-open');
+        palette.setAttribute('aria-hidden', 'false');
         input.value = '';
-        render();
-        setTimeout(() => input.focus(), 50);
+        filteredActions = [...actions];
+        selectedIndex = 0;
+        renderList();
+        input.focus();
       };
 
       const close = () => {
-        backdrop.classList.remove('is-open');
+        palette.classList.remove('is-open');
+        palette.setAttribute('aria-hidden', 'true');
       };
 
-      input.addEventListener('input', () => render(input.value));
+      input.addEventListener('input', () => {
+        const q = input.value.trim().toLowerCase();
+        filteredActions = actions.filter(a =>
+          a.label.toLowerCase().includes(q) || a.sub.toLowerCase().includes(q)
+        );
+        selectedIndex = 0;
+        renderList();
+      });
 
       input.addEventListener('keydown', (e) => {
-        const items = Array.from(list.querySelectorAll('.palette-item'));
-        const selected = list.querySelector('.palette-item.is-selected');
-        let idx = items.indexOf(selected);
-
         if (e.key === 'ArrowDown') {
           e.preventDefault();
-          if (selected) selected.classList.remove('is-selected');
-          const next = items[(idx + 1) % items.length];
-          if (next) next.classList.add('is-selected');
+          selectedIndex = (selectedIndex + 1) % Math.max(1, filteredActions.length);
+          renderList();
         } else if (e.key === 'ArrowUp') {
           e.preventDefault();
-          if (selected) selected.classList.remove('is-selected');
-          const prev = items[(idx - 1 + items.length) % items.length];
-          if (prev) prev.classList.add('is-selected');
+          selectedIndex = (selectedIndex - 1 + filteredActions.length) % Math.max(1, filteredActions.length);
+          renderList();
         } else if (e.key === 'Enter') {
           e.preventDefault();
-          if (selected) selected.click();
+          if (filteredActions[selectedIndex]) {
+            filteredActions[selectedIndex].run();
+            close();
+          }
         } else if (e.key === 'Escape') {
           close();
         }
       });
 
-      backdrop.addEventListener('click', (e) => {
-        if (e.target === backdrop) close();
+      palette.addEventListener('click', (e) => {
+        if (e.target === palette) close();
       });
 
-      document.addEventListener('keydown', (e) => {
+      window.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
           e.preventDefault();
-          backdrop.classList.contains('is-open') ? close() : open();
-        } else if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+          palette.classList.contains('is-open') ? close() : open();
+        } else if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
           e.preventDefault();
           open();
         }
       });
-
-      this.openPalette = open;
     },
 
-    /* =====================================================================
-       4. INTERACTIVE MINI TERMINAL (Part 7.21)
-    ===================================================================== */
-    initMiniTerminal() {
-      let backdrop = document.querySelector('.terminal-backdrop');
-      if (!backdrop) {
-        backdrop = document.createElement('div');
-        backdrop.className = 'terminal-backdrop';
-        backdrop.innerHTML = `
-          <div class="terminal-drawer" role="dialog" aria-modal="true" aria-label="Terminal">
-            <div class="terminal-header">
-              <div class="terminal-title">
-                <i class="terminal-title-dot"></i>
-                <span>mayura@portfolio: ~ (bash)</span>
-              </div>
-              <button class="terminal-close" type="button" aria-label="Close terminal">✕</button>
-            </div>
-            <div class="terminal-body" aria-live="polite">
-              <div class="terminal-line terminal-line--system">Mayura Interactive Shell v2.4.0 (x86_64-pc-sys)</div>
-              <div class="terminal-line terminal-line--dim">Type 'help' for available commands or 'exit' to close.</div>
-            </div>
-            <div class="terminal-input-row">
-              <span class="terminal-prompt">mayura@portfolio:~$</span>
-              <input class="terminal-input" type="text" autocomplete="off" spellcheck="false">
-            </div>
-          </div>
-        `;
-        document.body.appendChild(backdrop);
+    switchAccent(name) {
+      const dot = document.querySelector(`.accent-dot[data-accent="${name}"]`);
+      if (dot) dot.click();
+    },
+
+    setupKeyboardShortcuts() {
+      window.addEventListener('keydown', (e) => {
+        if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+        if (e.key.toLowerCase() === 'r' && !e.ctrlKey && !e.metaKey) {
+          if (window.PortfolioBoot) PortfolioBoot.replay();
+        }
+      });
+
+      const replayBtn = document.getElementById('replayBtn');
+      if (replayBtn) {
+        replayBtn.addEventListener('click', () => {
+          if (window.PortfolioBoot) PortfolioBoot.replay();
+        });
       }
 
-      const input = backdrop.querySelector('.terminal-input');
-      const body = backdrop.querySelector('.terminal-body');
-      const closeBtn = backdrop.querySelector('.terminal-close');
-
-      const print = (text, className = '') => {
-        const line = document.createElement('div');
-        line.className = `terminal-line ${className}`;
-        line.textContent = text;
-        body.appendChild(line);
-        body.scrollTop = body.scrollHeight;
-      };
-
-      const execute = (cmdStr) => {
-        const raw = cmdStr.trim();
-        if (!raw) return;
-        print(`mayura@portfolio:~$ ${raw}`, 'terminal-line--cmd');
-        const parts = raw.split(' ');
-        const cmd = parts[0].toLowerCase();
-        const arg = parts.slice(1).join(' ');
-
-        switch (cmd) {
-          case 'help':
-            print('Available commands:');
-            print('  whoami          Display bio and identity');
-            print('  about           Overview of skills and education');
-            print('  projects        List shipped works');
-            print('  open <n|slug>   Open a project modal');
-            print('  skills          Creative & engineering toolkit');
-            print('  contact         Show ways to reach out');
-            print('  github          Open GitHub profile');
-            print('  yulya           Open Yulya Bot website');
-            print('  theme <color>   Set theme: red, violet, blue, amber');
-            print('  replay          Re-run the swarm build intro');
-            print('  clear           Clear the terminal window');
-            print('  exit            Close the terminal');
-            break;
-          case 'whoami':
-            print('Mohieth Mayura S Y ("Mayura")');
-            print('Full Stack Developer & Graphics Designer based in Bengaluru, India.');
-            print('Building AI tools, local LLM fine-tunes, and browser games.');
-            break;
-          case 'about':
-            print('BCA Student at SFGC Bengaluru. 4+ years of programming, digital art & 3D.');
-            break;
-          case 'projects':
-            ((window.CONTENT && window.CONTENT.projects) || []).forEach((p, idx) => {
-              print(`  [${idx + 1}] ${p.title} (${p.tag})`);
-            });
-            break;
-          case 'open':
-            if (!arg) {
-              print('Usage: open <project_number_or_slug>');
-            } else {
-              const num = parseInt(arg, 10);
-              const p = !isNaN(num)
-                ? window.CONTENT.projects[num - 1]
-                : window.CONTENT.projects.find((item) => item.slug === arg);
-              if (p) {
-                print(`Opening project: ${p.title}`);
-                window.Work.openModal(p.slug);
-              } else {
-                print(`Project '${arg}' not found.`);
-              }
-            }
-            break;
-          case 'skills':
-            print('Python, JavaScript, TypeScript, Unity, Blender, Krita, Live2D, Ollama, Unsloth, WebGL');
-            break;
-          case 'contact':
-            print('Email: moheithmayura@gmail.com');
-            print('WhatsApp: +91 86602 27877');
-            print('Instagram: @moheith_mayura');
-            break;
-          case 'github':
-            window.open('https://github.com/moheith', '_blank');
-            print('Opening https://github.com/moheith...');
-            break;
-          case 'yulya':
-            window.open('https://discord.yulya.me', '_blank');
-            print('Opening https://discord.yulya.me...');
-            break;
-          case 'theme':
-            if (['red', 'violet', 'blue', 'amber'].includes(arg)) {
-              Extras.setAccent(arg);
-              print(`Accent theme set to ${arg}.`);
-            } else {
-              print('Usage: theme <red|violet|blue|amber>');
-            }
-            break;
-          case 'replay':
-            print('Replaying 30-agent swarm rebuild...');
-            if (window.Swarm) {
-              window.Swarm.reset();
-              window.Swarm.start();
-            }
-            break;
-          case 'clear':
-            body.innerHTML = '';
-            break;
-          case 'exit':
-            close();
-            break;
-          default:
-            print(`command not found: ${cmd}. Type 'help' for available commands.`, 'terminal-line--err');
-        }
-      };
-
-      const open = () => {
-        backdrop.classList.add('is-open');
-        setTimeout(() => input.focus(), 50);
-      };
-
-      const close = () => {
-        backdrop.classList.remove('is-open');
-      };
-
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          execute(input.value);
-          input.value = '';
-        } else if (e.key === 'Escape') {
-          close();
-        }
-      });
-
-      closeBtn.addEventListener('click', close);
-      backdrop.addEventListener('click', (e) => {
-        if (e.target === backdrop) close();
-      });
-
-      // Press backtick key ` to toggle
-      document.addEventListener('keydown', (e) => {
-        if (e.key === '`' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
-          e.preventDefault();
-          backdrop.classList.contains('is-open') ? close() : open();
-        }
-      });
-
-      this.openTerminal = open;
-    },
-
-    /* =====================================================================
-       5. IDLE SWARM COMPANIONS (Part 7.14)
-    ===================================================================== */
-    initIdleCompanions() {
-      let timer = null;
-      let active = false;
-      const companions = [];
-      const colors = ['#5eead4', '#fb923c', '#ffffff', '#a78bfa', '#7dd3fc', '#f43f5e'];
-
-      const create = () => {
-        for (let i = 0; i < 6; i++) {
-          const el = document.createElement('div');
-          el.className = 'companion-cursor';
-          el.innerHTML = `
-            <svg viewBox="0 0 16 16" fill="${colors[i]}" style="transform:rotate(-45deg)">
-              <polygon points="0,0 16,6 10,10 6,16"/>
-            </svg>
-          `;
-          document.body.appendChild(el);
-          companions.push({ el, x: 0, y: 0, targetX: 0, targetY: 0, angle: (i * Math.PI) / 3 });
-        }
-      };
-
-      let lastMouseX = window.innerWidth / 2;
-      let lastMouseY = window.innerHeight / 2;
-
-      window.addEventListener('mousemove', (e) => {
-        const dx = Math.abs(e.clientX - lastMouseX);
-        const dy = Math.abs(e.clientY - lastMouseY);
-        lastMouseX = e.clientX;
-        lastMouseY = e.clientY;
-
-        if (active && (dx > 30 || dy > 30)) {
-          dismiss();
-        }
-
-        clearTimeout(timer);
-        timer = setTimeout(() => {
-          // If cursor in hero, summon companions
-          const hero = document.getElementById('home');
-          if (hero && hero.getBoundingClientRect().bottom > 200) {
-            summon();
-          }
-        }, 4000);
-      });
-
-      const summon = () => {
-        if (active) return;
-        active = true;
-        if (!companions.length) create();
-
-        companions.forEach((c) => {
-          c.x = lastMouseX + (Math.random() - 0.5) * 300;
-          c.y = lastMouseY + (Math.random() - 0.5) * 300;
-          c.el.style.opacity = '1';
-        });
-
-        loop();
-      };
-
-      const dismiss = () => {
-        if (!active) return;
-        active = false;
-        companions.forEach((c) => {
-          c.el.style.opacity = '0';
-        });
-      };
-
-      const loop = () => {
-        if (!active) return;
-        const now = performance.now() * 0.002;
-        companions.forEach((c, idx) => {
-          c.angle += 0.02;
-          const radius = 55 + idx * 8;
-          c.targetX = lastMouseX + Math.cos(c.angle) * radius;
-          c.targetY = lastMouseY + Math.sin(c.angle) * radius;
-
-          c.x += (c.targetX - c.x) * 0.08;
-          c.y += (c.targetY - c.y) * 0.08;
-
-          c.el.style.transform = `translate(${c.x.toFixed(1)}px, ${c.y.toFixed(1)}px)`;
-        });
-        requestAnimationFrame(loop);
-      };
-    },
-
-    /* =====================================================================
-       6. KONAMI CODE & REPLAY EASTER EGG (Part 7.17)
-    ===================================================================== */
-    initKonamiAndReplay() {
-      const pattern = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
-      let current = 0;
-
-      document.addEventListener('keydown', (e) => {
-        // Replay rebuild on 'R' key when not typing in an input
-        if (
-          e.key.toLowerCase() === 'r' &&
-          document.activeElement.tagName !== 'INPUT' &&
-          document.activeElement.tagName !== 'TEXTAREA' &&
-          !e.ctrlKey &&
-          !e.metaKey
-        ) {
-          if (window.Swarm) {
-            Extras.toast('Rebuilding page...');
-            window.Swarm.reset();
-            window.Swarm.start();
-          }
-          return;
-        }
-
-        // Konami code check
-        const key = e.key;
-        if (key.toLowerCase() === pattern[current].toLowerCase()) {
-          current++;
-          if (current === pattern.length) {
-            current = 0;
-            Extras.toast('🎮 KONAMI UNLOCKED: Swarm Orbital Swarm!');
-            if (window.Swarm) {
-              window.Swarm.start();
-            }
+      // Konami code: Up Up Down Down Left Right Left Right B A
+      const konami = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+      let kIdx = 0;
+      window.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === konami[kIdx].toLowerCase()) {
+          kIdx++;
+          if (kIdx === konami.length) {
+            kIdx = 0;
+            Extras.toast('Swarm Orbit Activated! 🛸');
           }
         } else {
-          current = 0;
+          kIdx = 0;
         }
       });
     },
 
-    /* =====================================================================
-       7. LIVE GITHUB STATS WIDGET (Part 7.12)
-    ===================================================================== */
-    initGitHubStats() {
-      const cached = sessionStorage.getItem('mayura_gh_stats');
-      if (cached) {
-        try {
-          const data = JSON.parse(cached);
-          applyStats(data);
-          return;
-        } catch (_) {}
-      }
-
-      // Public GitHub API (no token) with silent fallback
-      fetch('https://api.github.com/users/moheith')
-        .then((res) => {
-          if (!res.ok) throw new Error('GH rate limit or offline');
-          return res.json();
-        })
-        .then((user) => {
-          const stats = {
-            public_repos: user.public_repos || 13,
-            followers: user.followers || 4,
-          };
-          sessionStorage.setItem('mayura_gh_stats', JSON.stringify(stats));
-          applyStats(stats);
-        })
-        .catch(() => {
-          // Silently fall back to static numbers
-          applyStats({ public_repos: 13, followers: 4 });
-        });
-
-      function applyStats(data) {
-        const repoStat = document.querySelector('[data-layer-id="hl.row.6.metric"]');
-        if (repoStat && (!window.Swarm || window.Swarm.state === 'finale' || window.Swarm.state === 'live')) {
-          repoStat.textContent = String(data.public_repos);
-        }
-      }
+    setupGlitchText() {
+      document.querySelectorAll('.h-display .line').forEach(line => {
+        line.setAttribute('data-text', line.textContent);
+      });
     },
+
+    afterIntro(how) {
+      this.fetchLiveStats();
+      this.setupIdleCompanions();
+    },
+
+    fetchLiveStats() {
+      // Live GitHub public_repos
+      fetch('https://api.github.com/users/moheith')
+        .then(r => r.json())
+        .then(data => {
+          if (data && typeof data.public_repos === 'number') {
+            const el = document.querySelector('.hl[href*="github"] .hl__val');
+            if (el && window.Hero) Hero.countUp(el, data.public_repos);
+          }
+        }).catch(() => {});
+
+      // Live Hugging Face models
+      fetch('https://huggingface.co/api/models?author=moheith')
+        .then(r => r.json())
+        .then(models => {
+          if (Array.isArray(models)) {
+            const el = document.querySelector('.hl[href*="huggingface"] .hl__val');
+            if (el && window.Hero) Hero.countUp(el, models.length);
+          }
+        }).catch(() => {});
+    },
+
+    setupIdleCompanions() {
+      if (window.matchMedia && window.matchMedia('(hover: none)').matches) return;
+      if (document.documentElement.getAttribute('data-motion') === 'off') return;
+
+      const hero = document.getElementById('home');
+      if (!hero) return;
+
+      let idleTimer = null;
+      let companions = [];
+      let lastMove = performance.now();
+
+      const clearCompanions = () => {
+        companions.forEach(c => c.remove());
+        companions = [];
+      };
+
+      const spawn = (mx, my) => {
+        clearCompanions();
+        const colors = ['#5eead4', '#fb923c', '#ffffff', '#a78bfa', '#7dd3fc', '#fda4af'];
+        colors.forEach((col, i) => {
+          const div = document.createElement('div');
+          div.className = 'companion';
+          div.innerHTML = `<svg viewBox="0 0 22 22" fill="none"><path d="M3 2 L3 19 L7.6 14.8 L10.6 21.6 L13.4 20.4 L10.4 13.6 L16.6 13.6 Z" fill="${col}" stroke="#fff" stroke-width="1.4"/></svg>`;
+          const angle = (i / colors.length) * Math.PI * 2;
+          const dist = 60 + (i % 2) * 20;
+          const x = mx + Math.cos(angle) * dist;
+          const y = my + Math.sin(angle) * dist;
+          div.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+          hero.appendChild(div);
+          companions.push(div);
+        });
+      };
+
+      hero.addEventListener('mousemove', (e) => {
+        const now = performance.now();
+        if (now - lastMove > 50 && companions.length > 0) {
+          clearCompanions();
+        }
+        lastMove = now;
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => {
+          spawn(e.clientX, e.clientY);
+        }, 4000);
+      }, { passive: true });
+    }
   };
 
   window.Extras = Extras;

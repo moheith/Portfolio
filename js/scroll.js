@@ -1,298 +1,238 @@
-/* js/scroll.js — Smooth Scrolling, GSAP ScrollTrigger, Scroll Spy, Playhead & Timecode, Mobile Drawer */
-
-(function () {
+/* js/scroll.js — Lenis + ScrollTrigger + spy + playhead + Reveals */
+(() => {
   'use strict';
 
-  let lenis = null;
+  let lenisInstance = null;
   let isStopped = false;
 
   const Scroll = {
-    lenis: null,
-
     init() {
-      // Initialize Lenis smooth scroll if available
+      // 1. Initialize Lenis if available
       if (typeof window.Lenis !== 'undefined') {
         try {
-          lenis = new window.Lenis({
+          lenisInstance = new Lenis({
             lerp: 0.09,
-            smoothWheel: true,
-            wheelMultiplier: 1.0,
-            touchMultiplier: 1.5,
-            autoResize: true,
+            smoothWheel: true
           });
-          this.lenis = lenis;
-
-          // Sync with GSAP ScrollTrigger
-          if (typeof window.ScrollTrigger !== 'undefined' && typeof window.gsap !== 'undefined') {
-            lenis.on('scroll', window.ScrollTrigger.update);
+          if (window.gsap && window.ScrollTrigger) {
+            lenisInstance.on('scroll', window.ScrollTrigger.update);
             window.gsap.ticker.add((time) => {
-              lenis.raf(time * 1000);
+              lenisInstance.raf(time * 1000);
             });
             window.gsap.ticker.lagSmoothing(0);
           } else {
-            const raf = (time) => {
-              lenis.raf(time);
+            function raf(time) {
+              lenisInstance.raf(time);
               requestAnimationFrame(raf);
-            };
+            }
             requestAnimationFrame(raf);
           }
-
-          // Stop immediately as required by Part 10.1 (until swarm completes or skips)
-          this.stop();
         } catch (e) {
-          console.warn('[scroll] Lenis init failed, fallback to native scroll', e);
+          console.warn('[Scroll] Lenis init failed, using native:', e);
         }
       }
 
-      this.initSpy();
-      this.initPlayhead();
-      this.initNav();
-      this.initHash();
-    },
-
-    stop() {
-      isStopped = true;
-      if (lenis) {
-        try { lenis.stop(); } catch (_) {}
-      }
+      this.setupSpyAndPlayhead();
+      this.setupAnchors();
+      this.setupMenu();
     },
 
     start() {
       isStopped = false;
-      if (lenis) {
-        try { lenis.start(); } catch (_) {}
+      if (lenisInstance) {
+        try { lenisInstance.start(); } catch (e) {}
       }
     },
 
-    to(target, options = {}) {
-      const offset = options.offset !== undefined ? options.offset : -64;
+    stop() {
+      isStopped = true;
+      if (lenisInstance) {
+        try { lenisInstance.stop(); } catch (e) {}
+      }
+    },
+
+    to(target, opts = {}) {
+      const offset = opts.offset !== undefined ? opts.offset : -64;
       const el = typeof target === 'string' ? document.querySelector(target) : target;
       if (!el) return;
 
-      if (lenis && !isStopped) {
-        lenis.scrollTo(el, { offset, duration: options.duration || 1.2 });
+      if (opts.immediate) {
+        const top = el.getBoundingClientRect().top + window.scrollY + offset;
+        window.scrollTo({ top, behavior: 'auto' });
+        return;
+      }
+
+      if (lenisInstance && !isStopped) {
+        lenisInstance.scrollTo(el, { offset });
       } else {
-        const top = el.getBoundingClientRect().top + window.pageYOffset + offset;
+        const top = el.getBoundingClientRect().top + window.scrollY + offset;
         window.scrollTo({ top, behavior: 'smooth' });
       }
     },
 
-    /* =====================================================================
-       Scroll Spy + Sliding Nav Underline
-    ===================================================================== */
-    initSpy() {
-      const navLinks = Array.from(document.querySelectorAll('.nav__links .nav__link'));
-      const underline = document.querySelector('.nav__underline');
-      const sections = ['home', 'work', 'highlights', 'about', 'journey', 'contact']
-        .map((id) => document.getElementById(id))
+    toHash(hash, immediate = false) {
+      if (!hash) return;
+      if (hash.startsWith('#work/') && window.Work) {
+        const slug = hash.replace('#work/', '');
+        this.to('#work', { immediate });
+        setTimeout(() => window.Work.open && window.Work.open(slug), 100);
+        return;
+      }
+      this.to(hash, { immediate });
+    },
+
+    setupSpyAndPlayhead() {
+      const sections = ['#home', '#work', '#logos', '#proof', '#raw', '#about', '#journey', '#contact']
+        .map(id => document.querySelector(id))
         .filter(Boolean);
 
-      if (!sections.length || !navLinks.length) return;
+      const navLinks = [...document.querySelectorAll('.nav__links a[data-spy]')];
+      const navUnderline = document.querySelector('.nav__underline');
+      const navLinksContainer = document.querySelector('.nav__links');
+      const playheadFill = document.getElementById('playheadFill');
+      const playheadReadout = document.getElementById('playheadReadout');
 
-      const updateUnderline = (activeLink) => {
-        if (!underline || !activeLink) {
-          if (underline) underline.style.width = '0px';
-          return;
+      function updateUnderline(activeLink) {
+        if (!activeLink || !navUnderline || !navLinksContainer) return;
+        const cRect = navLinksContainer.getBoundingClientRect();
+        const lRect = activeLink.getBoundingClientRect();
+        const x = lRect.left - cRect.left;
+        const w = lRect.width;
+        navLinksContainer.style.setProperty('--ul-x', `${x}px`);
+        navLinksContainer.style.setProperty('--ul-w', `${w}px`);
+      }
+
+      function update() {
+        const scrollY = window.scrollY;
+        const docH = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = docH > 0 ? Math.min(100, Math.max(0, (scrollY / docH) * 100)) : 0;
+
+        if (playheadFill) {
+          playheadFill.style.height = `${progress}%`;
         }
-        const left = activeLink.offsetLeft;
-        const width = activeLink.offsetWidth;
-        underline.style.transform = `translateX(${left}px)`;
-        underline.style.width = `${width}px`;
-      };
 
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              const id = entry.target.id;
-              navLinks.forEach((link) => {
-                const href = link.getAttribute('href');
-                const match = href === `#${id}`;
-                link.classList.toggle('is-active', match);
-                if (match) updateUnderline(link);
-              });
-            }
-          });
-        },
-        { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
-      );
-
-      sections.forEach((sec) => observer.observe(sec));
-
-      // Initial underline placement
-      const currentActive = document.querySelector('.nav__links .nav__link.is-active') || navLinks[0];
-      if (currentActive) updateUnderline(currentActive);
-
-      // Window resize listener to keep underline aligned
-      window.addEventListener('resize', () => {
-        const active = document.querySelector('.nav__links .nav__link.is-active');
-        if (active) updateUnderline(active);
-      });
-    },
-
-    /* =====================================================================
-       Scroll Playhead + Timecode Display (Part 7.1)
-    ===================================================================== */
-    initPlayhead() {
-      const playhead = document.getElementById('scroll-playhead');
-      if (!playhead) return;
-
-      const phLine = playhead.querySelector('.ph-line');
-      const phTime = playhead.querySelector('.ph-time');
-
-      // Create chapter markers along playhead
-      const sections = [
-        { id: 'home', name: '00 / INTRO' },
-        { id: 'work', name: '01 / WORK' },
-        { id: 'highlights', name: 'PROOF' },
-        { id: 'about', name: '02 / ABOUT' },
-        { id: 'journey', name: '03 / JOURNEY' },
-        { id: 'contact', name: '04 / CONTACT' },
-      ];
-
-      sections.forEach((s) => {
-        const el = document.getElementById(s.id);
-        if (!el) return;
-        const marker = document.createElement('div');
-        marker.className = 'ph-marker';
-        marker.innerHTML = `<span class="ph-tooltip">${s.name}</span>`;
-        marker.addEventListener('click', (e) => {
-          e.stopPropagation();
-          Scroll.to(el);
-        });
-        playhead.appendChild(marker);
-        marker.dataset.secId = s.id;
-      });
-
-      const positionMarkers = () => {
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-        if (maxScroll <= 0) return;
-        const markers = playhead.querySelectorAll('.ph-marker');
-        markers.forEach((m) => {
-          const el = document.getElementById(m.dataset.secId);
-          if (el) {
-            const top = el.offsetTop;
-            const pct = Math.min(1, Math.max(0, top / maxScroll)) * 100;
-            m.style.top = `${pct}%`;
+        // Determine active section
+        let currentSec = sections[0];
+        const vpH = window.innerHeight;
+        for (const sec of sections) {
+          const rect = sec.getBoundingClientRect();
+          if (rect.top <= vpH * 0.45 && rect.bottom >= 0) {
+            currentSec = sec;
           }
-        });
-      };
-      window.addEventListener('resize', positionMarkers);
-      setTimeout(positionMarkers, 1000);
-
-      const updateProgress = () => {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-        const progress = maxScroll > 0 ? Math.min(1, Math.max(0, scrollTop / maxScroll)) : 0;
-
-        if (phLine) {
-          phLine.style.height = `${(progress * 100).toFixed(2)}%`;
         }
 
-        // Map progress (0..1) to 00:00:00:00 -> 00:02:00:00 at 24fps (120 seconds total)
-        if (phTime) {
-          const totalFrames = Math.floor(progress * 120 * 24);
-          const fps = 24;
-          const frames = totalFrames % fps;
-          const totalSeconds = Math.floor(totalFrames / fps);
-          const seconds = totalSeconds % 60;
-          const minutes = Math.floor(totalSeconds / 60) % 60;
-          const hours = Math.floor(totalSeconds / 3600);
-
-          const pad = (n) => String(n).padStart(2, '0');
-          phTime.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}:${pad(frames)}`;
-        }
-      };
-
-      window.addEventListener('scroll', updateProgress, { passive: true });
-      updateProgress();
-
-      // Click on ph-time jumps to top
-      if (phTime) {
-        phTime.addEventListener('click', () => {
-          Scroll.to('#home');
-        });
-      }
-    },
-
-    /* =====================================================================
-       Navbar Scroll State & Mobile Burger Drawer
-    ===================================================================== */
-    initNav() {
-      const nav = document.querySelector('.nav');
-      const burger = document.querySelector('.nav__burger');
-
-      window.addEventListener(
-        'scroll',
-        () => {
-          const y = window.pageYOffset || document.documentElement.scrollTop;
-          if (nav) nav.classList.toggle('is-scrolled', y > 8);
-        },
-        { passive: true }
-      );
-
-      // Create mobile drawer if not already created
-      if (nav && !nav.querySelector('.nav__drawer')) {
-        const drawer = document.createElement('div');
-        drawer.className = 'nav__drawer';
-        drawer.innerHTML = `
-          <a class="nav__link" href="#home">HOME</a>
-          <a class="nav__link" href="#work">WORK</a>
-          <a class="nav__link" href="#highlights">PROOF</a>
-          <a class="nav__link" href="#about">ABOUT</a>
-          <a class="nav__link" href="#journey">JOURNEY</a>
-          <a class="nav__link" href="#contact">CONTACT</a>
-        `;
-        nav.appendChild(drawer);
-
-        drawer.querySelectorAll('.nav__link').forEach((link) => {
-          link.addEventListener('click', (e) => {
-            const href = link.getAttribute('href');
-            if (href && href.startsWith('#')) {
-              e.preventDefault();
-              nav.classList.remove('is-open');
-              Scroll.to(href);
-            }
-          });
-        });
-      }
-
-      if (burger && nav) {
-        burger.addEventListener('click', () => {
-          const isOpen = nav.classList.toggle('is-open');
-          burger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-        });
-
-        document.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape' && nav.classList.contains('is-open')) {
-            nav.classList.remove('is-open');
-            burger.setAttribute('aria-expanded', 'false');
+        if (currentSec) {
+          const id = currentSec.id;
+          const name = id.toUpperCase();
+          if (playheadReadout) {
+            const pctStr = String(Math.round(progress)).padStart(3, '0');
+            playheadReadout.textContent = `${pctStr}% · ${name === 'HOME' ? 'HOME' : name}`;
           }
-        });
+
+          // Active nav link
+          let activeLink = null;
+          navLinks.forEach(link => {
+            const match = link.getAttribute('data-spy') === id;
+            link.classList.toggle('is-active', match);
+            if (match) activeLink = link;
+          });
+          if (activeLink) updateUnderline(activeLink);
+        }
       }
+
+      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update, { passive: true });
+      setTimeout(update, 200);
     },
 
-    /* =====================================================================
-       Hash Routing & Section Click Interception
-    ===================================================================== */
-    initHash() {
+    setupAnchors() {
       document.addEventListener('click', (e) => {
-        const link = e.target.closest('a[href^="#"]');
-        if (!link) return;
-        const href = link.getAttribute('href');
-        if (!href || href === '#' || href.startsWith('#work/')) return;
-
+        const a = e.target.closest('a[href^="#"]');
+        if (!a) return;
+        const href = a.getAttribute('href');
+        if (href === '#' || href === '') return;
+        if (href.startsWith('#work/')) return; // handled by work.js
         const target = document.querySelector(href);
         if (target) {
           e.preventDefault();
-          Scroll.to(target);
-          if (history.pushState) {
-            history.pushState(null, '', href);
-          }
+          this.to(target);
+          if (history.pushState) history.pushState(null, '', href);
         }
       });
     },
+
+    setupMenu() {
+      const burger = document.getElementById('burger');
+      const menu = document.getElementById('menu');
+      if (!burger || !menu) return;
+
+      function openMenu() {
+        burger.setAttribute('aria-expanded', 'true');
+        menu.classList.add('is-open');
+        menu.setAttribute('aria-hidden', 'false');
+      }
+      function closeMenu() {
+        burger.setAttribute('aria-expanded', 'false');
+        menu.classList.remove('is-open');
+        menu.setAttribute('aria-hidden', 'true');
+      }
+
+      burger.addEventListener('click', () => {
+        const isOpen = menu.classList.contains('is-open');
+        isOpen ? closeMenu() : openMenu();
+      });
+
+      menu.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', closeMenu);
+      });
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && menu.classList.contains('is-open')) closeMenu();
+      });
+    }
+  };
+
+  const Reveals = {
+    init() {
+      if (document.documentElement.getAttribute('data-motion') === 'off') {
+        this.initQuiet();
+        return;
+      }
+      this.initQuiet();
+    },
+
+    initQuiet() {
+      // Wire spines and step nodes without hiding content
+      const processSpine = document.querySelector('.process__spine');
+      const journeySpine = document.querySelector('.tl__spine');
+      const stepNodes = [...document.querySelectorAll('.step__node')];
+
+      function updateSpines() {
+        if (processSpine) {
+          const rect = processSpine.parentElement.getBoundingClientRect();
+          const vh = window.innerHeight;
+          const prog = Math.min(1, Math.max(0, (vh * 0.7 - rect.top) / rect.height));
+          processSpine.style.transform = `scaleY(${prog})`;
+        }
+        if (journeySpine) {
+          const rect = journeySpine.parentElement.getBoundingClientRect();
+          const vh = window.innerHeight;
+          const prog = Math.min(1, Math.max(0, (vh * 0.7 - rect.top) / rect.height));
+          journeySpine.style.transform = `scaleY(${prog})`;
+        }
+        stepNodes.forEach(node => {
+          const r = node.getBoundingClientRect();
+          if (r.top <= window.innerHeight * 0.75) {
+            node.classList.add('is-lit');
+          }
+        });
+      }
+
+      window.addEventListener('scroll', updateSpines, { passive: true });
+      updateSpines();
+    }
   };
 
   window.Scroll = Scroll;
+  window.Reveals = Reveals;
 })();

@@ -1,156 +1,152 @@
-/* js/cursor.js — Custom Site Cursor, Context States & Magnetic Pull */
-
-(function () {
+/* js/cursor.js — Site cursor + magnetic pull + letter-roll */
+(() => {
   'use strict';
 
-  let isEnabled = false;
-  let dotEl = null;
-  let ringEl = null;
-  let labelEl = null;
+  let enabled = false;
+  let rafId = null;
+  let mouseX = -100, mouseY = -100;
+  let ringX = -100, ringY = -100;
+  let currentLabel = '';
 
-  let mouseX = -100;
-  let mouseY = -100;
-  let ringX = -100;
-  let ringY = -100;
+  const dot = () => document.getElementById('cursorDot');
+  const ring = () => document.getElementById('cursorRing');
+  const ringSpan = () => ring() ? ring().querySelector('span') : null;
 
-  const Cursor = {
+  const SiteCursor = {
+    init() {
+      // Intentionally do nothing visible before intro completes
+    },
+
     enable() {
-      // Check reduced motion or no hover
-      if (
-        isEnabled ||
-        window.matchMedia('(hover: none)').matches ||
-        document.documentElement.getAttribute('data-motion') === 'off' ||
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      ) {
-        return;
-      }
+      if (enabled) return;
+      if (window.matchMedia && window.matchMedia('(hover: none)').matches) return;
+      if (document.documentElement.getAttribute('data-motion') === 'off') return;
 
-      isEnabled = true;
-      document.body.classList.add('cursor-active');
+      enabled = true;
+      document.documentElement.classList.add('has-cursor');
 
-      // Create cursor elements if missing
-      if (!dotEl) {
-        dotEl = document.createElement('div');
-        dotEl.className = 'cursor-dot';
-        document.body.appendChild(dotEl);
-
-        ringEl = document.createElement('div');
-        ringEl.className = 'cursor-ring';
-        labelEl = document.createElement('span');
-        labelEl.className = 'cursor-ring-label';
-        ringEl.appendChild(labelEl);
-        document.body.appendChild(ringEl);
-      }
-
-      this.tagElements();
-      this.bindEvents();
-      this.initMagnetics();
-      this.loop();
-    },
-
-    tagElements() {
-      // Opt-in elements per Part 10.3
-      document.querySelectorAll('.card__link').forEach((el) => el.setAttribute('data-cursor', 'view'));
-      document.querySelectorAll('.hero__demo, .poster').forEach((el) => el.setAttribute('data-cursor', 'open'));
-      document.querySelectorAll('.work__slider, .raw__stage').forEach((el) => el.setAttribute('data-cursor', 'drag'));
-      document.querySelectorAll('.modal-close').forEach((el) => el.setAttribute('data-cursor', 'close'));
-    },
-
-    bindEvents() {
-      window.addEventListener('mousemove', (e) => {
+      const onMouseMove = (e) => {
         mouseX = e.clientX;
         mouseY = e.clientY;
-        if (dotEl) {
-          dotEl.style.transform = `translate(${mouseX}px, ${mouseY}px) translate(-50%, -50%)`;
+        const d = dot();
+        if (d) {
+          d.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
         }
+      };
 
-        // Context state lookup
-        const target = e.target.closest('[data-cursor]');
-        if (target) {
-          const mode = target.getAttribute('data-cursor');
-          document.body.setAttribute('data-cursor-state', mode);
-          if (labelEl) {
-            labelEl.textContent = mode === 'close' ? '×' : mode.toUpperCase();
-          }
+      const loop = () => {
+        if (!enabled) return;
+        ringX += (mouseX - ringX) * 0.18;
+        ringY += (mouseY - ringY) * 0.18;
+        const r = ring();
+        if (r) {
+          r.style.transform = `translate3d(${ringX}px, ${ringY}px, 0)`;
+        }
+        rafId = requestAnimationFrame(loop);
+      };
+
+      window.addEventListener('mousemove', onMouseMove, { passive: true });
+      rafId = requestAnimationFrame(loop);
+
+      // Context labels
+      document.addEventListener('mouseover', (e) => {
+        if (!enabled) return;
+        const card = e.target.closest('.card');
+        const openLink = e.target.closest('a[href^="http"], .hero__live, .poster__btn, .cta');
+        const dragArea = e.target.closest('.slider, .compare');
+        const closeBtn = e.target.closest('.modal__close');
+
+        const r = ring();
+        const span = ringSpan();
+        if (!r || !span) return;
+
+        if (card) {
+          currentLabel = 'VIEW';
+          r.style.width = '80px';
+          r.style.height = '80px';
+          r.style.margin = '-40px 0 0 -40px';
+          r.style.background = 'rgba(255, 59, 48, .2)';
+          r.style.borderColor = 'var(--red)';
+          span.textContent = currentLabel;
+          span.style.opacity = '1';
+        } else if (openLink) {
+          currentLabel = 'OPEN';
+          r.style.width = '56px';
+          r.style.height = '56px';
+          r.style.margin = '-28px 0 0 -28px';
+          r.style.background = 'rgba(255, 59, 48, .15)';
+          r.style.borderColor = 'var(--red)';
+          span.textContent = currentLabel;
+          span.style.opacity = '1';
+        } else if (dragArea) {
+          currentLabel = 'DRAG';
+          r.style.width = '56px';
+          r.style.height = '56px';
+          r.style.margin = '-28px 0 0 -28px';
+          r.style.background = 'rgba(47, 140, 255, .2)';
+          r.style.borderColor = 'var(--blue)';
+          span.textContent = currentLabel;
+          span.style.opacity = '1';
+        } else if (closeBtn) {
+          currentLabel = '✕';
+          r.style.width = '44px';
+          r.style.height = '44px';
+          r.style.margin = '-22px 0 0 -22px';
+          r.style.background = 'rgba(255, 59, 48, .3)';
+          r.style.borderColor = 'var(--red)';
+          span.textContent = currentLabel;
+          span.style.opacity = '1';
         } else {
-          document.body.removeAttribute('data-cursor-state');
-          if (labelEl) labelEl.textContent = '';
+          currentLabel = '';
+          r.style.width = '36px';
+          r.style.height = '36px';
+          r.style.margin = '-18px 0 0 -18px';
+          r.style.background = 'transparent';
+          r.style.borderColor = 'rgba(255, 255, 255, .5)';
+          span.textContent = '';
+          span.style.opacity = '0';
         }
       });
 
-      window.addEventListener('mouseleave', () => {
-        document.body.classList.remove('cursor-active');
-      });
-
-      window.addEventListener('mouseenter', () => {
-        if (isEnabled) document.body.classList.add('cursor-active');
-      });
+      this.setupMagnetics();
+      this.setupLetterRoll();
     },
 
-    loop() {
-      if (!isEnabled) return;
-      // Lerp ring towards mouse (.18)
-      ringX += (mouseX - ringX) * 0.18;
-      ringY += (mouseY - ringY) * 0.18;
-
-      if (ringEl) {
-        ringEl.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
-      }
-
-      requestAnimationFrame(() => Cursor.loop());
+    disable() {
+      enabled = false;
+      document.documentElement.classList.remove('has-cursor');
+      if (rafId) cancelAnimationFrame(rafId);
     },
 
-    /* =====================================================================
-       Magnetic Buttons Pull (GSAP quickTo / lerp within 90px radius)
-    ===================================================================== */
-    initMagnetics() {
-      const magneticTargets = document.querySelectorAll(
-        '.hero__cta, .cta, .nav__talk, .nav__logo, .slider__btn, .accent-dot, .brief__icon, .footer__top'
-      );
-
-      magneticTargets.forEach((target) => {
-        let xTo = null;
-        let yTo = null;
-
-        if (window.gsap) {
-          xTo = window.gsap.quickTo(target, 'x', { duration: 0.35, ease: 'power2.out' });
-          yTo = window.gsap.quickTo(target, 'y', { duration: 0.35, ease: 'power2.out' });
-        }
-
-        const handleMove = (e) => {
-          const rect = target.getBoundingClientRect();
+    setupMagnetics() {
+      const magneticTargets = [...document.querySelectorAll('.btn, .nav__links a, .footer__social a, .cta, .poster__btn')];
+      magneticTargets.forEach((btn) => {
+        btn.addEventListener('mousemove', (e) => {
+          if (!enabled) return;
+          const rect = btn.getBoundingClientRect();
           const centerX = rect.left + rect.width / 2;
           const centerY = rect.top + rect.height / 2;
           const dist = Math.hypot(e.clientX - centerX, e.clientY - centerY);
-
           if (dist < 90) {
-            const pullFactor = (1 - dist / 90) * 8; // max 8-10px
-            const dx = (e.clientX - centerX) * (pullFactor / 90);
-            const dy = (e.clientY - centerY) * (pullFactor / 90);
-
-            if (xTo && yTo) {
-              xTo(dx);
-              yTo(dy);
-            } else {
-              target.style.transform = `translate(${dx}px, ${dy}px)`;
-            }
+            const pullX = ((e.clientX - centerX) / 90) * 8;
+            const pullY = ((e.clientY - centerY) / 90) * 8;
+            btn.style.transform = `translate3d(${pullX}px, ${pullY}px, 0)`;
           }
-        };
-
-        const handleLeave = () => {
-          if (xTo && yTo) {
-            xTo(0);
-            yTo(0);
-          } else {
-            target.style.transform = 'translate(0, 0)';
-          }
-        };
-
-        window.addEventListener('mousemove', handleMove);
-        target.addEventListener('mouseleave', handleLeave);
+        });
+        btn.addEventListener('mouseleave', () => {
+          btn.style.transform = 'translate3d(0, 0, 0)';
+        });
       });
     },
+
+    setupLetterRoll() {
+      // Nav links letter-roll hover
+      const links = document.querySelectorAll('.nav__links a > span');
+      links.forEach(span => {
+        span.setAttribute('data-text', span.textContent);
+      });
+    }
   };
 
-  window.Cursor = Cursor;
+  window.SiteCursor = SiteCursor;
 })();

@@ -1,157 +1,135 @@
-/* js/content.js — ALL visible text and links for the site. English only.
-   Lines marked // EDIT are honest placeholders the owner will replace later. */
+/* js/content.js — ALL data for Mohieth Mayura S Y's portfolio. English only.
+   Static copy (headings, paragraphs, labels) lives inline in index.html.
+   This file holds: meta, project data, tech stack, highlights, education, toolkit, software tiles, process, journey, milestones.
+   Snapshot numbers are from November 2026 (GitHub 13 repos, Hugging Face 8 models, Ollama 259 pulls, Yulya Studio 109 commits). */
 const CONTENT = {
   meta: {
-    name: "MAYURA", fullName: "Mohieth Mayura S Y", initial: "M",
-    heroWord: "PORTFOLIO",              // giant word behind the portrait; may be changed to "MAYURA"
-    city: "BENGALURU, INDIA", tz: "Asia/Kolkata", tzLabel: "IST",
-    email: "moheithmayura@gmail.com",
+    name: "MOHIETH MAYURA S Y", short: "MAYURA", initial: "MAYURA●",
+    city: "Bengaluru, India", cityShort: "BENGALURU, INDIA", tz: "Asia/Kolkata", tzLabel: "IST",
+    email: "moheithmayura@gmail.com", phoneDisplay: "+91 86602 27877", whatsapp: "918660227877",
     instagram: "@moheith_mayura",
-    phoneDisplay: "+91 86602 27877", whatsapp: "918660227877",
-    siteUrl: "https://example.com"      // EDIT: replace when the domain is bought
-  },
-  links: {
-    github: "https://github.com/moheith",
-    githubRepos: "https://github.com/moheith?tab=repositories",
-    linkedin: "https://linkedin.com/in/mohieth",
-    x: "https://x.com/mohiethh",
-    huggingface: "https://huggingface.co/moheith",
-    ollama: "https://ollama.com/moheith",
-    instagram: "https://instagram.com/moheith_mayura",
-    yulyaBot: "https://discord.yulya.me",
-    yulyaInvite: "https://invite.yulya.me",
-    yulyaStudio: "https://studio.yulya.me",
-    yulyaSpace: "https://huggingface.co/moheith/spaces",
-    cv: "assets/cv/Mayura_CV.pdf",         // EDIT: placeholder. If the file is missing, show toast "CV coming soon"
-    resume: "assets/cv/Mayura_Resume.pdf"  // EDIT: placeholder. Same toast behaviour
-  },
-  en: {
-    nav: ["Work","Highlights","About","Journey","Contact"], motionOff: "Motion off", talk: "Let's talk",
-    tags: ["FULL STACK DEVELOPER / DESIGNER","GRAPHICS DESIGNER","OPEN TO WORK"],
-    hello: "Hello, I'm", role: ["FULL STACK DEV","& DESIGNER"],
-    intro: "I build AI products, game tools and web experiences, then design the visuals around them, from Discord bots and local LLMs to Unity, Blender and Live2D art.",
-    motto: "Code that works. Design that feels.",
-    cta: "See my work", tagline: ["Built with logic.","Finished with feeling."],
-    stats: [["4+","Years of building & designing"],["10+","Projects shipped"],["13+","Public repositories on GitHub"]],
-    cv: "Download CV",
-    demo: ["TRY YULYA","AI DISCORD BOT"],
-    scroll: "SCROLL TO DISCOVER", range: "SELECTED WORK · 2022 – 2026",
-    work: { eyebrow: "01 / SELECTED WORK", title: "WORK THAT SHIPS.", all: "ALL WORK", search: "Search title or category",
-            filters: ["All","AI & ML","Full Stack","Bots","Desktop","Games","Web Design","Art & 3D"], seeAll: "SEE ALL" },
-    logos: ["BUILT WITH","THE RIGHT TOOLS."],
-    highlights: { eyebrow: "HIGHLIGHTS & PROOF", title: ["THE WORK.","THE PROOF."], big: "10+", caption: "PROJECTS SHIPPED",
-                  text: "No trophies yet. Just shipped products, public code and local AI models that anyone can download.",
-                  link: "VIEW GITHUB", listTitle: "SELECTED HIGHLIGHTS", range: "PUBLIC & VERIFIABLE",
-                  live: ["LATEST ACTIVITY","REPOSITORIES","FOLLOWERS"] },
-    raw: { eyebrow: "A LOOK UNDER THE SURFACE", title: ["FROM RAW.","TO REAL."],
-           text: "One interface. Many iterations. Drag to watch a screen go from grey boxes to a finished, living UI.",
-           meta: ["YULYA STUDIO / 2026","UI DESIGN · FRONT-END · MOTION"], solid: "WIREFRAME", final: "FINAL UI", hint: "DRAG TO SEE THE PROCESS" },
-    about: { eyebrow: "02 / BEHIND THE SCREEN", title: ["CODE THAT WORKS.","DESIGN THAT FEELS."],
-             text: "I'm Mohieth Mayura S Y, a full stack developer and graphics designer from Bengaluru. I build AI tools, bots and games, then design every pixel around them in Krita, Blender and Live2D. I speak English, Kannada and Hindi, and I'm studying BCA at SFGC.",
-             eduTitle: "EDUCATION & SKILLS", eduLabel: "EDUCATION", toolkit: "CREATIVE TOOLKIT",
-             processTitle: "FROM IDEA TO LAUNCH",
-             quote: ["Build it like an engineer.","Finish it like an artist."], signature: "Mayura", quoteFoot: ["LET'S BUILD","SOMETHING WORTH USING"] },
-    journey: { eyebrow: "03 / THE JOURNEY", title: "KEEP MOVING. KEEP BUILDING.", resume: "RESUME",
-               milestonesLabel: "A FEW MILESTONES", milestonesTitle: ["LITTLE WINS.","BIG MEANING."] },
-    contact: { eyebrow: "04 / YOUR NEXT PROJECT", title: ["LET'S WORK","TOGETHER."],
-               text: "Got an idea you want to bring to life? Let's build something worth using.",
-               cta: "START A CONVERSATION", labels: ["EMAIL","INSTAGRAM","WHATSAPP","BASED IN"],
-               poster: ["BUILD IT.","MAKE IT FEEL ALIVE."], brief: "Tell me about your project",
-               term: ["$ whoami","$ ls projects/","$ ./ship --now"] },
-    footer: { rights: "All rights reserved.", top: "Back to top" },
-    toasts: { emailCopied: "Email copied ✓", cvSoon: "CV coming soon", resumeSoon: "Resume coming soon" }
+    cv: "assets/Mayura-CV.pdf",              /* placeholder: the file does not exist yet */
+    showreel: "",                             /* empty on purpose: no showreel video yet */
+    liveProject: "https://discord.yulya.me",
+    domain: "https://YOURDOMAIN.com",         /* replace after buying a domain */
+    links: {
+      github: "https://github.com/moheith",
+      linkedin: "https://linkedin.com/in/mohieth",
+      huggingface: "https://huggingface.co/moheith",
+      ollama: "https://ollama.com/moheith",
+      x: "https://x.com/mohiethh",
+      instagram: "https://instagram.com/moheith_mayura"
+    },
+    waMessage: "Hi Mayura, I saw your portfolio and I'd like to talk about a project: "
   },
 
-  /* 11 projects. Real ones come from github.com/moheith, huggingface.co/moheith, discord.yulya.me and studio.yulya.me.
-     "img" is optional: if the file is missing, draw the generated code-poster (see 6.2). "cats" = every filter the card belongs to. */
+  /* ---------- Selected work (11 cards). cats use these exact English names: "Full-Stack","AI / ML","Discord","Web Apps","Design","Open Source" ---------- */
   projects: [
-    { slug:"yulya-discord-bot", n:"01", title:"YULYA — AI DISCORD BOT", meta:"BOTS / 2026", tag:"AI / DISCORD BOT", cats:["Bots","AI & ML"],
-      img:"assets/img/work-01.jpg", live:"https://discord.yulya.me", repo:"https://github.com/moheith/Yulya",
-      desc:"A free, multimodal AI for Discord. Real-time voice and screen-share chat, rolling neural channel memory, image generation, live web research, and a simulated crypto stock market with heists, bounties and server leaderboards.",
-      tech:["Python","Discord API","Gemini Live","WebRTC voice"] },
-    { slug:"yulya-studio", n:"02", title:"YULYA STUDIO — GAME MAKER", meta:"GAMES / 2026", tag:"BROWSER GAME ENGINE", cats:["Games","Full Stack"],
-      img:"assets/img/work-02.jpg", live:"https://studio.yulya.me", repo:"https://github.com/moheith?tab=repositories",   // EDIT: paste the exact studio repo link
-      desc:"Make real games in your browser. A Monaco-powered IDE with a Gemini AI coding assistant, Canvas 2D and WebGL support, one-click live hosting, and an open online arcade to play what people build.",
-      tech:["JavaScript","Monaco Editor","Gemini AI","Canvas 2D","WebGL"] },
-    { slug:"yulya-model-family", n:"03", title:"YULYA — LOCAL AI MODELS", meta:"AI & ML / 2026", tag:"FINE-TUNED LLMS", cats:["AI & ML"],
-      img:"assets/img/work-03.jpg", live:"https://huggingface.co/moheith", repo:"https://github.com/moheith/Yulya",
-      desc:"A family of fine-tuned language models I trained and published on Hugging Face, from tiny 135M models to an 8B model. Shipped as GGUF and adapters so they run locally with llama.cpp, Ollama and LM Studio.",
-      tech:["Python","Unsloth","GGUF","llama.cpp","Ollama","Hugging Face"] },
-    { slug:"desktop-ai-companion", n:"04", title:"DESKTOP AI COMPANION", meta:"DESKTOP / 2026", tag:"DESKTOP APP", cats:["Desktop","AI & ML","Art & 3D"],
-      img:"assets/img/work-04.jpg", live:"", repo:"https://github.com/moheith/desktop-ai-companion",
-      desc:"A Live2D mascot that lives on your desktop in a transparent, click-through window. It chats with a local AI through Ollama, listens with whisper.cpp, and keeps persistent memory of you.",
-      tech:["Electron","PixiJS","Live2D","Ollama","whisper.cpp","JavaScript"] },
-    { slug:"yulya-api", n:"05", title:"YULYA API", meta:"FULL STACK / 2026", tag:"API / EMBEDDINGS", cats:["Full Stack","AI & ML"],
-      img:"assets/img/work-05.jpg", live:"", repo:"https://github.com/moheith/Yulya-API",
-      desc:"A Python API that generates unlimited embedding files, built to power Yulya's long-term memory.",
-      tech:["Python","REST API","Embeddings"] },
-    { slug:"neural-deck", n:"06", title:"YULYA NEURAL DECK", meta:"WEB DESIGN / 2026", tag:"WEBSITE & DASHBOARD", cats:["Web Design","Bots"],
-      img:"assets/img/work-06.jpg", live:"https://discord.yulya.me", repo:"",
-      desc:"The landing page and sign-in flow for the Yulya bot: a dark, animated site with a live command ledger, simulated market charts and Discord OAuth2 login.",
-      tech:["HTML","CSS","JavaScript","Discord OAuth2"] },
-    { slug:"mascot-live2d-art", n:"07", title:"MASCOT & LIVE2D ART", meta:"ART & 3D / 2026", tag:"KRITA + LIVE2D", cats:["Art & 3D","Desktop"],
-      img:"assets/img/work-07.jpg", live:"", repo:"https://github.com/moheith/desktop-ai-companion",
-      desc:"Original mascot artwork drawn in Krita and rigged as Live2D models for the desktop companion, with expressions, idle motion and custom model versions.",
-      tech:["Krita","Live2D Cubism","PixiJS"] },
-    { slug:"mascot-website", n:"08", title:"MASCOT WEBSITE TEMPLATE", meta:"WEB DESIGN / 2026", tag:"WEB TEMPLATE", cats:["Web Design","Art & 3D"],
-      img:"assets/img/work-08.jpg", live:"", repo:"https://github.com/moheith/Mascot-Website",
-      desc:"A reusable website template where people can learn about a mascot and download it.",
-      tech:["HTML","CSS","JavaScript"] },
-    { slug:"unity-blender", n:"09", title:"UNITY & BLENDER EXPERIMENTS", meta:"GAMES / 2022 – 2026", tag:"3D & GAME DEV", cats:["Games","Art & 3D"],   // EDIT: add real project names
-      img:"assets/img/work-09.jpg", live:"", repo:"",
-      desc:"Gameplay prototypes built in Unity and 3D models, props and scenes made in Blender. A growing sandbox for ideas that later become full games.",
-      tech:["Unity","C#","Blender"] },
-    { slug:"yulya-space", n:"10", title:"YULYA — LIVE DEMO SPACE", meta:"AI & ML / 2026", tag:"LIVE DEMO", cats:["AI & ML"],
-      img:"assets/img/work-10.jpg", live:"https://huggingface.co/moheith/spaces", repo:"",
-      desc:"A running Hugging Face Space where anyone can try Yulya in the browser without installing anything.",
-      tech:["Hugging Face Spaces","Python"] },
-    { slug:"college-project", n:"11", title:"COLLEGE PROJECT", meta:"FULL STACK / 2025", tag:"FULL STACK", cats:["Full Stack"],   // EDIT: confirm the year and add a better description
-      img:"assets/img/work-11.jpg", live:"", repo:"https://github.com/moheith/College-Project",
-      desc:"A JavaScript project built during my BCA at SFGC.",
-      tech:["JavaScript"] }
+    { slug: "yulya", n: "01", title: "YULYA — DISCORD AI COMPANION", meta: "AI / WEB · 2026", tag: "LIVE · AI / DISCORD",
+      cats: ["AI / ML", "Discord", "Full-Stack"], stack: "Python · Gemini Live · WebRTC · MongoDB",
+      desc: "A living AI companion for Discord: voice chat with custom personas, persistent memory, image and video understanding, and a simulated server economy with crypto markets and heists.",
+      img: "assets/img/work-01.jpg", url: "https://discord.yulya.me", repo: "https://github.com/moheith/Yulya", video: "" },
+    { slug: "yulya-studio", n: "02", title: "YULYA STUDIO", meta: "WEB APP · 2026", tag: "WEB APP · AI",
+      cats: ["Full-Stack", "Web Apps", "AI / ML"], stack: "React · TypeScript · Vite · FastAPI · MongoDB · Gemini",
+      desc: "An AI-assisted browser game studio: write, preview and remix static games in the browser with a sandboxed assistant, a public gallery and one-click remixing.",
+      img: "assets/img/work-02.jpg", url: "https://studio.yulya.me", repo: "https://github.com/moheith/Studio", video: "" },
+    { slug: "learnexa", n: "03", title: "LEARNEXA 2.0", meta: "FULL-STACK · 2026", tag: "FULL-STACK",
+      cats: ["Full-Stack", "Web Apps"], stack: "Flask · Next.js · TypeScript · SQLite / MySQL",
+      desc: "A skill-exchange platform for students: list what you can teach and want to learn, get matched with TF-IDF recommendations, schedule sessions, give feedback and earn reward points.",
+      img: "assets/img/work-03.jpg", url: "", repo: "https://github.com/moheith/LEARNEXA-2.0", video: "" },
+    { slug: "yulya-models", n: "04", title: "YULYA MODELS", meta: "AI / ML · 2026", tag: "AI / ML",
+      cats: ["AI / ML", "Open Source"], stack: "Qwen2.5 · Llama 3.x · SmolLM2 · Ollama",
+      desc: "A family of 8 fine-tuned conversational models published on Hugging Face, plus a local-run build on Ollama.",
+      img: "assets/img/work-04.jpg", url: "https://huggingface.co/moheith", repo: "https://ollama.com/moheith", video: "" },
+    { slug: "desktop-ai-companion", n: "05", title: "DESKTOP AI COMPANION", meta: "AI / DESKTOP", tag: "AI · JAVASCRIPT",
+      cats: ["AI / ML", "Full-Stack"], stack: "JavaScript", desc: "A desktop mate with AI memory.",
+      img: "assets/img/work-05.jpg", url: "", repo: "https://github.com/moheith/desktop-ai-companion", video: "" },
+    { slug: "yulya-landing", n: "06", title: "YULYA LANDING PAGE", meta: "WEB / DESIGN", tag: "DESIGN · WEB",
+      cats: ["Design", "Web Apps"], stack: "HTML · CSS · JavaScript", desc: "The landing page for the Yulya organisation.",
+      img: "assets/img/work-06.jpg", url: "", repo: "https://github.com/moheith/yulya-landing-page", video: "" },
+    { slug: "mascot-website", n: "07", title: "MASCOT WEBSITE", meta: "WEB / DESIGN", tag: "DESIGN · WEB",
+      cats: ["Design", "Web Apps"], stack: "HTML", desc: "A website where people get to know a mascot and download it.",
+      img: "assets/img/work-07.jpg", url: "", repo: "https://github.com/moheith/Mascot-Website", video: "" },
+    { slug: "textlink", n: "08", title: "TEXTLINK", meta: "WEB APP · TOOL", tag: "WEB APP",
+      cats: ["Web Apps", "Open Source"], stack: "HTML · CSS · JavaScript",
+      desc: "Turns any text into a unique shareable link. Single file, no backend, no database.",
+      img: "assets/img/work-08.jpg", url: "", repo: "https://github.com/moheith/Treasure", video: "" },
+    { slug: "yulya-api", n: "09", title: "YULYA API", meta: "AI / BACKEND", tag: "AI · PYTHON",
+      cats: ["AI / ML", "Open Source"], stack: "Python", desc: "Generates unlimited embedding files.",
+      img: "assets/img/work-09.jpg", url: "", repo: "https://github.com/moheith/Yulya-API", video: "" },
+    { slug: "graphic-design", n: "10", title: "GRAPHIC DESIGN — SELECTED WORKS", meta: "DESIGN", tag: "DESIGN",
+      cats: ["Design"], stack: "Posters · Logos · Social · Krita", placeholder: true,
+      desc: "Posters, logos and social media creatives. Placeholder card: replace with your best pieces.",
+      img: "assets/img/work-10.jpg", url: "https://instagram.com/moheith_mayura", repo: "", video: "" },
+    { slug: "brand-identity", n: "11", title: "BRAND IDENTITY — YOUR PROJECT", meta: "DESIGN", tag: "DESIGN",
+      cats: ["Design"], stack: "Branding · UI · Blender", placeholder: true,
+      desc: "A brand identity case study. Placeholder card: replace with a real project.",
+      img: "assets/img/work-11.jpg", url: "", repo: "", video: "" }
   ],
 
+  /* ---------- Tech marquee: [label, simple-icons slug ("" = no icon exists, use a text wordmark), hex colour] ---------- */
+  stack: [
+    ["Python", "python", "FFD343"], ["TypeScript", "typescript", "5AA0FF"], ["JavaScript", "javascript", "F7DF1E"],
+    ["React", "react", "61DAFB"], ["Next.js", "nextdotjs", "FFFFFF"], ["FastAPI", "fastapi", "2DD4BF"],
+    ["Flask", "flask", "FFFFFF"], ["MongoDB", "mongodb", "5FD068"], ["Hugging Face", "huggingface", "FFD21E"],
+    ["Ollama", "ollama", "FFFFFF"], ["Discord", "discord", "8B95FF"], ["Gemini", "googlegemini", "B39DDB"],
+    ["Unity", "unity", "FFFFFF"], ["Blender", "blender", "F5792A"], ["Krita", "krita", "3BABFF"], ["Live2D", "", "7DD3FC"]
+  ],
+
+  /* ---------- Proof of work rows: [title, sub, metric, unit, link] ---------- */
   highlights: [
-    { t:"Yulya Studio, a game maker in the browser", s:"Monaco IDE, Gemini AI, live hosting and an online arcade", m:"LIVE", url:"https://studio.yulya.me" },
-    { t:"Yulya Discord bot", s:"Voice AI, neural memory and a live simulated crypto market. 100% free", m:"LIVE", url:"https://discord.yulya.me" },
-    { t:"Yulya model family on Hugging Face", s:"Fine-tuned local models, from tiny 135M to an 8B model", m:"8B", url:"https://huggingface.co/moheith" },
-    { t:"Desktop AI Companion", s:"Live2D mascot with local AI and persistent memory, open source", m:"OSS", url:"https://github.com/moheith/desktop-ai-companion" },
-    { t:"13 public repositories", s:"AI, bots, games, desktop apps and websites on GitHub", m:"13", url:"https://github.com/moheith?tab=repositories" },
-    { t:"Developer, artist and 3D in one", s:"Code, Unity, Blender, Krita and Live2D, all by one person", m:"4+ YRS", url:"#about" }
+    ["Yulya — Discord AI companion", "Live bot with voice chat, memory and an in-server economy", "LIVE", "online", "https://discord.yulya.me"],
+    ["Hugging Face models", "Yulya family fine-tuned on Qwen2.5, Llama 3.x and SmolLM2", "8", "models", "https://huggingface.co/moheith"],
+    ["Yulya on Ollama", "Run the persona locally on your own PC", "259+", "pulls", "https://ollama.com/moheith"],
+    ["Yulya Studio", "AI-assisted browser game studio — React, FastAPI, MongoDB", "109", "commits", "https://github.com/moheith/Studio"],
+    ["LEARNEXA 2.0", "Skill-exchange platform for students — Flask + Next.js", "2.0", "version", "https://github.com/moheith/LEARNEXA-2.0"],
+    ["GitHub", "Public repositories, from AI to web apps", "13", "repos", "https://github.com/moheith"]
   ],
 
+  /* ---------- About → education column: [title, sub, tag] ---------- */
   education: [
-    ["SFGC","Bachelor of Computer Applications (BCA)","ONGOING"],
-    ["Self-driven learning","LLM fine-tuning, game development, 3D and digital art","2022 — NOW"],   // EDIT
-    ["Languages","English · Kannada · Hindi",""]
+    ["SFGC", "Bachelor of Computer Applications (BCA)", ""],
+    ["Self-directed learning", "Full stack, AI/ML, graphic design and game art — learned by shipping real projects", "4+ yrs"]
   ],
-  toolkit: ["Full Stack Development","AI & LLM Fine-Tuning","Discord Bots","Game Development","3D Modelling","Digital Art","Live2D Rigging","UI & Web Design","Desktop Apps","Python","JavaScript"],
-  software: [["Un","Unity","#ffffff"],["Bl","Blender","#ea7600"],["Kr","Krita","#3bbecf"],["L2","Live2D","#7b61ff"],
-             ["Py","Python","#ffd43b"],["JS","JavaScript","#f7df1e"],["Ol","Ollama","#f5f5f7"],["Gi","Git","#f05133"]],
-  tools: ["Unity","Blender","Krita","Live2D","Python","JavaScript","Electron","Ollama","Hugging Face","Discord API","Gemini","Monaco","Git & GitHub","whisper.cpp"],
 
-  process: [["01","THE IDEA","Understand the problem and who it is for. Define the goal, the features and the feel."],
-            ["02","THE PLAN","Pick the stack, sketch the architecture and wireframe the screens before writing code."],
-            ["03","THE BUILD","Code, draw and model together, one working piece at a time."],
-            ["04","THE POLISH","Speed, motion, accessibility and the small details that make it feel premium."],
-            ["05","THE LAUNCH","Ship it, watch real usage, and keep improving it."]],
+  toolkit: ["Full Stack Development", "UI / UX Design", "Graphic Design", "Python", "TypeScript", "React & Next.js",
+            "FastAPI & Flask", "MongoDB & SQL", "LLM Fine-tuning", "Discord Bots",
+            "Unity", "Blender", "Krita", "Live2D"],
 
-  timeline: [   // EDIT: dates and wording are polished placeholders; check each one
-    ["2026 · NOW","Founder & Lead Developer","Yulya, the AI ecosystem","Building the whole Yulya world solo: a multimodal Discord bot with voice, memory and a simulated crypto economy, Yulya Studio (a browser game maker with Gemini AI), a family of locally runnable fine-tuned models, and the web dashboards around them."],
-    ["2025 · NOW","BCA Student","SFGC, Bengaluru","Studying Computer Applications while shipping real products alongside the coursework."],
-    ["2024 · 2026","Full Stack & AI Developer","Independent projects","Designing and building apps, bots, APIs and fine-tuned models, from database to interface."],
-    ["2022 · NOW","Digital Artist & Designer","Krita · Live2D · Blender","Mascot art, Live2D models, 3D assets and interface visuals, drawn in Krita, rigged in Live2D and built in Blender."],
-    ["2022","Where It Began","First scripts, first games, first designs","Started with small websites, game experiments and drawings. Never stopped."]
+  /* tiles under the toolkit chips (same format as stack) */
+  software: [["Python", "python", "FFD343"], ["TypeScript", "typescript", "5AA0FF"], ["React", "react", "61DAFB"],
+             ["Next.js", "nextdotjs", "FFFFFF"], ["MongoDB", "mongodb", "5FD068"], ["Hugging Face", "huggingface", "FFD21E"],
+             ["Unity", "unity", "FFFFFF"], ["Blender", "blender", "F5792A"], ["Krita", "krita", "3BABFF"], ["Live2D", "", "7DD3FC"]],
+
+  /* ---------- About → "FROM IDEA TO LAUNCH": [number, title, description] ---------- */
+  process: [
+    ["01", "THE IDEA", "Understand the problem, the users and the feeling the product should have."],
+    ["02", "THE DESIGN", "Wireframes, visual direction and a design system that scales."],
+    ["03", "THE BUILD", "Frontend, backend and data, written clean and tested."],
+    ["04", "THE POLISH", "Motion, speed, accessibility and the details people feel."],
+    ["05", "THE LAUNCH", "Ship it live, watch it run, and keep improving."]
   ],
-  milestones: [["Yulya Studio goes live","2026"],["Yulya Discord bot launched, free","2026"],["Fine-tuned models on Hugging Face","2026"],["13 public repositories","NOW"]],
 
-  social: [["GitHub","https://github.com/moheith"],["LinkedIn","https://linkedin.com/in/mohieth"],["X","https://x.com/mohiethh"],
-           ["Hugging Face","https://huggingface.co/moheith"],["Ollama","https://ollama.com/moheith"],["Instagram","https://instagram.com/moheith_mayura"]]
+  /* ---------- Journey accordion: [date, role, sub, description]. The FIRST item is open by default. ---------- */
+  timeline: [
+    ["2026 · NOW", "Independent Full Stack Developer & Designer", "Yulya · AI products & web apps",
+     "Building Yulya end to end: a live Discord AI companion with voice, memory and an in-server economy, plus Yulya Studio and LEARNEXA 2.0. Design, frontend, backend, data and deployment, all in one pair of hands."],
+    ["2026", "AI / ML Builder", "Hugging Face · Ollama",
+     "Fine-tuned and published a family of 8 conversational models across Qwen2.5, Llama 3.x and SmolLM2, then shipped the persona to Ollama so anyone can run it locally."],
+    ["2026", "BCA — SFGC", "Bachelor of Computer Applications",
+     "Formal computer-science foundations, studied alongside hands-on product work and a growing list of shipped projects."],
+    ["2024", "Game & Character Art", "Unity · Blender · Krita · Live2D",
+     "Explored the creative side of tech: modelling in Blender, painting in Krita, rigging expressive Live2D characters and building interactive scenes in Unity. It shaped the visual taste behind everything I build."],
+    ["2022 · 2025", "Designer & Developer — the self-taught years", "Graphics, websites & first products",
+     "It started with graphic design (posters, logos, social creatives), grew into websites, then full stack code and AI. Four years of learning in public and shipping small things until they stopped being small."]
+  ],
+
+  /* ---------- Journey → milestones: [title, year, link] ---------- */
+  milestones: [
+    ["Yulya goes live on Discord", "2026", "https://discord.yulya.me"],
+    ["8 models on Hugging Face", "2026", "https://huggingface.co/moheith"],
+    ["Yulya Studio opens to the public", "2026", "https://studio.yulya.me"],
+    ["Yulya on Ollama", "2026", "https://ollama.com/moheith"]
+  ]
 };
-
-if (typeof window !== 'undefined') {
-  window.CONTENT = CONTENT;
-}
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = CONTENT;
-}
+if (typeof module !== 'undefined') module.exports = CONTENT;
