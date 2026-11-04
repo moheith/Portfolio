@@ -1,0 +1,303 @@
+/* css/base.css — Reset, Typography, Canvas Grain, Vignette, Playhead & Base Utilities */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: auto !important; /* MANDATORY: Prevents breaking auto-scroll tour */
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--f-body);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  max-width: 100vw;
+  position: relative;
+}
+
+/* Accessibility Skip Link */
+.skip {
+  position: fixed;
+  top: 14px;
+  left: 20px;
+  z-index: 100000;
+  padding: 10px 18px;
+  background: var(--red);
+  color: #fff;
+  font: 700 12px/1 var(--f-body);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  border-radius: 4px;
+  transform: translateY(-160%);
+  transition: transform .25s var(--ease);
+}
+.skip:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+/* Accessible Global Focus States */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Base interactive elements */
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color .2s var(--ease);
+}
+
+button {
+  all: unset;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+img, svg, picture {
+  display: block;
+  max-width: 100%;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* Typography Utilities */
+.h2-display {
+  font-family: var(--f-display);
+  text-transform: uppercase;
+  line-height: .92;
+  letter-spacing: -0.01em;
+  font-size: clamp(48px, 6.8vw, 104px);
+  color: #fff;
+}
+
+.h2-xl {
+  font-size: clamp(56px, 8.2vw, 132px);
+}
+
+.h2-bold {
+  font-family: var(--f-body);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  font-size: clamp(34px, 4.6vw, 68px);
+  color: #fff;
+}
+
+.h3-bold {
+  font-family: var(--f-body);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  font-size: clamp(18px, 2.2vw, 26px);
+  color: #fff;
+}
+
+.h3-display {
+  font-family: var(--f-display);
+  text-transform: uppercase;
+  line-height: .95;
+  letter-spacing: -0.01em;
+  font-size: clamp(26px, 3.4vw, 44px);
+  color: #fff;
+}
+
+.h2-line {
+  display: block;
+}
+
+.accent {
+  color: var(--accent);
+}
+
+.script {
+  font-family: var(--f-script);
+  font-size: clamp(28px, 3.4vw, 42px);
+  color: #fff;
+  transform: rotate(-4deg);
+  display: inline-block;
+}
+
+.eyebrow {
+  font-family: var(--f-body);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: var(--muted);
+}
+
+.micro {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--dim);
+}
+
+.label-red {
+  font-family: var(--f-body);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: var(--red);
+}
+
+.dot-sq {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  background: var(--red);
+  margin-left: 4px;
+  vertical-align: baseline;
+}
+
+.hairline {
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: var(--line);
+  border: none;
+}
+.hairline--bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.wrap {
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 var(--pad);
+  position: relative;
+}
+
+/* Background Atmosphere: Grain Canvas + Vignette */
+#grain {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: .055;
+  z-index: 40;
+}
+
+.vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, transparent 60%, rgba(0, 0, 0, .48) 100%);
+  z-index: 41;
+}
+
+/* Scroll Playhead & Timeline Timecode (Part 7.1) */
+#scroll-playhead {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  z-index: 60;
+  pointer-events: auto;
+}
+
+#scroll-playhead .ph-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 0%;
+  background: var(--red);
+  box-shadow: 0 0 10px var(--red);
+  transition: height .08s linear;
+}
+
+#scroll-playhead .ph-time {
+  position: fixed;
+  left: 12px;
+  bottom: 24px;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  color: var(--muted);
+  background: rgba(7, 7, 10, .85);
+  backdrop-filter: blur(8px);
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  z-index: 61;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: color .2s var(--ease), border-color .2s var(--ease);
+}
+#scroll-playhead .ph-time:hover {
+  color: #fff;
+  border-color: var(--line-strong);
+}
+
+/* Global Toast Notification */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 34px;
+  transform: translate(-50%, 20px);
+  background: rgba(18, 18, 24, .95);
+  backdrop-filter: blur(14px);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: 999px;
+  padding: 10px 22px;
+  font-family: var(--f-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, .6);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s var(--ease), transform .25s var(--ease);
+  z-index: 100000;
+}
+.toast.is-show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* Motion Off Preferences & Reduced Motion */
+html[data-motion="off"] *,
+html[data-motion="off"] *::before,
+html[data-motion="off"] *::after,
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  #grain { display: none !important; }
+}

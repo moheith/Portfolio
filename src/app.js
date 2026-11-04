@@ -14,6 +14,10 @@ let modalReturnFocus = null;
 let modalKeyHandler = null;
 let paletteItems = [];
 let paletteSelected = 0;
+let paletteReturnFocus = null;
+let terminalReturnFocus = null;
+let terminalHistory = [];
+let terminalHistoryIndex = 0;
 let introTimer = null;
 let introWorkUntil = 0;
 let introScrollCancel = null;
@@ -129,6 +133,7 @@ function showModal(project) {
   const repoLink = !project.repoOwnerOnly ? external(project.repo, 'VIEW SOURCE ↗', 'class="secondary"') : '';
   const siteLink = project.site ? external(project.site, project.repoOwnerOnly ? 'VISIT PROJECT ↗' : 'OPEN PROJECT ↗') : '';
   content.innerHTML = `<p class="eyebrow">${safeText(project.number)} / ${safeText(project.kind)}</p><h2 id="modal-title">${safeText(project.title)}</h2><span class="stage-chip">${safeText(project.stage)}</span><p class="modal-summary">${safeText(project.summary)}</p>${artMarkup(project)}<p class="visual-caption">ORIGINAL CSS INTERFACE ILLUSTRATION — NOT A PRODUCT SCREENSHOT</p><div class="project-stack">${project.stack.map((item) => `<span>${safeText(item)}</span>`).join('')}</div><div class="modal-sections"><div><h3>THE CHALLENGE</h3><p>${safeText(project.challenge)}</p></div><div><h3>THE APPROACH</h3><p>${safeText(project.approach)}</p></div><div><h3>ENGINEERING NOTES</h3><p>${safeText(project.decisions)}</p></div><div><h3>DOCUMENTED FEATURES</h3><ul>${project.features.map((feature) => `<li>${safeText(feature)}</li>`).join('')}</ul></div><div class="modal-context"><h3>PROJECT CONTEXT</h3><p>${safeText(project.context)}</p></div></div><div class="modal-actions">${siteLink}${repoLink}</div>`;
+  modal.inert = false;
   modal.setAttribute('aria-hidden', 'false');
   modal.classList.add('open');
   document.body.classList.add('modal-open');
@@ -148,6 +153,7 @@ function closeModal() {
   if (!modal.classList.contains('open')) return;
   modal.classList.remove('open');
   modal.setAttribute('aria-hidden', 'true');
+  modal.inert = true;
   document.body.classList.remove('modal-open');
   modalReturnFocus?.focus?.();
 }
@@ -342,19 +348,31 @@ const commandDefinitions = () => [
   ...SITE.projects.map((project) => ({ title: `Open ${project.title}`, type: 'project', target: project.id, hint: 'PROJECT' })),
   { title: 'Copy email address', type: 'copy', target: SITE.person.email, hint: 'ACTION' },
   { title: 'Start a WhatsApp message', type: 'whatsapp', target: SITE.person.whatsapp, hint: 'ACTION' },
+  { title: 'Open GitHub profile', type: 'external', target: SITE.socials.find((item) => item.label === 'GitHub')?.url, hint: 'EXTERNAL' },
+  { title: 'Open Yulya for Discord', type: 'external', target: SITE.projects.find((project) => project.id === 'discord-bot')?.site, hint: 'EXTERNAL' },
+  { title: 'Open mini terminal', type: 'terminal', hint: 'EXPERIENCE' },
   { title: `${motionOff ? 'Turn motion on' : 'Turn motion off'}`, type: 'motion', hint: 'PREFERENCE' },
   { title: 'Replay the portfolio build', type: 'replay', hint: 'EXPERIENCE' }
 ];
 
 function openPalette() {
+  if ($('#terminal').classList.contains('open')) closeTerminal();
   const palette = $('#palette');
+  if (!palette.classList.contains('open')) paletteReturnFocus = document.activeElement;
+  palette.inert = false;
   palette.classList.add('open'); palette.setAttribute('aria-hidden', 'false');
   $('.palette-search input', palette).value = '';
   renderPalette('');
   $('.palette-search input', palette).focus();
 }
 
-function closePalette() { const palette = $('#palette'); palette.classList.remove('open'); palette.setAttribute('aria-hidden', 'true'); }
+function closePalette(restoreFocus = true) {
+  const palette = $('#palette');
+  if (!palette.classList.contains('open')) return;
+  palette.classList.remove('open'); palette.setAttribute('aria-hidden', 'true'); palette.inert = true;
+  if (restoreFocus && paletteReturnFocus?.isConnected) paletteReturnFocus.focus({ preventScroll: true });
+  paletteReturnFocus = null;
+}
 
 function renderPalette(query) {
   paletteItems = commandDefinitions().filter((item) => item.title.toLowerCase().includes(query.toLowerCase()));
@@ -370,6 +388,8 @@ function executeCommand(command) {
   if (command.type === 'project') openProject(command.target, document.activeElement);
   if (command.type === 'copy') $('#copy-email').click();
   if (command.type === 'whatsapp') window.open(`https://wa.me/${command.target}`, '_blank', 'noopener,noreferrer');
+  if (command.type === 'external' && command.target) window.open(command.target, '_blank', 'noopener,noreferrer');
+  if (command.type === 'terminal') openTerminal();
   if (command.type === 'motion') setMotion(!motionOff);
   if (command.type === 'replay') startIntro(true);
 }
@@ -384,10 +404,133 @@ function initPalette() {
     if (event.key === 'Enter') { event.preventDefault(); executeCommand(paletteItems[paletteSelected]); }
   });
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') { closePalette(); closeMobileMenu(); }
+    if (event.key === 'Escape') { closeTerminal(); closePalette(); closeMobileMenu(); }
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); openPalette(); }
     if (event.key === '/' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) && !event.ctrlKey && !event.metaKey) { event.preventDefault(); openPalette(); }
+    if (event.code === 'Backquote' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) && !event.ctrlKey && !event.metaKey && !event.altKey) { event.preventDefault(); openTerminal(); }
     if (event.key.toLowerCase() === 'm' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) && !event.ctrlKey && !event.metaKey) runEasterEgg();
+  });
+}
+
+function writeTerminalLine(message, kind = 'output') {
+  const line = document.createElement('p');
+  line.className = `terminal-line terminal-line-${kind}`;
+  line.textContent = String(message);
+  $('#terminal-output').append(line);
+  $('#terminal-output').scrollTop = $('#terminal-output').scrollHeight;
+}
+
+function closeTerminal(restoreFocus = true) {
+  const terminal = $('#terminal');
+  if (!terminal?.classList.contains('open')) return;
+  terminal.classList.remove('open');
+  terminal.setAttribute('aria-hidden', 'true');
+  terminal.inert = true;
+  if (!$('#project-modal').classList.contains('open')) document.body.classList.remove('modal-open');
+  if (restoreFocus && terminalReturnFocus?.isConnected) terminalReturnFocus.focus({ preventScroll: true });
+  terminalReturnFocus = null;
+}
+
+function openTerminal() {
+  const terminal = $('#terminal');
+  if (terminal.classList.contains('open')) { $('#terminal-input').focus(); return; }
+  if ($('#project-modal').classList.contains('open')) return;
+  if ($('#palette').classList.contains('open')) closePalette();
+  terminalReturnFocus = document.activeElement;
+  terminal.inert = false;
+  terminal.classList.add('open');
+  terminal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-open');
+  if (!$('#terminal-output').childElementCount) writeTerminalLine('Portfolio terminal ready. Type help to explore.');
+  $('#terminal-input').focus();
+}
+
+function executeTerminalCommand(rawCommand) {
+  const [command = '', ...args] = rawCommand.trim().split(/\s+/);
+  const name = command.toLowerCase();
+  if (!name) return;
+  writeTerminalLine(`mayura@portfolio:~$ ${rawCommand}`, 'command');
+
+  if (name === 'help') {
+    writeTerminalLine('help · whoami · about · projects · open <number> · skills · contact · github · yulya · theme <red|violet|blue|amber> · replay · clear · exit');
+  } else if (name === 'whoami') {
+    writeTerminalLine(`${SITE.person.name}\n${SITE.person.rolePrimary} & ${SITE.person.roleSecondary}\n${SITE.person.location}`);
+  } else if (name === 'about') {
+    writeTerminalLine(SITE.person.intro);
+  } else if (name === 'projects') {
+    SITE.projects.forEach((project, index) => writeTerminalLine(`${index + 1}. ${project.title} — ${project.stage}`));
+    writeTerminalLine('Use open <number> to read a case study.');
+  } else if (name === 'open') {
+    const project = SITE.projects[Number(args[0]) - 1];
+    if (!project) writeTerminalLine('Use open <number> with a project number from the list.', 'error');
+    else {
+      writeTerminalLine(`Opening case study: ${project.title}`);
+      const returnFocus = terminalReturnFocus;
+      closeTerminal(false);
+      openProject(project.id, returnFocus);
+    }
+  } else if (name === 'skills') {
+    SITE.skills.forEach((group) => writeTerminalLine(`${group.title}: ${group.items.join(', ')}`));
+  } else if (name === 'contact') {
+    writeTerminalLine(`Email: ${SITE.person.email}\nWhatsApp: ${SITE.person.phoneDisplay}`);
+  } else if (name === 'github') {
+    const github = SITE.socials.find((item) => item.label === 'GitHub')?.url;
+    if (github) window.open(github, '_blank', 'noopener,noreferrer');
+    writeTerminalLine('Opening GitHub profile.');
+  } else if (name === 'yulya') {
+    const url = SITE.projects.find((project) => project.id === 'discord-bot')?.site;
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
+    writeTerminalLine('Opening Yulya for Discord.');
+  } else if (name === 'theme') {
+    const selected = args[0]?.toLowerCase();
+    if (setAccent(selected)) writeTerminalLine(`Accent set to ${selected}.`);
+    else writeTerminalLine('Use theme red, theme violet, theme blue or theme amber.', 'error');
+  } else if (name === 'replay') {
+    closeTerminal();
+    startIntro(true);
+  } else if (name === 'clear') {
+    $('#terminal-output').replaceChildren();
+  } else if (name === 'exit') {
+    closeTerminal();
+  } else {
+    writeTerminalLine(`command not found: ${name}. Type help for the available commands.`, 'error');
+  }
+}
+
+function initTerminal() {
+  const terminal = $('#terminal');
+  const form = $('#terminal-form');
+  const input = $('#terminal-input');
+  $('.terminal-close').addEventListener('click', () => closeTerminal());
+  terminal.addEventListener('click', (event) => { if (event.target === terminal) closeTerminal(); });
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const command = input.value.trim();
+    if (!command) return;
+    terminalHistory.push(command);
+    terminalHistory = terminalHistory.slice(-30);
+    terminalHistoryIndex = terminalHistory.length;
+    input.value = '';
+    executeTerminalCommand(command);
+  });
+  terminal.addEventListener('keydown', (event) => {
+    if (event.key === 'Tab' && terminal.classList.contains('open')) {
+      const focusable = $$('button:not([disabled]),input:not([disabled])', terminal);
+      const first = focusable[0]; const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+    if (event.target !== input) return;
+    if (event.key === 'ArrowUp' && terminalHistory.length) {
+      event.preventDefault(); terminalHistoryIndex = Math.max(0, terminalHistoryIndex - 1);
+      input.value = terminalHistory[terminalHistoryIndex] || '';
+      input.setSelectionRange(input.value.length, input.value.length);
+    }
+    if (event.key === 'ArrowDown' && terminalHistory.length) {
+      event.preventDefault(); terminalHistoryIndex = Math.min(terminalHistory.length, terminalHistoryIndex + 1);
+      input.value = terminalHistory[terminalHistoryIndex] || '';
+      input.setSelectionRange(input.value.length, input.value.length);
+    }
   });
 }
 
@@ -401,23 +544,26 @@ function setMotion(off) {
   announce(`Motion ${off ? 'off' : 'on'}`);
 }
 
+function setAccent(selected) {
+  const accents = ['red', 'violet', 'blue', 'amber'];
+  if (!accents.includes(selected)) return false;
+  document.body.classList.toggle('accent-violet', selected === 'violet');
+  document.body.classList.toggle('accent-blue', selected === 'blue');
+  document.body.classList.toggle('accent-amber', selected === 'amber');
+  localStorage.setItem('mohieth-accent', selected);
+  $$('.accent-swatch').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.accent === selected)));
+  return true;
+}
+
 function initPreferences() {
   document.body.classList.toggle('motion-off', motionOff);
   const footer = $('.site-footer');
-  const controls = document.createElement('div'); controls.className = 'footer-preferences'; controls.innerHTML = '<button id="motion-toggle" type="button">MOTION: ON</button><label for="accent-select">ACCENT</label><select id="accent-select" aria-label="Accent colour"><option value="red">RED</option><option value="blue">BLUE</option><option value="amber">AMBER</option></select>';
+  const controls = document.createElement('div'); controls.className = 'footer-preferences'; controls.innerHTML = '<button id="motion-toggle" type="button">MOTION: ON</button><span class="accent-label">ACCENT</span><div class="accent-switcher" role="group" aria-label="Choose accent colour"><button class="accent-swatch accent-swatch-red" type="button" data-accent="red" aria-label="Red accent" title="Red accent"><i></i></button><button class="accent-swatch accent-swatch-violet" type="button" data-accent="violet" aria-label="Violet accent" title="Violet accent"><i></i></button><button class="accent-swatch accent-swatch-blue" type="button" data-accent="blue" aria-label="Blue accent" title="Blue accent"><i></i></button><button class="accent-swatch accent-swatch-amber" type="button" data-accent="amber" aria-label="Amber accent" title="Amber accent"><i></i></button></div>';
   footer.insertBefore(controls, $('.back-top'));
   $('#motion-toggle').textContent = `MOTION: ${motionOff ? 'OFF' : 'ON'}`;
   $('#motion-toggle').addEventListener('click', () => setMotion(!motionOff));
-  const accent = localStorage.getItem('mohieth-accent') || 'red';
-  document.body.classList.toggle('accent-blue', accent === 'blue');
-  document.body.classList.toggle('accent-amber', accent === 'amber');
-  $('#accent-select').value = accent;
-  $('#accent-select').addEventListener('change', (event) => {
-    const selected = event.target.value;
-    document.body.classList.toggle('accent-blue', selected === 'blue');
-    document.body.classList.toggle('accent-amber', selected === 'amber');
-    localStorage.setItem('mohieth-accent', selected);
-  });
+  $$('.accent-swatch').forEach((button) => button.addEventListener('click', () => setAccent(button.dataset.accent)));
+  setAccent(localStorage.getItem('mohieth-accent') || 'red');
 }
 
 const introColors = ['#5eead4', '#fb923c', '#ffffff', '#a78bfa', '#7dd3fc', '#fda4af', '#fcd34d', '#86efac'];
@@ -1459,7 +1605,7 @@ function scheduleIntroPrelude(remaining = 1800) {
 }
 
 function startIntro(force = false) {
-  if (motionOff) { $('#build-replay').hidden = false; syncReplayButtonVisibility(); return; }
+  if (motionOff || (!force && new URLSearchParams(location.search).get('intro') === 'off')) { $('#build-replay').hidden = false; syncReplayButtonVisibility(); return; }
   if (!force && sessionStorage.getItem('mohieth-swarm-seen')) { $('#build-replay').hidden = false; syncReplayButtonVisibility(); return; }
   cancelIntroScroll();
   clearIntroEffects();
@@ -1523,7 +1669,7 @@ function runEasterEgg() {
 }
 
 function init() {
-  renderContent(); initMenu(); initFilters(); initModal(); initContact(); initFeatureToggle(); initScroll(); initVisuals(); initPalette(); initPreferences(); initSwarm();
+  renderContent(); initMenu(); initFilters(); initModal(); initContact(); initFeatureToggle(); initScroll(); initVisuals(); initPalette(); initPreferences(); initTerminal(); initSwarm();
   updateClock(); setInterval(updateClock, 30000);
 }
 

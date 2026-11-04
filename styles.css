@@ -107,3 +107,35 @@ body.build-intro-active .stack-strip .marquee-track{animation-play-state:paused}
 .intro-selection-frame.is-settled .intro-selection-handle{opacity:1;transform:scale(1)}
 .intro-selection-frame.is-releasing .intro-selection-handle{opacity:0;transform:scale(.72)}
 .agent.is-selecting svg{transform:scale(.92);transform-origin:top left;filter:drop-shadow(0 1px 2px #000c) drop-shadow(0 0 5px currentColor)}
+
+/* A restrained four-colour accent picker and a keyboard-friendly portfolio terminal. */
+.accent-violet{--accent:#a893ff}.accent-blue{--accent:#3b82ff}.accent-amber{--accent:#ffb020}
+.footer-preferences .accent-label{margin-left:8px}
+.footer-preferences .accent-switcher{display:flex;align-items:center;gap:5px}
+.footer-preferences .accent-swatch{display:grid;place-items:center;width:19px;height:19px;padding:0;border:1px solid var(--line-strong);border-radius:50%;background:transparent;transition:transform .18s,border-color .18s,box-shadow .18s}
+.footer-preferences .accent-swatch:hover{transform:scale(1.12)}
+.accent-swatch i{width:9px;height:9px;border-radius:50%;background:var(--swatch)}
+.accent-swatch[aria-pressed=true]{border-color:var(--swatch);box-shadow:0 0 0 1px var(--bg),0 0 0 2px var(--swatch)}
+.accent-swatch-red{--swatch:#ff3b30}.accent-swatch-violet{--swatch:#a893ff}.accent-swatch-blue{--swatch:#3b82ff}.accent-swatch-amber{--swatch:#ffb020}
+.terminal-backdrop{position:fixed;inset:0;z-index:9100;display:grid;align-items:end;justify-items:center;padding:22px;background:rgba(0,0,0,.58);backdrop-filter:blur(5px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .22s,visibility .22s}
+.terminal-backdrop.open{opacity:1;visibility:visible;pointer-events:auto}
+.terminal-window{width:min(720px,100%);padding:15px 17px 11px;border:1px solid rgba(255,255,255,.19);background:linear-gradient(145deg,rgba(20,20,27,.98),rgba(8,8,12,.98));box-shadow:0 24px 90px #000b,0 0 34px color-mix(in srgb,var(--accent) 12%,transparent);transform:translateY(18px);transition:transform .28s var(--ease);font-family:var(--mono)}
+.terminal-backdrop.open .terminal-window{transform:none}
+.terminal-topbar{display:flex;align-items:center;justify-content:space-between;min-height:28px;padding-bottom:10px;border-bottom:1px solid var(--line);font:9px var(--mono);letter-spacing:.12em;color:#a8a8b2}
+.terminal-topbar>span{display:flex;align-items:center;gap:9px}
+.terminal-topbar i{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+.terminal-close{width:30px;height:28px;border:1px solid var(--line-strong);background:transparent;color:#c6c6ce;font-size:19px;line-height:1}
+.terminal-close:hover{border-color:var(--accent);color:white}
+.terminal-output{max-height:min(38vh,300px);min-height:112px;overflow:auto;padding:13px 2px;font:10px/1.7 var(--mono);color:#bcbcc6;white-space:pre-wrap;scrollbar-color:#3d3d48 transparent}
+.terminal-line{margin:0 0 5px;overflow-wrap:anywhere}
+.terminal-line-command{color:var(--accent)}
+.terminal-line-error{color:#ff8b82}
+.terminal-form{display:flex;align-items:center;gap:10px;padding-top:11px;border-top:1px solid var(--line);font:10px var(--mono)}
+.terminal-form label{color:var(--accent);white-space:nowrap}
+.terminal-form input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#f4f4f6;font:inherit}
+.terminal-form input:focus-visible{outline:1px solid var(--accent);outline-offset:4px}
+.terminal-form button{width:34px;height:31px;border:1px solid var(--line-strong);background:transparent;color:var(--accent);font:19px var(--mono);transition:background .18s,color .18s}
+.terminal-form button:hover{background:var(--accent);color:#09090c}
+.terminal-hint{display:flex;justify-content:space-between;margin:10px 0 0;color:#777782;font:8px var(--mono);letter-spacing:.08em}
+@media(max-width:860px){.footer-preferences .accent-label{margin-left:auto}}
+@media(max-width:640px){.terminal-backdrop{padding:10px}.terminal-window{padding:12px}.terminal-output{max-height:40svh;min-height:96px}.terminal-form{gap:6px;font-size:8px}.terminal-hint{font-size:7px}}

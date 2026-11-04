@@ -1,0 +1,52 @@
+/* tools/qa.js — optional functional QA (run: node tools/qa.js). Exercises the features with ?intro=off in headless Chromium. */
+const path = require('path'); const { chromium } = require('playwright');
+(async () => {
+  const b = await chromium.launch({ args: ['--no-sandbox'] }); let fail = 0;
+  const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fail++; };
+  const url = 'file://' + path.resolve(__dirname, '..', 'index.html');
+  for (const w of [360, 390, 768, 1024, 1280, 1440, 1920, 2560]) {
+    const p = await b.newPage({ viewport: { width: w, height: 900 } }); await p.goto(url + '?intro=off'); await p.waitForTimeout(700);
+    ok(!(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth)), `no horizontal scroll at ${w}px`); await p.close();
+  }
+  const p = await b.newPage({ viewport: { width: 1440, height: 900 } }); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
+  await p.goto(url + '?intro=off'); await p.waitForTimeout(1500);
+  ok(await p.evaluate(() => document.querySelectorAll('.card').length === 11), '11 project cards');
+  ok(await p.evaluate(() => document.querySelectorAll('.tab').length === 8), '8 filter tabs');
+  await p.click('.tab[data-filter="Bots"]'); await p.waitForTimeout(700);
+  ok(await p.evaluate(() => [...document.querySelectorAll('.card')].filter((c) => !c.hidden).length === 2), 'Bots filter shows 2 cards');
+  ok(await p.evaluate(() => document.querySelector('.work__count').textContent === 'SEE ALL (2) •'), 'count text updates');
+  await p.click('.tab[data-filter="All"]'); await p.fill('.work__search input', 'unity'); await p.waitForTimeout(500);
+  ok(await p.evaluate(() => [...document.querySelectorAll('.card')].filter((c) => !c.hidden).length >= 1 && document.querySelector('.card:not([hidden]) mark') !== null), 'search filters and highlights');
+  await p.fill('.work__search input', 'zzzzqq'); await p.waitForTimeout(300);
+  ok(await p.evaluate(() => !document.querySelector('.work__empty').hidden), 'empty state shown'); await p.fill('.work__search input', '');
+  await p.evaluate(() => Work.open('yulya-studio', true)); await p.waitForTimeout(900);
+  ok(await p.evaluate(() => Work.isOpen() && location.hash === '#work/yulya-studio'), 'modal opens with deep-link hash');
+  await p.keyboard.press('ArrowRight'); ok(await p.evaluate(() => location.hash === '#work/yulya-model-family'), 'arrow key goes to next project');
+  await p.keyboard.press('Escape'); await p.waitForTimeout(600); ok(await p.evaluate(() => !Work.isOpen()), 'Esc closes the modal');
+  await p.evaluate(() => { document.querySelector('#compare').scrollIntoView(); }); await p.focus('#compare'); await p.keyboard.press('Home');
+  ok(await p.evaluate(() => document.querySelector('#compare').getAttribute('aria-valuenow') === '0'), 'compare slider: Home key');
+  await p.keyboard.press('End'); ok(await p.evaluate(() => document.querySelector('#compare').getAttribute('aria-valuenow') === '100'), 'compare slider: End key');
+  await p.mouse.move(10, 10); await p.keyboard.press('Control+k'); await p.waitForTimeout(300);
+  ok(await p.evaluate(() => document.querySelector('.palette.is-open') !== null), 'command palette opens (Ctrl+K)');
+  await p.keyboard.type('terminal'); await p.keyboard.press('Enter'); await p.waitForTimeout(800);
+  ok(await p.evaluate(() => document.querySelector('.term.is-open') !== null), 'palette runs "Open terminal"');
+  await p.keyboard.type('whoami'); await p.keyboard.press('Enter'); await p.keyboard.type('nonsense'); await p.keyboard.press('Enter');
+  ok(await p.evaluate(() => document.querySelector('.term__out').textContent.includes('command not found, try help') && document.querySelector('.term__out').textContent.includes('Bengaluru')), 'terminal commands work');
+  await p.keyboard.type('theme violet'); await p.keyboard.press('Enter');
+  ok(await p.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--red').trim() === '#a893ff'), 'terminal theme changes accent');
+  await p.keyboard.press('Escape'); await p.waitForTimeout(300);
+  await p.evaluate(() => document.querySelector('.accent-dot[data-accent="amber"]').click());
+  ok(await p.evaluate(() => localStorage.getItem('accent') === 'amber'), 'accent dot persists');
+  await p.evaluate(() => document.querySelectorAll('.jr-row__btn')[2].click());
+  ok(await p.evaluate(() => document.querySelectorAll('.jr-row.is-open').length === 1 && document.querySelectorAll('.jr-row__btn')[2].getAttribute('aria-expanded') === 'true'), 'journey accordion: one open at a time');
+  await p.evaluate(() => document.querySelector('#motion-toggle').click());
+  ok(await p.evaluate(() => document.documentElement.dataset.motion === 'off' && localStorage.motion === 'off'), 'motion-off toggle persists');
+  await p.evaluate(() => document.querySelector('#motion-toggle').click());
+  await p.evaluate(() => { document.querySelector('.hero__cv').click(); }); await p.waitForTimeout(300);
+  ok(await p.evaluate(() => document.querySelector('#toast').textContent === 'CV coming soon'), 'CV placeholder shows a toast');
+  const href = await p.evaluate(() => document.querySelector('.cta').href); ok(href.startsWith('https://wa.me/918660227877'), 'WhatsApp CTA link');
+  const txt = await p.evaluate(() => document.body.innerText.toLowerCase());
+  ok(!/\b(award|certificate|client|showreel|figma|photoshop)s?\b/.test(txt), 'no forbidden words in visible text');
+  ok(errs.length === 0, 'no page errors ' + JSON.stringify(errs.slice(0, 3)));
+  await b.close(); console.log(fail ? `\n${fail} FAILED` : '\nQA OK'); process.exit(fail ? 1 : 0);
+})();

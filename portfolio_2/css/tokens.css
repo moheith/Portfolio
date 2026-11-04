@@ -1,0 +1,31 @@
+/* css/tokens.css — design tokens only (colours, type, layout, z-index). */
+:root{
+  /* surfaces */
+  --bg:#07070a; --bg-2:#0d0d11; --surface:#121216; --surface-2:#18181e;
+  --line:rgba(255,255,255,.07); --line-strong:rgba(255,255,255,.16);
+  /* text */
+  --text:#f5f5f7; --text-2:rgba(245,245,247,.78); --muted:#9a9aa6; --dim:#6b6b76;
+  /* brand reds */
+  --red:#ff3b30;           /* hero giant word top, big stat numerals */
+  --red-deep:#c8231f;      /* gradient middle */
+  --accent:#ff4d5a;        /* coral-red for accent headline words */
+  --btn:#ef4337;           /* CTA buttons */
+  --maroon:#2a0a12;        /* highlights panel glow */
+  --violet:#a893ff;        /* Yulya violet, used in the UI mock and as an accent preset */
+  /* agent / build-UI blues (only used by the swarm overlay) */
+  --blue:#2f8cff; --blue-pill:#0d99ff; --blue-fill:rgba(70,95,130,.85);
+  --guide:#ff4d2d;         /* red snap-guide lines, like design-tool smart guides */
+  --hud-bg:rgba(16,18,22,.92);
+  /* agent cursor colours (cycle through them) */
+  --a1:#5eead4; --a2:#fb923c; --a3:#ffffff; --a4:#a78bfa; --a5:#7dd3fc; --a6:#fda4af; --a7:#fcd34d; --a8:#86efac;
+  /* type */
+  --f-display:'Anton','Bebas Neue',Impact,sans-serif;
+  --f-body:'Plus Jakarta Sans','Inter',system-ui,sans-serif;
+  --f-script:'Nothing You Could Do','Caveat',cursive;
+  --f-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  /* layout */
+  --nav-h:64px; --pad:clamp(20px,4vw,64px); --maxw:1440px;
+  --ease:cubic-bezier(.22,1,.36,1); --ease-io:cubic-bezier(.65,0,.35,1);
+  /* z-index scale */
+  --z-hero-word:1; --z-hero-photo:2; --z-hero-text:3; --z-nav:50; --z-modal:80; --z-swarm:9999;
+}
