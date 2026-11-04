@@ -54,7 +54,7 @@
 
 <!-- ===================== NAV ===================== -->
 <header class="nav" id="nav" data-swarm-section="nav">
-  <a class="nav__logo" href="#home" aria-label="Mayura — home"><span class="nav__word" data-layer="text">MAYURA</span><i class="nav__dot" data-layer="shape"></i></a>
+  <a class="nav__logo" href="#home" aria-label="Mohieth — home"><span class="nav__word" data-layer="text">MOHIETH</span><i class="nav__dot" data-layer="shape"></i></a>
   <nav class="nav__links" aria-label="Primary">
     <a href="#work" data-spy="work"><span data-layer="text">Work</span></a>
     <a href="#proof" data-spy="proof"><span data-layer="text">Proof</span></a>
@@ -88,11 +88,10 @@
 
   <p class="hero__tag hero__tag--tl" data-layer="text">FULL STACK DEV / DESIGNER</p>
   <p class="hero__tag hero__tag--tl2" data-layer="text">GRAPHICS · UI · AI</p>
-  <p class="hero__avail"><i class="hero__pulse" data-layer="shape"></i><span data-layer="text">AVAILABLE FOR WORK</span></p>
 
   <div class="hero__left">
     <p class="hero__hello" data-layer="text">Hello, I'm</p>
-    <h2 class="hero__name"><span data-layer="text">MAYURA</span><i class="hero__period" aria-hidden="true"></i></h2>
+    <h2 class="hero__name"><span data-layer="text">MOHIETH</span><i class="hero__period" aria-hidden="true"></i></h2>
     <p class="hero__full" data-layer="text">MOHIETH MAYURA S Y</p>
     <p class="hero__role"><span class="line" data-layer="text">FULL STACK DEV</span><span class="line" data-layer="text">&amp; DESIGNER</span></p>
     <p class="hero__intro" data-layer="text">I design it, I build it, I ship it. From pixel-perfect interfaces to the backends that power them, I turn ideas into products people actually use.</p>
@@ -116,7 +115,6 @@
     <a class="hero__cv" id="cvLink" href="assets/Mayura-CV.pdf" download><span data-layer="icon" aria-hidden="true">↓</span><span data-layer="text">DOWNLOAD CV</span></a>
   </div>
 
-  <p class="hero__scroll"><i class="hero__dot" data-layer="shape"></i><span data-layer="text">SCROLL TO DISCOVER ↓</span></p>
   <p class="hero__range" data-layer="text">SELECTED WORK · 2026</p>
 </section>
 
@@ -190,8 +188,89 @@
   </div>
   <div class="raw__right">
     <div class="compare" id="compare" data-layer="image" role="slider" tabindex="0" aria-label="Wireframe versus final UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
-      <div class="compare__final" id="cmpFinal"><img src="assets/img/raw-final.jpg" alt="" onerror="this.remove()"><div class="fakeui" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
-      <div class="compare__wire" id="cmpWire"><img src="assets/img/raw-wireframe.jpg" alt="" onerror="this.remove()"><div class="fakeui fakeui--wire" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+      <div class="compare__final" id="cmpFinal">
+        <img src="assets/img/raw-final.jpg" alt="" onerror="this.remove()">
+        <div class="fakeui" aria-hidden="true">
+          <div class="fakeui__chrome">
+            <div class="fakeui__dots"><span class="fakeui__dot fakeui__dot--r"></span><span class="fakeui__dot fakeui__dot--y"></span><span class="fakeui__dot fakeui__dot--g"></span></div>
+            <span class="fakeui__title">https://studio.yulya.me/editor</span>
+            <span class="fakeui__status fakeui__status--live">● LIVE (60 FPS)</span>
+          </div>
+          <div class="fakeui__inner">
+            <div class="fakeui__side">
+              <div class="fakeui__sidehead">EXPLORER</div>
+              <div class="fakeui__tree">
+                <div class="fakeui__treeitem fakeui__treeitem--active"><span class="fakeui__tag fakeui__tag--ts">TS</span> GameLoop.ts</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag fakeui__tag--gl">GL</span> ParticleSystem.ts</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag fakeui__tag--ai">AI</span> NeuralAgent.ts</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag fakeui__tag--bin">BIN</span> yulya_model.bin</div>
+              </div>
+            </div>
+            <div class="fakeui__main">
+              <div class="fakeui__canvas">
+                <div class="fakeui__sun"></div>
+                <div class="fakeui__canvas--grid"></div>
+                <div class="fakeui__craft"></div>
+                <div class="fakeui__telemetry">ENTITIES: 1,420 · DRAW CALLS: 12</div>
+              </div>
+              <div class="fakeui__editor">
+                <div class="fakeui__code">
+                  <span class="fakeui__k">const</span> agent = <span class="fakeui__k">await</span> Yulya.<span class="fakeui__f">spawn</span>({ <span class="fakeui__p">mode</span>: <span class="fakeui__s">"companion"</span>, <span class="fakeui__p">fps</span>: <span class="fakeui__n">60</span> });<br>
+                  agent.<span class="fakeui__f">onTick</span>((dt) =&gt; agent.<span class="fakeui__f">renderPhysics</span>(dt));
+                </div>
+              </div>
+            </div>
+            <div class="fakeui__panel">
+              <div class="fakeui__panelhead">INSPECTOR</div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">RIGIDBODY</span><span class="fakeui__rowval">DYNAMIC</span></div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">VELOCITY</span><span class="fakeui__rowval">240 PX/S</span></div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">PHYSICS</span><span class="fakeui__toggle fakeui__toggle--on"></span></div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">STABILITY</span><div class="fakeui__meter"><div class="fakeui__meterbar"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="compare__wire" id="cmpWire">
+        <img src="assets/img/raw-wireframe.jpg" alt="" onerror="this.remove()">
+        <div class="fakeui fakeui--wire" aria-hidden="true">
+          <div class="fakeui__chrome">
+            <div class="fakeui__dots"><span class="fakeui__dot"></span><span class="fakeui__dot"></span><span class="fakeui__dot"></span></div>
+            <span class="fakeui__title">[BLUEPRINT] studio.yulya.me/editor</span>
+            <span class="fakeui__status">STAGE: WIREFRAME</span>
+          </div>
+          <div class="fakeui__inner">
+            <div class="fakeui__side">
+              <div class="fakeui__sidehead">SCHEMATIC</div>
+              <div class="fakeui__tree">
+                <div class="fakeui__treeitem fakeui__treeitem--active"><span class="fakeui__tag">DIR</span> /src</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag">OBJ</span> GameLoop.ts</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag">OBJ</span> ParticleSystem.ts</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag">OBJ</span> NeuralAgent.ts</div>
+              </div>
+            </div>
+            <div class="fakeui__main">
+              <div class="fakeui__canvas">
+                <div class="fakeui__canvas--grid"></div>
+                <div class="fakeui__reticle"></div>
+                <div class="fakeui__craft"></div>
+                <div class="fakeui__telemetry">BOUNDS: 800 x 480 · AXIS: (0,0)</div>
+              </div>
+              <div class="fakeui__editor">
+                <div class="fakeui__skel fakeui__skel--short"></div>
+                <div class="fakeui__skel fakeui__skel--med"></div>
+                <div class="fakeui__skel fakeui__skel--long"></div>
+              </div>
+            </div>
+            <div class="fakeui__panel">
+              <div class="fakeui__panelhead">PROPERTIES</div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">X / Y POS</span><span class="fakeui__rowval">[ 400 , 240 ]</span></div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">COLLISION</span><span class="fakeui__rowval">BOX 32x32</span></div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">SIMULATION</span><span class="fakeui__toggle"></span></div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">MEMORY</span><div class="fakeui__meter"><div class="fakeui__meterbar"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
       <i class="compare__line" id="cmpLine" data-layer="line"></i>
       <button class="compare__handle" id="cmpHandle" type="button" tabindex="-1" aria-hidden="true" data-layer="shape"><span aria-hidden="true">⇆</span></button>
       <span class="compare__lab compare__lab--l" data-layer="chip">WIREFRAME</span>
@@ -322,7 +401,7 @@
 
 <!-- SWARM OVERLAY: everything the agents draw lives in here (aria-hidden, pointer-events:none) -->
 <div id="swarm-root" aria-hidden="true">
-  <div id="sw-watermark">MAYURA●</div>
+  <div id="sw-watermark">MAYURA</div>
   <div id="sw-ruler-top"></div><div id="sw-ruler-left"></div>
   <div id="sw-scan-top"></div><div id="sw-scan-left"></div>
   <div id="sw-guide"></div>

@@ -4,7 +4,8 @@
    6.4 & 6.12 PROJECT CARDS
    ======================================================================= */
 .card {
-  flex: 0 0 calc((100% - 48px) / 3);
+  flex: 0 0 clamp(320px, calc((100vw - 8vw - 48px) / 3), 440px);
+  width: clamp(320px, calc((100vw - 8vw - 48px) / 3), 440px);
   scroll-snap-align: start;
   position: relative;
   transition: transform .5s var(--ease), outline-color .3s ease;
@@ -17,12 +18,14 @@
 
 @media (max-width: 1024px) {
   .card {
-    flex: 0 0 calc((100% - 24px) / 2);
+    flex: 0 0 clamp(300px, calc((100vw - 8vw - 24px) / 2), 400px);
+    width: clamp(300px, calc((100vw - 8vw - 24px) / 2), 400px);
   }
 }
 @media (max-width: 640px) {
   .card {
-    flex: 0 0 85%;
+    flex: 0 0 85vw;
+    width: 85vw;
   }
 }
 
@@ -85,6 +88,526 @@
   border-left: 2px solid var(--red);
   color: #fff;
   border-radius: 1px;
+  z-index: 2;
+}
+
+/* Bespoke Card Posters */
+.card__poster {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px;
+  background: #0c0f17;
+  font-family: var(--f-mono);
+  user-select: none;
+  transition: transform .6s var(--ease), filter .6s var(--ease);
+}
+.card:hover .card__poster {
+  transform: scale(1.02);
+  filter: brightness(1.08);
+}
+.card__poster--yulya {
+  background: radial-gradient(circle at 85% 15%, rgba(88, 101, 242, .25), transparent 60%), linear-gradient(145deg, #0e111a, #07090e);
+  border-top: 1px solid rgba(88, 101, 242, .3);
+}
+.card__poster--yulya-studio {
+  background: radial-gradient(circle at 15% 85%, rgba(255, 59, 48, .2), transparent 60%), linear-gradient(145deg, #110e1a, #07090e);
+  border-top: 1px solid rgba(255, 59, 48, .3);
+}
+.card__poster--learnexa {
+  background: radial-gradient(circle at 50% 10%, rgba(16, 185, 129, .2), transparent 60%), linear-gradient(145deg, #0b1414, #07090e);
+  border-top: 1px solid rgba(16, 185, 129, .3);
+}
+.card__poster--yulya-models {
+  background: radial-gradient(circle at 80% 80%, rgba(245, 158, 11, .2), transparent 60%), linear-gradient(145deg, #14120c, #07090e);
+  border-top: 1px solid rgba(245, 158, 11, .3);
+}
+.card__poster--desktop-ai-companion {
+  background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, .22), transparent 70%), linear-gradient(145deg, #09131a, #07090e);
+  border-top: 1px solid rgba(56, 189, 248, .3);
+}
+.card__poster--yulya-landing {
+  background: radial-gradient(circle at 20% 20%, rgba(255, 59, 48, .3), transparent 65%), linear-gradient(145deg, #19090b, #07090e);
+  border-top: 1px solid var(--red);
+}
+.card__poster--mascot-website {
+  background: radial-gradient(circle at 70% 30%, rgba(168, 85, 247, .25), transparent 60%), linear-gradient(145deg, #140d1a, #07090e);
+  border-top: 1px solid rgba(168, 85, 247, .3);
+}
+.card__poster--textlink {
+  background: radial-gradient(circle at 30% 70%, rgba(14, 165, 233, .2), transparent 60%), linear-gradient(145deg, #0a1118, #07090e);
+  border-top: 1px solid rgba(14, 165, 233, .3);
+}
+.card__poster--yulya-api {
+  background: radial-gradient(circle at 85% 85%, rgba(34, 197, 94, .2), transparent 60%), linear-gradient(145deg, #09150e, #07090e);
+  border-top: 1px solid rgba(34, 197, 94, .3);
+}
+.card__poster--graphic-design {
+  background: linear-gradient(135deg, #1a0505 0%, #0d0d0f 50%, #200808 100%);
+  border-top: 1px solid var(--red);
+}
+.card__poster--brand-identity {
+  background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, .08), transparent 60%), linear-gradient(145deg, #121318, #08090d);
+  border-top: 1px solid rgba(255, 255, 255, .2);
+}
+
+.poster__head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  font-size: 8.5px;
+  margin-bottom: 6px;
+}
+.poster__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+}
+.poster__title {
+  color: #64748b;
+  letter-spacing: .05em;
+  font-size: 8.5px;
+}
+.poster__badge {
+  font-size: 7.5px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(255, 255, 255, .08);
+  padding: 2px 5px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.poster__bot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+.poster__center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1;
+  margin: 4px 0;
+}
+.poster__avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #5865f2;
+  color: #fff;
+  font-weight: 800;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px rgba(88, 101, 242, .5);
+}
+.poster__avatar--lg {
+  width: 44px;
+  height: 44px;
+  font-size: 16px;
+  box-shadow: 0 0 16px rgba(88, 101, 242, .6);
+}
+.poster__msg {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.poster__sender {
+  font-size: 9px;
+  font-weight: 700;
+  color: #5865f2;
+}
+.poster__bubble {
+  font-size: 8.5px;
+  color: #cbd5e1;
+  background: rgba(0, 0, 0, .4);
+  padding: 4px 8px;
+  border-radius: 3px;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.poster__waveform {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 48px;
+  margin: 10px auto;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, .3);
+  border-radius: 4px;
+  border: 1px solid rgba(88, 101, 242, .2);
+}
+.poster__waveform i {
+  width: 4px;
+  height: 25%;
+  background: #5865f2;
+  border-radius: 2px;
+}
+.poster__waveform i:nth-child(even) { height: 60%; background: #00f0ff; }
+.poster__waveform i:nth-child(3n) { height: 95%; background: var(--red); }
+.poster__waveform i:nth-child(4n) { height: 40%; background: #34d399; }
+.poster__chips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+.poster__chip {
+  font-size: 8px;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .08);
+  padding: 2px 5px;
+  border-radius: 2px;
+}
+.poster__ide {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  margin: 8px 0;
+  flex: 1;
+}
+.poster__code {
+  flex: 1.1;
+  font-size: 8px;
+  line-height: 1.6;
+  color: #cbd5e1;
+  background: rgba(0, 0, 0, .45);
+  padding: 8px 10px;
+  border-radius: 3px;
+  border-left: 2px solid var(--red);
+  display: block;
+  overflow: hidden;
+}
+.poster__kw { color: #f43f5e; }
+.poster__fn { color: #38bdf8; }
+.poster__str { color: #34d399; }
+.poster__stage {
+  flex: 0.9;
+  position: relative;
+  min-height: 80px;
+  background: #07090e;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.poster__grid {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0, transparent 9px, rgba(255, 59, 48, .12) 10px),
+              repeating-linear-gradient(90deg, transparent 0, transparent 9px, rgba(56, 189, 248, .12) 10px);
+}
+.poster__craft {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #00f0ff;
+  transform: rotate(45deg);
+  box-shadow: 0 0 10px #00f0ff;
+}
+.poster__sun {
+  position: absolute;
+  bottom: -15px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(to top, #ff3b30, #ffb020);
+  filter: drop-shadow(0 0 12px rgba(255, 59, 48, .7));
+}
+.poster__match {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 10px 0;
+  flex: 1;
+}
+.poster__card {
+  flex: 1;
+  background: rgba(0, 0, 0, .45);
+  border: 1px solid rgba(16, 185, 129, .2);
+  padding: 10px 12px;
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.poster__sub {
+  font-size: 7px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.poster__card b {
+  font-size: 9.5px;
+  color: #34d399;
+  font-weight: 700;
+}
+.poster__swap {
+  font-size: 16px;
+  color: #38bdf8;
+  font-weight: bold;
+}
+.poster__models {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0;
+  flex: 1;
+  justify-content: center;
+}
+.poster__chart {
+  height: 48px;
+  width: 100%;
+}
+.poster__svg {
+  width: 100%;
+  height: 100%;
+}
+.poster__cmd {
+  font-size: 8.5px;
+  color: #fbbf24;
+  background: rgba(0, 0, 0, .5);
+  padding: 5px 8px;
+  border-radius: 2px;
+  font-family: var(--f-mono);
+}
+.poster__graph {
+  position: relative;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0;
+  flex: 1;
+}
+.poster__node {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+}
+.poster__node--center {
+  width: 26px;
+  height: 26px;
+  font-size: 9px;
+  font-weight: 800;
+  color: #000;
+  background: #00f0ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: 0 0 12px #00f0ff;
+}
+.poster__node--1 { top: 12px; left: 24%; }
+.poster__node--2 { bottom: 12px; left: 30%; }
+.poster__node--3 { top: 18px; right: 26%; }
+.poster__link {
+  position: absolute;
+  height: 1px;
+  background: rgba(56, 189, 248, .35);
+  z-index: 1;
+}
+.poster__link--1 { width: 48px; top: 22px; left: 30%; transform: rotate(-25deg); }
+.poster__link--2 { width: 44px; bottom: 24px; left: 34%; transform: rotate(35deg); }
+.poster__link--3 { width: 52px; top: 28px; right: 30%; transform: rotate(-15deg); }
+.poster__showcase {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 8px 0;
+  flex: 1;
+}
+.poster__glowtext {
+  font-family: var(--f-display);
+  font-size: 44px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  color: #fff;
+  text-shadow: 0 0 25px rgba(255, 59, 48, .9);
+  line-height: 1;
+}
+.poster__subtext {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .15em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.poster__btn {
+  font-size: 8.5px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--red);
+  padding: 4px 10px;
+  border-radius: 2px;
+  margin-top: 4px;
+}
+.poster__mascot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0;
+  flex: 1;
+}
+.poster__botface {
+  width: 56px;
+  height: 42px;
+  border-radius: 12px;
+  background: #1f142e;
+  border: 2px solid #a855f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px rgba(168, 85, 247, .5);
+}
+.poster__eyes {
+  width: 30px;
+  height: 8px;
+  border-radius: 4px;
+  background: #00f0ff;
+  box-shadow: 0 0 8px #00f0ff;
+}
+.poster__mascotstat {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  color: #c084fc;
+  text-transform: uppercase;
+}
+.poster__textlink {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 12px 0;
+  flex: 1;
+}
+.poster__urlbox {
+  font-size: 13px;
+  color: #fff;
+  background: rgba(0, 0, 0, .5);
+  border: 1px dashed rgba(14, 165, 233, .6);
+  padding: 8px 18px;
+  border-radius: 4px;
+}
+.poster__urlbox b { color: #38bdf8; }
+.poster__tagline {
+  font-size: 8px;
+  color: var(--muted);
+  letter-spacing: .06em;
+}
+.poster__api {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0;
+  flex: 1;
+  justify-content: center;
+}
+.poster__endpoint {
+  font-size: 11px;
+  color: #fff;
+  font-weight: 700;
+  background: rgba(0, 0, 0, .5);
+  border: 1px solid rgba(34, 197, 94, .25);
+  padding: 8px 12px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.poster__method {
+  font-size: 8px;
+  font-weight: 800;
+  color: #22c55e;
+  background: rgba(34, 197, 94, .15);
+  padding: 2px 5px;
+  border-radius: 2px;
+}
+.poster__json {
+  font-size: 8.5px;
+  color: #94a3b8;
+  padding-left: 8px;
+}
+.poster__swiss {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 10px 0;
+  flex: 1;
+}
+.poster__swisstop {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  color: var(--red);
+}
+.poster__swissbig {
+  font-family: var(--f-display);
+  font-size: 52px;
+  font-weight: 900;
+  line-height: 0.9;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+.poster__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 10px 0;
+  flex: 1;
+  justify-content: center;
+}
+.poster__swatches {
+  display: flex;
+  gap: 8px;
+}
+.poster__color {
+  flex: 1;
+  height: 24px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, .15);
+}
+.poster__color--1 { background: #ff3b30; }
+.poster__color--2 { background: #00f0ff; }
+.poster__color--3 { background: #0d1117; }
+.poster__color--4 { background: #f3f4f6; }
+.poster__specimen {
+  font-size: 8px;
+  color: #94a3b8;
+  letter-spacing: .08em;
+}
+.poster__generic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
 }
 
 .card__row {

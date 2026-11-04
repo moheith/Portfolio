@@ -4,7 +4,7 @@
    Snapshot numbers are from November 2026 (GitHub 13 repos, Hugging Face 8 models, Ollama 259 pulls, Yulya Studio 109 commits). */
 const CONTENT = {
   meta: {
-    name: "MOHIETH MAYURA S Y", short: "MAYURA", initial: "MAYURA●",
+    name: "MOHIETH MAYURA S Y", short: "MOHIETH", initial: "MAYURA",
     city: "Bengaluru, India", cityShort: "BENGALURU, INDIA", tz: "Asia/Kolkata", tzLabel: "IST",
     email: "moheithmayura@gmail.com", phoneDisplay: "+91 86602 27877", whatsapp: "918660227877",
     instagram: "@moheith_mayura",

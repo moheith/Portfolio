@@ -14,13 +14,8 @@ const { chromium } = require('playwright');
   const browser = await chromium.launch({ executablePath: chromePath, args: ['--no-sandbox'] });
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 
-  await page.goto('file://' + path.join(root, 'index.html'));
-  await page.waitForTimeout(500);
-  // Finish swarm instantly to reveal entire completed page
-  await page.evaluate(() => {
-    if (window.Swarm) Swarm.finishAll();
-  });
-  await page.waitForTimeout(600);
+  await page.goto('http://localhost:8765/index.html?swarm=off');
+  await page.waitForTimeout(1000);
 
   // 1. Hero
   const hero = page.locator('#home');

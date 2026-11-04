@@ -504,7 +504,7 @@
     if (target == null) return;
     const max = document.documentElement.scrollHeight - innerHeight; target = clamp(target, 0, Math.max(0, max));
     const d = target - scrollY; if (Math.abs(d) < 0.6) return;
-    const step = clamp(d * (1 - Math.exp(-dt / 330)), -2.4 * dt, 2.4 * dt); window.scrollTo(0, scrollY + step);
+    const step = clamp(d * (1 - Math.exp(-dt / 520)), -1.2 * dt, 1.2 * dt); window.scrollTo(0, scrollY + step);
   }
 
   function orbitStep(dt) {
