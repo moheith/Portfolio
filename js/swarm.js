@@ -1,7 +1,6 @@
-/* js/swarm.js — Agent Swarm build engine, SCRIPTED mode (reference implementation, tested in headless Chromium).
-   It plays SWARM_SCRIPT (js/swarm-script.js): a fixed, deterministic choreography. Every layer has an agent and 5 timestamps:
-   t0 agent leaves its previous spot and starts flying · t1 arrives at the element's top-left · t2 finished dragging the box
-   · t3 finished typing / filling (agent is free) · t4 box fully faded out. Times are virtual seconds at 1x. */
+/* js/swarm.js — Agent Swarm build engine, SCRIPTED mode with Multi-Agent Co-Construction Squads.
+   Plays SWARM_SCRIPT with synchronized cursor squads: lead builder drags/types while companion agents
+   lock bounding corners (TR, BL), read dimension pills, sweep alignment guides, and escort in tight formation. */
 (function () {
   'use strict';
   const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -10,7 +9,7 @@
   const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
   const easeInOutCubic = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const lerp = (a, b, t) => a + (b - a) * t;
-  const rand = (() => { let s = 1234567; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); })(); // seeded, so every run looks the same
+  const rand = (() => { let s = 1234567; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); })(); // seeded
 
   const Swarm = {
     speed: 1, tour: true, state: 'idle',          // idle | building | finale | live
@@ -33,7 +32,7 @@
   function makeAgent(i) {
     const color = S.colors[i % S.colors.length];
     const a = { i, color, el: arrowSVG(color), x: 0, y: 0, rot: 0, vx: 0, vy: 0, mode: 'arrow', joined: false,
-                task: null, tween: null, home: [0.5, 0.5], orbit: null };
+                task: null, squadRole: null, tween: null, home: [0.5, 0.5], orbit: null };
     a.el.style.display = 'none';
     Swarm.root.appendChild(a.el);
     return a;
@@ -42,12 +41,14 @@
     a.el.style.transform = `translate3d(${a.x}px,${a.y}px,0) rotate(${a.rot}deg)`;
     a.el.dataset.mode = a.mode;
   }
-  function placeFlockStart(a) {          // 18 starting agents: two flocks, around 35%/60% and 65%/45% of the viewport
+  function placeFlockStart(a) {          // 18 starting agents in two clusters
     const c = S.events.find((e) => e.e === 'flocks').clusters[a.i % 2];
     a.home = c;
     a.x = c[0] * innerWidth + (rand() - 0.5) * 220; a.y = c[1] * innerHeight + (rand() - 0.5) * 160;
     a.vx = (rand() - 0.5) * 1.4; a.vy = (rand() - 0.5) * 1.4;
   }
+
+  /* Compute current center of activity across active construction layers */
   function getBuildFront() {
     if (Swarm.active.length > 0) {
       let sx = 0, sy = 0, n = 0;
@@ -72,24 +73,32 @@
     }
     return { x: innerWidth * 0.5, y: innerHeight * 0.45 };
   }
-  function escortPatrol(a, k, front) {
+
+  /* Escort formation for free agents: dynamic perimeter surveillance around the build front */
+  function escortPatrol(a, k, front, freeIdx, freeTotal) {
     const i = a.i;
-    const dist = 85 + (i % 7) * 24;
-    const spd = (0.55 + (i % 4) * 0.14) * (i % 2 === 0 ? 1 : -1);
-    const tx = front.x + Math.cos(Swarm.t * spd + i * 1.05) * dist;
-    const ty = front.y + Math.sin(Swarm.t * spd + i * 1.05) * (dist * 0.65);
-    const cx = clamp(tx, 28, innerWidth - 28);
-    const cy = clamp(ty, 28, innerHeight - 28);
+    const ringRadius = 110 + (i % 6) * 32;
+    const spd = (0.65 + (i % 3) * 0.15) * (i % 2 === 0 ? 1 : -1);
+    const theta = Swarm.t * spd + (freeIdx * 2 * Math.PI) / Math.max(1, freeTotal);
+    const tx = front.x + Math.cos(theta) * ringRadius;
+    const ty = front.y + Math.sin(theta) * (ringRadius * 0.55);
+
+    const cx = clamp(tx, 20, innerWidth - 24);
+    const cy = clamp(ty, 20, innerHeight - 24);
     const dx = cx - a.x, dy = cy - a.y;
-    a.vx = lerp(a.vx, dx * 0.08, 0.12 * k);
-    a.vy = lerp(a.vy, dy * 0.08, 0.12 * k);
-    const sp = Math.hypot(a.vx, a.vy), maxSpd = 3.2;
+
+    a.vx = lerp(a.vx, dx * 0.09, 0.14 * k);
+    a.vy = lerp(a.vy, dy * 0.09, 0.14 * k);
+    const sp = Math.hypot(a.vx, a.vy), maxSpd = 3.6;
     if (sp > maxSpd) { a.vx *= maxSpd / sp; a.vy *= maxSpd / sp; }
     a.x = clamp(a.x + a.vx * k, 16, innerWidth - 20);
     a.y = clamp(a.y + a.vy * k, 16, innerHeight - 20);
+
     if (Math.hypot(a.vx, a.vy) > 0.08) {
       a.rot = (Math.atan2(a.vy, a.vx) * 180) / Math.PI + 135;
     }
+    // Alternate modes among squad: crosshairs measuring, arrows sweeping
+    a.mode = (i % 3 === 0) ? 'cross' : (i % 4 === 0) ? 'ibeam' : 'arrow';
   }
 
   /* ------------------------------------------------------------ boxes (blue/red selection boxes) */
@@ -129,11 +138,10 @@
     Swarm.states = S.layers.map((L) => {
       const el = document.querySelector(`[data-layer-id="${L.id}"]`);
       if (el && el.dataset.full === undefined) el.dataset.full = el.textContent;
-      return { L, el, phase: 0, box: null, typedN: -1 };
+      return { L, el, phase: 0, box: null, typedN: -1, squad: [], activatedAt: null };
     });
     Swarm.total = Swarm.states.length;
     Swarm.agents = Array.from({ length: S.agentCount }, (_, i) => makeAgent(i));
-    // layers that are missing in the DOM are reported once so the builder can fix the markup
     const missing = Swarm.states.filter((s) => !s.el).map((s) => s.L.id);
     if (missing.length) console.warn('[swarm] layers without a DOM element:', missing.join(', '));
   };
@@ -157,9 +165,8 @@
     const html = document.documentElement;
     if (e.e === 'rulers') html.classList.toggle('show-rulers', !!e.on);
     else if (e.e === 'topbar-flash') { html.classList.add('flash-bars'); setTimeout(() => html.classList.remove('flash-bars'), e.ms / Swarm.speed); }
-    else if (e.e === 'hud') { /* HUD state is derived in hud.js from Swarm.t, nothing to do here */ }
-    else if (e.e === 'scatter') {          // flocks scatter to the page edges and turn into "+" crosshairs and I-beams
-      const pts = [];
+    else if (e.e === 'hud') { /* HUD state is derived in hud.js from Swarm.t */ }
+    else if (e.e === 'scatter') {
       Swarm.agents.filter((a) => a.joined).forEach((a, k) => {
         const side = k % 4, f = ((k * 0.137) % 1);
         const tx = side === 0 ? 14 : side === 1 ? innerWidth - 28 : f * innerWidth, ty = side === 2 ? 14 : side === 3 ? innerHeight - 28 : f * innerHeight;
@@ -183,12 +190,13 @@
     }
   }
 
-  /* ------------------------------------------------------------ one layer, one frame */
+  /* ------------------------------------------------------------ one layer, one frame with Co-Construction Squad */
   function activate(st) {
     let a = Swarm.agents[st.L.a];
     if (!a.joined) {
       a.joined = true; a.el.style.display = ''; a.x = innerWidth - 40; a.y = -20;
     } else if (a.task) {
+      // If preferred agent is busy, recruit nearest available joined agent
       const freeAgents = Swarm.agents.filter((ag) => ag.joined && !ag.task);
       if (freeAgents.length > 0) {
         if (st.el) {
@@ -198,35 +206,94 @@
         a = freeAgents[0];
       }
     }
-    st.agent = a; a.task = st; a.tween = null; a.mode = 'arrow';
+    st.agent = a; a.task = st; a.squadRole = 'lead'; a.tween = null; a.mode = 'arrow';
+    st.activatedAt = Swarm.t;
     st.fromX = a.x; st.fromY = a.y;
-    st.cx = (a.x + innerWidth / 2) / 2 + (rand() - 0.5) * 140;     // bezier control point
+    st.cx = (a.x + innerWidth / 2) / 2 + (rand() - 0.5) * 140;
     st.cy = (a.y + innerHeight / 2) / 2 + (rand() - 0.5) * 120;
+
+    // Recruit 2-3 companion squad agents for corner framing & dimension scanning
+    st.squad = [];
+    const available = Swarm.agents.filter((ag) => ag.joined && !ag.task && ag !== a);
+    if (st.el && available.length >= 2) {
+      const r = st.el.getBoundingClientRect();
+      available.sort((p, q) => Math.hypot(p.x - r.left, p.y - r.top) - Math.hypot(q.x - r.left, q.y - r.top));
+      const roles = ['tr', 'bl', 'scan'];
+      for (let i = 0; i < Math.min(3, available.length); i++) {
+        const helper = available[i];
+        helper.task = st;
+        helper.squadRole = roles[i];
+        helper.tween = null;
+        st.squad.push(helper);
+      }
+    }
+
     Swarm.active.push(st);
   }
 
   function stepLayer(st, t) {
     const [t0, t1, t2, t3, t4] = st.L.t, a = st.agent, el = st.el, kind = st.L.k;
-    if (!el || el.offsetParent === null && getComputedStyle(el).position !== 'fixed') {      // hidden or missing element: finish instantly
+    if (!el || (el.offsetParent === null && getComputedStyle(el).position !== 'fixed')) {
       if (!st.done) completeLayer(st, a); return true;
     }
     const r = el.getBoundingClientRect();
     const needBox = (t >= (st.L.tw ?? t1)) && t < t4;
     if (needBox && !st.box) { st.box = makeBox(kind); st.box.dataset.for = st.L.id; }
-    // phase 1: flying to the top-left corner
+
+    const squadTR = st.squad ? st.squad.find(s => s.squadRole === 'tr') : null;
+    const squadBL = st.squad ? st.squad.find(s => s.squadRole === 'bl') : null;
+    const squadScan = st.squad ? st.squad.find(s => s.squadRole === 'scan') : null;
+
+    // phase 1: flying to start corners
     if (t < t1) {
-      const e = easeInOutCubic(clamp((t - t0) / (t1 - t0), 0, 1)), u = 1 - e;
+      const startT = st.activatedAt !== null ? Math.min(st.activatedAt, t0) : t0;
+      const dur = Math.max(0.01, t1 - startT);
+      const e = easeInOutCubic(clamp((t - startT) / dur, 0, 1)), u = 1 - e;
       const tx = r.left - 2, ty = r.top - 2;
       a.x = u * u * st.fromX + 2 * u * e * st.cx + e * e * tx; a.y = u * u * st.fromY + 2 * u * e * st.cy + e * e * ty;
       a.rot = 40 * Math.sin(Math.PI * Math.min(1, e * 1.1)) * (st.cx < st.fromX ? 1 : -1);
       a.mode = 'arrow';
-      if (st.box && st.L.tw !== undefined) placeBox(st.box, r, 1);            // hero wireframe: box already exists at full size
-    } else if (t < t2) {                       // phase 2: drag the box from the top-left to the bottom-right corner
-      const g = easeOutCubic((t - t1) / (t2 - t1));
+      if (st.box && st.L.tw !== undefined) placeBox(st.box, r, 1);
+
+      // Squad companions approach opposite corners
+      if (squadTR) {
+        squadTR.x = lerp(squadTR.x, r.right + 2, 0.18);
+        squadTR.y = lerp(squadTR.y, r.top - 2, 0.18);
+        squadTR.mode = 'cross'; squadTR.rot = 0;
+      }
+      if (squadBL) {
+        squadBL.x = lerp(squadBL.x, r.left - 2, 0.18);
+        squadBL.y = lerp(squadBL.y, r.bottom + 2, 0.18);
+        squadBL.mode = 'cross'; squadBL.rot = 0;
+      }
+      if (squadScan) {
+        squadScan.x = lerp(squadScan.x, r.left + r.width / 2, 0.18);
+        squadScan.y = lerp(squadScan.y, r.top - 4, 0.18);
+        squadScan.mode = 'cross'; squadScan.rot = 0;
+      }
+    } else if (t < t2) {                       // phase 2: drag the box from top-left to bottom-right corner
+      const g = easeOutCubic((t - t1) / Math.max(0.01, t2 - t1));
       if (st.box) placeBox(st.box, r, st.L.tw !== undefined ? 1 : g);
+      // Lead drags moving bottom-right corner
       a.x = r.left + r.width * g; a.y = r.top + r.height * g; a.rot = 0; a.mode = 'cross';
-    } else if (t < t3) {                       // phase 3: type the text / fill the image / fill the shape
-      const p = clamp((t - t2) / (t3 - t2), 0, 1);
+
+      // Companion 1 anchors top-right corner of expanding box
+      if (squadTR) {
+        squadTR.x = r.left + r.width * g; squadTR.y = r.top - 2;
+        squadTR.mode = 'cross'; squadTR.rot = 0;
+      }
+      // Companion 2 anchors bottom-left corner of expanding box
+      if (squadBL) {
+        squadBL.x = r.left - 2; squadBL.y = r.top + r.height * g;
+        squadBL.mode = 'cross'; squadBL.rot = 0;
+      }
+      // Companion 3 glides along bottom dimension pill
+      if (squadScan) {
+        squadScan.x = r.left + (r.width * g) / 2; squadScan.y = r.top + r.height * g + 14;
+        squadScan.mode = 'ibeam'; squadScan.rot = 0;
+      }
+    } else if (t < t3) {                       // phase 3: type text / fill image / fill shape
+      const p = clamp((t - t2) / Math.max(0.01, t3 - t2), 0, 1);
       if (st.box) placeBox(st.box, r, 1);
       if (kind === 'text') {
         el.classList.add('is-built');
@@ -234,17 +301,30 @@
         if (st.box) { st.box.classList.add('typing'); st.box.style.setProperty('--caret', `${Math.min(1, n / Math.max(1, el.dataset.full.length))}`); }
         if (n !== st.typedN) { st.typedN = n; const ch = el.dataset.full.slice(n - 1, n); Swarm.onType && Swarm.onType(ch); window.SwarmSound && SwarmSound.tick(ch); }
         a.mode = 'ibeam'; a.x = r.right + 6; a.y = r.top + Math.min(r.height - 18, 2); a.rot = 0;
+
+        // Squad co-types & validates text boundaries
+        if (squadBL) { squadBL.x = r.left - 4; squadBL.y = r.top + 2; squadBL.mode = 'ibeam'; squadBL.rot = 0; }
+        if (squadTR) { squadTR.x = r.right + 2; squadTR.y = r.top - 2; squadTR.mode = 'cross'; squadTR.rot = 0; }
+        if (squadScan) { squadScan.x = r.left + r.width * p; squadScan.y = r.bottom + 4; squadScan.mode = 'ibeam'; squadScan.rot = 0; }
       } else if (kind === 'image') {
         if (st.box) st.box.classList.add('is-placeholder');
         if (p > 0.37 && !el.classList.contains('is-built')) el.classList.add('is-built', 'reveal-blur');
         a.mode = 'arrow'; a.x = r.right - 6; a.y = r.bottom - 6;
+
+        if (squadTR) { squadTR.x = r.right - 6; squadTR.y = r.top + 6; squadTR.mode = 'cross'; squadTR.rot = 0; }
+        if (squadBL) { squadBL.x = r.left + 6; squadBL.y = r.bottom - 6; squadBL.mode = 'cross'; squadBL.rot = 0; }
+        if (squadScan) { squadScan.x = r.left + r.width / 2; squadScan.y = r.top + r.height / 2; squadScan.mode = 'cross'; squadScan.rot = 0; }
       } else {                                 // shape, card, logo
         if (st.box) st.box.classList.add('is-filled');
         if (p > 0.65) el.classList.add('is-built');
         a.mode = 'arrow'; a.x = r.right - 4; a.y = r.bottom - 4;
+
+        if (squadTR) { squadTR.x = r.right - 4; squadTR.y = r.top + 4; squadTR.mode = 'cross'; squadTR.rot = 0; }
+        if (squadBL) { squadBL.x = r.left + 4; squadBL.y = r.bottom - 4; squadBL.mode = 'cross'; squadBL.rot = 0; }
+        if (squadScan) { squadScan.x = r.left + r.width / 2; squadScan.y = r.top + 2; squadScan.mode = 'cross'; squadScan.rot = 0; }
       }
       el.dataset.phase = 'fill';
-    } else {                                   // phase 4: release, agent is free (it goes back to idle drifting), the box fades out
+    } else {                                   // phase 4: release, agents free, box fades out
       if (!st.done) completeLayer(st, a);
       if (st.box) { placeBox(st.box, r, 1); st.box.classList.add('fade-out'); }
     }
@@ -255,7 +335,20 @@
     const el = st.el;
     if (el) { if (st.L.k === 'text') el.textContent = el.dataset.full; el.classList.add('is-built'); delete el.dataset.phase; }
     st.done = true; Swarm.built++;
-    if (a && a.task === st) { a.task = null; a.mode = 'arrow'; a.vx = (rand() - 0.5) * 2; a.vy = (rand() - 0.5) * 2; }
+    if (a && a.task === st) {
+      a.task = null; a.squadRole = null; a.mode = 'arrow';
+      a.vx = (rand() - 0.5) * 2; a.vy = (rand() - 0.5) * 2;
+    }
+    // Release squad companion agents with lively outward velocities
+    if (st.squad && st.squad.length > 0) {
+      st.squad.forEach((h) => {
+        if (h && h.task === st) {
+          h.task = null; h.squadRole = null; h.mode = 'arrow';
+          h.vx = (rand() - 0.5) * 2.2; h.vy = (rand() - 0.5) * 2.2;
+        }
+      });
+      st.squad = [];
+    }
   }
 
   /* ------------------------------------------------------------ main loop */
@@ -265,22 +358,46 @@
     if (Swarm.state === 'building') {
       Swarm.t += dt;
       while (Swarm.eventIdx < Swarm.events.length && Swarm.events[Swarm.eventIdx].t <= Swarm.t) runEvent(Swarm.events[Swarm.eventIdx++]);
-      while (Swarm.layerIdx < Swarm.states.length && Swarm.states[Swarm.layerIdx].L.t[0] <= Swarm.t) activate(Swarm.states[Swarm.layerIdx++]);
-      // hero wireframe boxes appear BEFORE their agent arrives, so also step layers whose "tw" has passed
+
+      // Concurrent squad activation: allow up to 5 concurrent layers within lookahead window
+      const maxConcurrent = 5;
+      while (Swarm.layerIdx < Swarm.states.length) {
+        const nextSt = Swarm.states[Swarm.layerIdx];
+        const canLookahead = (Swarm.active.length < maxConcurrent) && (nextSt.L.t[0] <= Swarm.t + 0.3) && (Swarm.active.length === 0 || nextSt.L.g === Swarm.active[0].L.g);
+        if (nextSt.L.t[0] <= Swarm.t || canLookahead) {
+          activate(Swarm.states[Swarm.layerIdx++]);
+        } else {
+          break;
+        }
+      }
+
+      // hero wireframe boxes appear BEFORE their agent arrives
       for (const st of Swarm.states) if (st.L.tw !== undefined && !st.agent && Swarm.t >= st.L.tw && !st.wire) {
         st.wire = true; st.box = makeBox(st.L.k); st.box.dataset.for = st.L.id; if (st.el) placeBox(st.box, st.el.getBoundingClientRect(), 1);
       }
       Swarm.active = Swarm.active.filter((st) => { const fin = stepLayer(st, Swarm.t); if (fin) { if (st.box) removeBox(st.box); } return !fin; });
-      for (const st of Swarm.states) if (st.wire && !st.agent && st.box && st.el) placeBox(st.box, st.el.getBoundingClientRect(), 1);   // keep wire boxes glued to their element
+      for (const st of Swarm.states) if (st.wire && !st.agent && st.box && st.el) placeBox(st.box, st.el.getBoundingClientRect(), 1);
+
       // joined agents come online
       Swarm.agents.forEach((a) => { if (!a.joined && S.agentJoins[a.i] <= Swarm.t) { a.joined = true; a.el.style.display = ''; a.x = innerWidth - 40; a.y = -20; } });
+
       const buildFront = getBuildFront();
+      const freeAgents = Swarm.agents.filter(a => a.joined && !a.task);
+      const freeTotal = freeAgents.length;
+
       Swarm.agents.forEach((a) => {
         if (!a.joined) return;
-        if (a.tween) { const e = easeOutCubic(clamp((Swarm.t - a.tween.t0) / a.tween.dur, 0, 1)); a.x = lerp(a.tween.fx, a.tween.tx, e); a.y = lerp(a.tween.fy, a.tween.ty, e); if (e >= 1) a.tween = null; }
-        else if (!a.task) escortPatrol(a, k, buildFront);
+        if (a.tween) {
+          const e = easeOutCubic(clamp((Swarm.t - a.tween.t0) / a.tween.dur, 0, 1));
+          a.x = lerp(a.tween.fx, a.tween.tx, e); a.y = lerp(a.tween.fy, a.tween.ty, e);
+          if (e >= 1) a.tween = null;
+        } else if (!a.task) {
+          const freeIdx = freeAgents.indexOf(a);
+          escortPatrol(a, k, buildFront, freeIdx >= 0 ? freeIdx : 0, freeTotal);
+        }
         drawAgent(a);
       });
+
       guides(); sweeps(); tour(dtReal);
       if (Swarm.eventIdx >= Swarm.events.length && Swarm.layerIdx >= Swarm.states.length && Swarm.active.length === 0 && Swarm.built >= Swarm.total) startFinale();
     } else if (Swarm.state === 'finale') {
@@ -308,18 +425,18 @@
       return true;
     });
   }
-  function tour(dtReal) {                      // auto-scroll ("Touring"): keep the build front in the upper third of the screen
+  function tour(dtReal) {
     if (!Swarm.tour) return;
     let front = null;
     for (const st of Swarm.active) { if (!st.el) continue; const y = st.el.getBoundingClientRect().top + scrollY; if (front === null || y < front) front = y; }
     if (front === null) { const nx = Swarm.states[Swarm.layerIdx]; if (nx && nx.el) front = nx.el.getBoundingClientRect().top + scrollY; }
     if (front === null) return;
     const target = Math.max(0, front - innerHeight * 0.32);
-    const t = Swarm.t; if (t < 3.9) { scrollTo(0, 0); return; }            // the hero is built without scrolling
+    const t = Swarm.t; if (t < 3.9) { scrollTo(0, 0); return; }
     scrollTo(0, scrollY + (target - scrollY) * Math.min(1, dtReal * 3.2 * Math.min(Swarm.speed, 2)));
   }
 
-  /* ------------------------------------------------------------ finale: cursors lift off and orbit the featured card + the top-right corner */
+  /* ------------------------------------------------------------ finale: cursors orbit featured card + top-right corner */
   function startFinale() {
     Swarm.elapsedWall = (performance.now() - Swarm.startedWall) / 1000;
     document.documentElement.classList.remove('is-building', 'show-rulers');
@@ -328,11 +445,14 @@
     Swarm.finaleT0 = Swarm.t; setState('finale');
     const card = document.querySelector(`[data-layer-id="${S.finale.target}"]`);
     Swarm.finaleCard = card;
-    Swarm.agents.forEach((a, i) => { a.orbit = { which: i % 3 === 0 ? 'corner' : 'card', theta: rand() * 6.28, radius: 110 + (i % 4) * 38, spd: 0.03 + (i % 3) * 0.006 }; a.task = null; a.tween = null; a.mode = 'arrow'; });
+    Swarm.agents.forEach((a, i) => {
+      a.orbit = { which: i % 3 === 0 ? 'corner' : 'card', theta: rand() * 6.28, radius: 110 + (i % 4) * 38, spd: 0.03 + (i % 3) * 0.006 };
+      a.task = null; a.squadRole = null; a.tween = null; a.mode = 'arrow';
+    });
   }
   function finaleStep(dtReal) {
     const card = Swarm.finaleCard;
-    if (card && Swarm.tour) {                    // bring the card into view
+    if (card && Swarm.tour) {
       const r = card.getBoundingClientRect(); const target = scrollY + r.top + r.height / 2 - innerHeight / 2;
       scrollTo(0, scrollY + (target - scrollY) * Math.min(1, dtReal * 2.5));
     }
@@ -344,16 +464,16 @@
       o.theta += o.spd * dtReal * 60;
       const cx = o.which === 'card' ? ccx : tcx, cy = o.which === 'card' ? ccy : tcy, rad = o.radius * (o.which === 'card' ? breathe : 0.55);
       const tx = cx + Math.cos(o.theta) * rad, ty = cy + Math.sin(o.theta) * rad * 0.7;
-      a.x += (tx - a.x) * Math.min(1, dtReal * 6); a.y += (ty - a.y) * Math.min(1, dtReal * 6);   // glide onto the ring, then follow it
-      a.rot = (o.theta * 180) / Math.PI + 225;                                                   // arrow tangent to the circle
+      a.x += (tx - a.x) * Math.min(1, dtReal * 6); a.y += (ty - a.y) * Math.min(1, dtReal * 6);
+      a.rot = (o.theta * 180) / Math.PI + 225;
       drawAgent(a);
     });
   }
 
-  /* ------------------------------------------------------------ public controls (used by hud.js) */
+  /* ------------------------------------------------------------ public controls */
   Swarm.setSpeed = (s) => { Swarm.speed = s; };
   Swarm.toggleTour = () => { Swarm.tour = !Swarm.tour; return Swarm.tour; };
-  Swarm.finishAll = function () {              // instantly show everything (✕ / skip / reduced motion)
+  Swarm.finishAll = function () {
     cancelAnimationFrame(Swarm._raf);
     (Swarm.states.length ? Swarm.states : (Swarm.init(), Swarm.states)).forEach((st) => {
       if (st.el) { if (st.L.k === 'text') st.el.textContent = st.el.dataset.full; st.el.classList.add('is-built'); delete st.el.dataset.phase; }
@@ -365,7 +485,7 @@
     Swarm.agents.forEach((a) => a.el.remove()); Swarm.agents = [];
     Swarm.built = Swarm.total; setState('live');
   };
-  Swarm.goLive = function () {                 // "Go live": cursors fly off to the top-right and disappear
+  Swarm.goLive = function () {
     Swarm.agents.forEach((a) => { a.el.style.transition = 'transform .8s cubic-bezier(.65,0,.35,1), opacity .8s'; a.el.style.transform = `translate3d(${innerWidth + 60}px,-60px,0)`; a.el.style.opacity = '0'; });
     setTimeout(() => { Swarm.finishAll(); }, 850);
   };
@@ -374,7 +494,7 @@
     Swarm.finishAllReset && Swarm.finishAllReset();
     cancelAnimationFrame(Swarm._raf);
     [...Swarm.boxes].forEach(removeBox); Swarm.root.innerHTML = '';
-    Swarm.states.forEach((st) => { st.box = null; st.agent = null; st.done = false; st.wire = false; st.phase = 0; });
+    Swarm.states.forEach((st) => { st.box = null; st.agent = null; st.squad = []; st.done = false; st.wire = false; st.phase = 0; });
     Swarm.start();
   };
   window.Swarm = Swarm;
