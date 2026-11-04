@@ -2061,3 +2061,6 @@ html:not(.is-building) .hero__avail {
   .about__grid { grid-template-columns: 1fr; }
   .hero__stats { flex-direction: column; }
 }
+
+
+.work__empty{ padding:60px 0; font:600 13px/1 var(--f-body); color:var(--muted); letter-spacing:.08em; text-transform:uppercase; text-align:center; }

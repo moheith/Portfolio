@@ -1,77 +1,18 @@
-/* js/work.js — Project Cards Generation, Code Posters, FLIP Filtering, Live Search, Horizontal Drag Slider & Cinema Modal */
-
+/* js/work.js — project cards (code posters), filters with FLIP, fuzzy search, slider (drag + inertia), 3D tilt, cinema modal. */
 (function () {
   'use strict';
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const building = () => window.Swarm && Swarm.state === 'building';
+  const motionOff = () => document.documentElement.dataset.motion === 'off';
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-  let activeFilter = 'All';
-  let searchTerm = '';
-  let activeModalSlug = null;
-  let lastFocusedElement = null;
+  let list, cardsEl, empty, input, searchBox, tabsEl, line;
+  let filter = 'All', query = '';
+  let cinema = null, current = -1, lastFocus = null;
 
-  const Work = {
-    init() {
-      this.populateCards();
-      this.setupCodePosters();
-      this.initTabs();
-      this.initSearch();
-      this.initSlider();
-      this.initModal();
-      this.init3DTilt();
-      this.checkUrlHash();
-    },
-
-    /* =====================================================================
-       Cards 4..11 Generation (Identical markup to static ones, NO data-layer)
-    ===================================================================== */
-    populateCards() {
-      const cardsList = document.querySelector('.work__slider .cards');
-      if (!cardsList || !window.CONTENT || !window.CONTENT.projects) return;
-
-      const projects = window.CONTENT.projects;
-
-      // Cards 4 to 11 (index 3 to 10)
-      for (let i = 3; i < projects.length; i++) {
-        const p = projects[i];
-        // Check if card with this slug already exists
-        if (cardsList.querySelector(`[data-slug="${p.slug}"]`)) continue;
-
-        const li = document.createElement('li');
-        li.className = 'card';
-        li.setAttribute('data-slug', p.slug);
-        li.setAttribute('data-cats', p.cats.join('|'));
-
-        li.innerHTML = `
-          <a class="card__link" href="#work/${p.slug}" data-cursor="view">
-            <figure class="card__media">
-              <span class="card__poster"></span>
-            </figure>
-            <span class="card__tagwrap">
-              <i class="card__chip-rule"></i>
-              <span class="card__tag">${p.tag}</span>
-            </span>
-            <div class="card__row">
-              <b class="card__num">${p.n}</b>
-              <div class="card__titles">
-                <h3 class="card__title">${p.title}</h3>
-                <p class="card__meta">${p.meta}</p>
-              </div>
-              <i class="card__arrow">↗</i>
-            </div>
-          </a>
-        `;
-
-        cardsList.appendChild(li);
-      }
-    },
-
-    /* =====================================================================
-       Code Posters Generator (Part 6.2) — Bespoke Visual Posters
-    ===================================================================== */
-    setupCodePosters() {
-      const cards = document.querySelectorAll('.work__slider .card');
-      const projects = (window.CONTENT && window.CONTENT.projects) || [];
-
-      const getPosterVisual = (slug, p) => {
+  /* the generated "code poster": hue per project, dot grid, giant initials, up to three tech chips */
+    const getPosterVisual = (slug, p) => {
         switch (slug) {
           case 'yulya-discord-bot':
             return `
@@ -256,7 +197,7 @@
                   <span class="p-vis__pill">FULL STACK</span>
                 </div>
                 <div class="p-college-arch">
-                  <span>Next.js Client</span>
+                  <span>Next.js Frontend</span>
                   <i>➔</i>
                   <span>Flask API</span>
                   <i>➔</i>
@@ -268,461 +209,270 @@
         }
       };
 
-      cards.forEach((card, index) => {
-        const slug = card.getAttribute('data-slug');
-        const p = projects.find((item) => item.slug === slug) || projects[index];
-        if (!p) return;
+  function decoratePoster(poster, p, i) {
+    poster.style.setProperty('--h', (i * 47) % 360);
+    poster.dataset.ini = p.title.replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase();
+    poster.textContent = '';
+    const visual = getPosterVisual(p.slug, p);
+    if (visual) {
+      poster.innerHTML = visual;
+    }
+    const chips = document.createElement('span'); chips.className = 'card__chips';
+    p.tech.slice(0, 3).forEach((t) => { const c = document.createElement('i'); c.textContent = t.toUpperCase(); chips.appendChild(c); });
+    poster.appendChild(chips);
+  }
+  /* if assets/img/work-NN.jpg exists and loads, it replaces the poster (never a broken-image icon) */
+  function tryImage(media, p, poster) {
+    if (!p.img) return;
+    const im = new Image(); im.decoding = 'async'; im.alt = p.title; im.loading = 'lazy';
+    im.onload = () => { if (!media.isConnected) return; media.appendChild(im); if (poster && poster.parentNode === media) poster.remove(); };
+    im.onerror = () => { /* keep the code poster */ };
+    im.src = p.img;
+  }
+  function buildCard(p, i) {
+    const li = document.createElement('li'); li.className = 'card'; li.dataset.slug = p.slug; li.dataset.cats = p.cats.join('|');
+    li.innerHTML = '<a class="card__link" href="#work/' + esc(p.slug) + '"><figure class="card__media"><span class="card__poster" aria-hidden="true"></span></figure>' +
+      '<span class="card__tagwrap"><i class="card__chip-rule"></i><span class="card__tag">' + esc(p.tag) + '</span></span>' +
+      '<div class="card__row"><b class="card__num">' + esc(p.n) + '</b><div class="card__titles"><h3 class="card__title">' + esc(p.title) + '</h3><p class="card__meta">' + esc(p.meta) + '</p></div><i class="card__arrow">↗</i></div></a>';
+    return li;
+  }
 
-        const media = card.querySelector('.card__media');
-        if (!media) return;
-
-        const posterSpan = media.querySelector('.card__poster');
-        if (!posterSpan) return;
-
-        const chipsHtml = (p.tech || []).slice(0, 3).map(t => `<span class="card__poster-chip">${t}</span>`).join('');
-        const visualHtml = getPosterVisual(p.slug, p);
-
-        posterSpan.innerHTML = `
-          <div class="card__poster-inner">
-            ${visualHtml}
-            <div class="card__poster-chips">${chipsHtml}</div>
-          </div>
-        `;
-
-        // If an image path is specified, test loading it
-        if (p.img) {
-          const img = new Image();
-          img.src = p.img;
-          img.onload = () => {
-            img.className = 'card__img';
-            img.style.width = '100%';
-            img.style.height = '100%';
-            img.style.objectFit = 'cover';
-            media.appendChild(img);
-            posterSpan.style.display = 'none';
-          };
-        }
+  const Work = {
+    /* 2. rebuild cards 4..N from CONTENT.projects; decorate the first three (they keep their swarm layers) */
+    init() {
+      cardsEl = $('#cards'); if (!cardsEl) return;
+      const P = CONTENT.projects;
+      $$('.card:not([data-layer])', cardsEl).forEach((c) => c.remove());
+      P.forEach((p, i) => { if (i >= 3) cardsEl.appendChild(buildCard(p, i)); });
+      list = $$('.card', cardsEl);
+      list.forEach((li, i) => {
+        const p = P[i]; if (!p) return;
+        const media = $('.card__media', li), poster = $('.card__poster', li);
+        decoratePoster(poster, p, i); tryImage(media, p, poster);
+      });
+      empty = document.createElement('p'); empty.className = 'work__empty'; empty.textContent = 'No projects match.'; empty.hidden = true;
+      cardsEl.insertAdjacentElement('afterend', empty);
+      tabsEl = $('.tabs'); line = $('.tabs__line'); input = $('.work__search input'); searchBox = $('.work__search');
+      Work.bindTabs(); Work.bindSearch(); Work.bindSlider(); Work.bindTilt();
+      Work.buildDots(); Work.layout();
+      window.addEventListener('resize', () => { Work.layout(); Work.buildDots(); });
+    },
+    /* put the red tab line under the active tab (called after fonts are ready too) */
+    layout() {
+      if (!tabsEl || !line) return;
+      const a = $('.tab.is-active', tabsEl); if (!a) return;
+      line.style.width = a.offsetWidth + 'px'; line.style.transform = 'translateX(' + a.offsetLeft + 'px)';
+    },
+    afterBuild() { Work.layout(); Work.buildDots(); Work.updateCount(); Work.updateButtons(); },
+    visibleCards() { return list.filter((c) => !c.hidden); },
+    updateCount() {
+      const el = $('.work__count'); if (!el || building()) return;
+      const t = 'SEE ALL (' + Work.visibleCards().length + ') •'; el.textContent = t; el.dataset.full = t;
+    },
+    /* ---------- filters (FLIP) ---------- */
+    bindTabs() {
+      $$('.tab', tabsEl).forEach((tab) => tab.addEventListener('click', () => {
+        if (building()) return;
+        $$('.tab', tabsEl).forEach((t) => { const on = t === tab; t.classList.toggle('is-active', on); t.setAttribute('aria-selected', String(on)); });
+        filter = tab.dataset.filter; Work.layout(); Work.apply();
+      }));
+      tabsEl.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        const t = $$('.tab', tabsEl), i = t.indexOf(document.activeElement); if (i < 0) return;
+        const n = t[(i + (e.key === 'ArrowRight' ? 1 : -1) + t.length) % t.length]; n.focus(); n.click();
       });
     },
-
-    /* =====================================================================
-       FLIP Animated Tab Filtering (Part 6.2 / 10.5)
-    ===================================================================== */
-    initTabs() {
-      const tabs = Array.from(document.querySelectorAll('.work__filters .tab'));
-      const line = document.querySelector('.tabs__line');
-      if (!tabs.length) return;
-
-      const updateTabLine = (tab) => {
-        if (!line || !tab) return;
-        const left = tab.offsetLeft;
-        const width = tab.offsetWidth;
-        line.style.transform = `translateX(${left}px)`;
-        line.style.width = `${width}px`;
-      };
-
-      // Set initial line position
-      const initialTab = document.querySelector('.work__filters .tab.is-active') || tabs[0];
-      if (initialTab) updateTabLine(initialTab);
-
-      tabs.forEach((tab) => {
-        tab.addEventListener('click', () => {
-          tabs.forEach((t) => {
-            t.classList.remove('is-active');
-            t.setAttribute('aria-selected', 'false');
-          });
-          tab.classList.add('is-active');
-          tab.setAttribute('aria-selected', 'true');
-          updateTabLine(tab);
-
-          activeFilter = tab.getAttribute('data-filter') || 'All';
-          Work.applyFilter();
+    matches(li, i) {
+      const p = CONTENT.projects[i];
+      const catOk = filter === 'All' || li.dataset.cats.split('|').includes(filter);
+      return catOk && (!query || Work.fuzzy(p, query).ok);
+    },
+    /* fuzzy: the letters of the query must appear in order in title + tag + tech */
+    fuzzy(p, q) {
+      const hay = (p.title + ' ' + p.tag + ' ' + p.tech.join(' ') + ' ' + p.cats.join(' ')).toLowerCase();
+      const ql = q.toLowerCase().replace(/\s+/g, ' ').trim(); let pos = 0;
+      for (const ch of ql) { const k = hay.indexOf(ch, pos); if (k < 0) return { ok: false }; pos = k + 1; }
+      // letters to highlight inside the title only
+      const t = p.title.toLowerCase(), marks = []; let j = 0;
+      for (const ch of ql) { if (ch === ' ') continue; const k = t.indexOf(ch, j); if (k < 0) break; marks.push(k); j = k + 1; }
+      return { ok: true, marks };
+    },
+    apply() {
+      const first = new Map();
+      list.forEach((li) => { if (!li.hidden) first.set(li, li.getBoundingClientRect()); });
+      const next = list.map((li, i) => Work.matches(li, i));
+      list.forEach((li, i) => { li.hidden = !next[i]; });
+      empty.hidden = next.some(Boolean);
+      // FLIP: remaining cards glide to their new place, new ones fade in (0.5 s)
+      if (!motionOff() && li0().animate) {
+        list.forEach((li) => {
+          if (li.hidden) return;
+          const a = first.get(li), b = li.getBoundingClientRect();
+          if (a) { const dx = a.left - b.left, dy = a.top - b.top; if (dx || dy) li.animate([{ transform: `translate(${dx}px,${dy}px)` }, { transform: 'none' }], { duration: 500, easing: 'cubic-bezier(.22,1,.36,1)' }); }
+          else li.animate([{ opacity: 0, transform: 'scale(.94)' }, { opacity: 1, transform: 'none' }], { duration: 500, easing: 'cubic-bezier(.22,1,.36,1)' });
         });
+      }
+      cardsEl.scrollTo({ left: 0 });
+      Work.highlight(); Work.updateCount(); Work.buildDots(); Work.updateButtons();
+    },
+    /* matched letters of the title turn red (only after the build; the title is restored when the search is cleared) */
+    highlight() {
+      if (building()) return;
+      list.forEach((li, i) => {
+        const h = $('.card__title', li), p = CONTENT.projects[i]; if (!h || !p) return;
+        const r = query ? Work.fuzzy(p, query) : null;
+        if (r && r.ok && r.marks.length) {
+          const s = new Set(r.marks);
+          h.innerHTML = [...p.title].map((ch, k) => (s.has(k) ? '<mark>' + esc(ch) + '</mark>' : esc(ch))).join('');
+        } else if (h.querySelector('mark')) h.textContent = p.title;
       });
     },
-
-    /* =====================================================================
-       Live Search with Highlighted Matches (Part 6.2 / 10.5)
-    ===================================================================== */
-    initSearch() {
-      const input = document.querySelector('.work__search input');
-      const placeholder = document.querySelector('.work__search-ph');
+    bindSearch() {
       if (!input) return;
-
       input.addEventListener('input', () => {
-        searchTerm = input.value.trim().toLowerCase();
-        if (placeholder) {
-          placeholder.classList.toggle('is-hidden', input.value.length > 0);
-        }
-        Work.applyFilter();
+        if (building()) { input.value = ''; return; }
+        query = input.value.trim(); searchBox.classList.toggle('has-text', !!input.value); Work.apply();
       });
+      input.addEventListener('keydown', (e) => { if (e.key === 'Escape') { input.value = ''; input.dispatchEvent(new Event('input')); } });
     },
-
-    applyFilter() {
-      const cards = Array.from(document.querySelectorAll('.work__slider .card'));
-      const projects = (window.CONTENT && window.CONTENT.projects) || [];
-
-      // 1. Record initial rects for FLIP
-      const firstPositions = new Map();
-      cards.forEach((card) => {
-        if (!card.hidden && card.offsetParent !== null) {
-          firstPositions.set(card, card.getBoundingClientRect());
-        }
-      });
-
-      let visibleCount = 0;
-
-      cards.forEach((card, index) => {
-        const slug = card.getAttribute('data-slug');
-        const p = projects.find((item) => item.slug === slug) || projects[index];
-        const cats = (card.getAttribute('data-cats') || '').split('|');
-
-        // Check category filter
-        const matchesCategory = activeFilter === 'All' || cats.includes(activeFilter);
-
-        // Check search term
-        let matchesSearch = true;
-        if (searchTerm && p) {
-          const searchable = `${p.title} ${p.meta} ${p.tag} ${(p.tech || []).join(' ')}`.toLowerCase();
-          matchesSearch = searchable.includes(searchTerm);
-        }
-
-        const isVisible = matchesCategory && matchesSearch;
-
-        // Title highlight
-        const titleEl = card.querySelector('.card__title');
-        if (titleEl && p) {
-          if (searchTerm && isVisible) {
-            const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-            titleEl.innerHTML = p.title.replace(regex, '<mark class="match">$1</mark>');
-          } else {
-            titleEl.textContent = p.title;
-          }
-        }
-
-        if (isVisible) {
-          card.hidden = false;
-          visibleCount++;
-        } else {
-          card.hidden = true;
-        }
-      });
-
-      // 2. Animate delta for FLIP
-      cards.forEach((card) => {
-        if (card.hidden) return;
-        const first = firstPositions.get(card);
-        if (!first) {
-          card.style.opacity = '0';
-          card.style.transform = 'scale(0.9)';
-          requestAnimationFrame(() => {
-            card.style.transition = 'opacity .4s ease, transform .4s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'none';
-          });
-          return;
-        }
-
-        const last = card.getBoundingClientRect();
-        const dx = first.left - last.left;
-        const dy = first.top - last.top;
-
-        if (dx !== 0 || dy !== 0) {
-          card.style.transform = `translate(${dx}px, ${dy}px)`;
-          card.style.transition = 'transform 0s';
-
-          requestAnimationFrame(() => {
-            card.style.transition = 'transform .5s cubic-bezier(0.16, 1, 0.3, 1)';
-            card.style.transform = 'none';
-          });
-        }
-      });
-
-      // Update counter text (only after swarm is complete)
-      const countEl = document.querySelector('.work__count');
-      if (countEl && (!window.Swarm || window.Swarm.state === 'finale' || window.Swarm.state === 'live')) {
-        countEl.textContent = `SEE ALL (${visibleCount}) •`;
+    /* ---------- slider: scroll-snap + mouse drag with inertia + arrows + dots ---------- */
+    perView() { const c = Work.visibleCards()[0]; if (!c) return 1; return Math.max(1, Math.round(cardsEl.offsetWidth / (c.offsetWidth + 24))); },
+    step() { const c = Work.visibleCards()[0]; return c ? c.offsetWidth + (parseFloat(getComputedStyle(cardsEl).columnGap) || 24) : 300; },
+    buildDots() {
+      const box = $('.slider__dots'); if (!box || !cardsEl) return;
+      const pages = Math.max(1, Math.ceil(Work.visibleCards().length / Work.perView()));
+      if (box.children.length !== pages) {
+        box.textContent = '';
+        for (let i = 0; i < pages; i++) { const d = document.createElement('i'); d.addEventListener('click', () => { if (!building()) cardsEl.scrollTo({ left: i * Work.perView() * Work.step(), behavior: motionOff() ? 'auto' : 'smooth' }); }); box.appendChild(d); }
       }
+      Work.updateButtons();
     },
-
-    /* =====================================================================
-       Horizontal Slider (Scroll-snap + Drag with Inertia + Prev/Next)
-    ===================================================================== */
-    initSlider() {
-      const slider = document.querySelector('.work__slider .cards');
-      const prevBtn = document.querySelector('.slider__btn--prev');
-      const nextBtn = document.querySelector('.slider__btn--next');
-      const dotsWrap = document.querySelector('.slider__dots');
-      if (!slider) return;
-
-      // Populate indicator dots
-      const updateDots = () => {
-        if (!dotsWrap) return;
-        dotsWrap.innerHTML = '';
-        const pageCount = Math.max(1, Math.ceil(slider.scrollWidth / slider.clientWidth));
-        const currentPage = Math.round(slider.scrollLeft / slider.clientWidth);
-
-        for (let i = 0; i < pageCount; i++) {
-          const dot = document.createElement('i');
-          if (i === currentPage) dot.classList.add('is-active');
-          dot.addEventListener('click', () => {
-            slider.scrollTo({ left: i * slider.clientWidth, behavior: 'smooth' });
-          });
-          dotsWrap.appendChild(dot);
-        }
+    updateButtons() {
+      if (!cardsEl) return;
+      const prev = $('[data-layer-id="work.prev"]'), next = $('[data-layer-id="work.next"]');
+      const max = cardsEl.scrollWidth - cardsEl.offsetWidth - 2;
+      if (prev) prev.disabled = cardsEl.scrollLeft <= 2; if (next) next.disabled = cardsEl.scrollLeft >= max;
+      const dots = $$('.slider__dots i'), pg = Math.round(cardsEl.scrollLeft / (Work.step() * Work.perView()));
+      dots.forEach((d, i) => d.classList.toggle('is-on', i === Math.min(pg, dots.length - 1)));
+    },
+    bindSlider() {
+      const prev = $('[data-layer-id="work.prev"]'), next = $('[data-layer-id="work.next"]');
+      const go = (dir) => { if (building()) return; cardsEl.scrollBy({ left: dir * Work.step(), behavior: motionOff() ? 'auto' : 'smooth' }); };
+      prev && prev.addEventListener('click', () => go(-1)); next && next.addEventListener('click', () => go(1));
+      cardsEl.addEventListener('scroll', () => Work.updateButtons(), { passive: true });
+      // mouse drag with inertia (touch uses native scrolling)
+      let down = false, sx = 0, sl = 0, moved = 0, vx = 0, lx = 0, raf = 0;
+      cardsEl.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse' || e.button !== 0 || building()) return; down = true; moved = 0; sx = e.clientX; sl = cardsEl.scrollLeft; lx = e.clientX; vx = 0; cancelAnimationFrame(raf); });
+      window.addEventListener('pointermove', (e) => {
+        if (!down) return;
+        const dx = e.clientX - sx; moved = Math.max(moved, Math.abs(dx));
+        if (moved > 5) cardsEl.classList.add('is-dragging');
+        cardsEl.scrollLeft = sl - dx; vx = e.clientX - lx; lx = e.clientX;
+      });
+      const end = () => {
+        if (!down) return; down = false;
+        const glide = () => { if (Math.abs(vx) < 0.5) { cardsEl.classList.remove('is-dragging'); return; } cardsEl.scrollLeft -= vx; vx *= 0.93; raf = requestAnimationFrame(glide); };
+        if (moved > 5) glide(); else cardsEl.classList.remove('is-dragging');
       };
-
-      slider.addEventListener('scroll', () => {
-        const dots = dotsWrap ? dotsWrap.querySelectorAll('i') : [];
-        const currentPage = Math.round(slider.scrollLeft / slider.clientWidth);
-        dots.forEach((dot, idx) => {
-          dot.classList.toggle('is-active', idx === currentPage);
-        });
-      }, { passive: true });
-
-      setTimeout(updateDots, 600);
-      window.addEventListener('resize', updateDots);
-
-      if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-          slider.scrollBy({ left: -slider.clientWidth * 0.75, behavior: 'smooth' });
-        });
-      }
-
-      if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-          slider.scrollBy({ left: slider.clientWidth * 0.75, behavior: 'smooth' });
-        });
-      }
-
-      // Pointer drag to scroll
-      let isDown = false;
-      let startX = 0;
-      let scrollLeft = 0;
-
-      slider.addEventListener('mousedown', (e) => {
-        isDown = true;
-        startX = e.pageX - slider.offsetLeft;
-        scrollLeft = slider.scrollLeft;
-        slider.style.cursor = 'grabbing';
-      });
-
-      window.addEventListener('mouseup', () => {
-        isDown = false;
-        slider.style.cursor = '';
-      });
-
-      slider.addEventListener('mousemove', (e) => {
-        if (!isDown) return;
-        e.preventDefault();
-        const x = e.pageX - slider.offsetLeft;
-        const walk = (x - startX) * 1.5;
-        slider.scrollLeft = scrollLeft - walk;
+      window.addEventListener('pointerup', end); window.addEventListener('pointercancel', end);
+      cardsEl.addEventListener('click', (e) => { if (moved > 5) { e.preventDefault(); e.stopPropagation(); moved = 0; } }, true);
+      // card links open the cinema modal
+      cardsEl.addEventListener('click', (e) => {
+        const a = e.target.closest('.card__link'); if (!a || e.defaultPrevented) return;
+        e.preventDefault(); if (building()) return;
+        Work.open(a.parentElement.dataset.slug, true);
       });
     },
-
-    /* =====================================================================
-       Card 3D Tilt Hover Effect
-    ===================================================================== */
-    init3DTilt() {
-      if (
-        document.documentElement.getAttribute('data-motion') === 'off' ||
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      ) {
-        return;
-      }
-
-      const cards = document.querySelectorAll('.work__slider .card');
-      cards.forEach((card) => {
-        card.addEventListener('mousemove', (e) => {
-          const rect = card.getBoundingClientRect();
-          const x = (e.clientX - rect.left) / rect.width - 0.5;
-          const y = (e.clientY - rect.top) / rect.height - 0.5;
-          const rotateX = -y * 8;
-          const rotateY = x * 8;
-
-          card.style.transform = `perspective(800px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-4px)`;
-        });
-
-        card.addEventListener('mouseleave', () => {
-          card.style.transform = '';
-        });
+    /* ---------- 3D tilt ±6° following the mouse ---------- */
+    bindTilt() {
+      if (!matchMedia('(hover:hover)').matches) return;
+      cardsEl.addEventListener('mousemove', (e) => {
+        if (motionOff() || building()) return;
+        const a = e.target.closest('.card__link'); if (!a) return;
+        const r = a.getBoundingClientRect(), px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5;
+        a.style.transition = 'transform .12s linear';
+        a.style.transform = `perspective(900px) rotateY(${(px * 12).toFixed(2)}deg) rotateX(${(-py * 12).toFixed(2)}deg)`;
       });
+      cardsEl.addEventListener('mouseout', (e) => { const a = e.target.closest('.card__link'); if (a && !a.contains(e.relatedTarget)) { a.style.transition = 'transform .6s cubic-bezier(.22,1,.36,1)'; a.style.transform = ''; } });
     },
-
-    /* =====================================================================
-       Cinema Project Modal (Part 7.6 / 7.7)
-    ===================================================================== */
-    initModal() {
-      let modalBackdrop = document.querySelector('.modal-backdrop');
-      if (!modalBackdrop) {
-        modalBackdrop = document.createElement('div');
-        modalBackdrop.className = 'modal-backdrop';
-        modalBackdrop.setAttribute('role', 'dialog');
-        modalBackdrop.setAttribute('aria-modal', 'true');
-        modalBackdrop.setAttribute('aria-label', 'Project details');
-
-        modalBackdrop.innerHTML = `
-          <div class="modal-letterbox-t"></div>
-          <div class="modal-letterbox-b"></div>
-          <div class="modal-window">
-            <button class="modal-close" type="button" aria-label="Close modal" data-cursor="close">✕</button>
-            <div class="modal-body">
-              <div class="modal-media"></div>
-              <div class="modal-details">
-                <p class="modal-num"></p>
-                <h3 class="modal-title"></h3>
-                <p class="modal-meta"></p>
-                <p class="modal-desc"></p>
-                <div class="modal-tech"></div>
-                <div class="modal-actions">
-                  <a class="modal-btn modal-btn--live" href="#" target="_blank" rel="noopener">LIVE DEMO ↗</a>
-                  <a class="modal-btn modal-btn--repo" href="#" target="_blank" rel="noopener">VIEW GITHUB ↗</a>
-                </div>
-              </div>
-            </div>
-            <div class="modal-nav">
-              <button class="modal-nav-btn modal-nav-btn--prev" type="button" aria-label="Previous project">‹</button>
-              <button class="modal-nav-btn modal-nav-btn--next" type="button" aria-label="Next project">›</button>
-            </div>
-          </div>
-        `;
-
-        document.body.appendChild(modalBackdrop);
-
-        // Bind close button
-        modalBackdrop.querySelector('.modal-close').addEventListener('click', () => {
-          Work.closeModal();
-        });
-
-        modalBackdrop.addEventListener('click', (e) => {
-          if (e.target === modalBackdrop) Work.closeModal();
-        });
-
-        // Prev / Next Project buttons
-        modalBackdrop.querySelector('.modal-nav-btn--prev').addEventListener('click', (e) => {
-          e.stopPropagation();
-          Work.navigateModal(-1);
-        });
-
-        modalBackdrop.querySelector('.modal-nav-btn--next').addEventListener('click', (e) => {
-          e.stopPropagation();
-          Work.navigateModal(1);
-        });
-
-        // Keyboard handler: Esc to close, Left/Right arrows
-        document.addEventListener('keydown', (e) => {
-          if (!modalBackdrop.classList.contains('is-open')) return;
-          if (e.key === 'Escape') Work.closeModal();
-          else if (e.key === 'ArrowLeft') Work.navigateModal(-1);
-          else if (e.key === 'ArrowRight') Work.navigateModal(1);
-        });
-      }
-
-      // Delegate click on card links
-      document.addEventListener('click', (e) => {
-        const link = e.target.closest('a[href^="#work/"]');
-        if (!link) return;
-        e.preventDefault();
-        const slug = link.getAttribute('href').replace('#work/', '');
-        lastFocusedElement = link;
-        Work.openModal(slug);
+    /* ---------- cinema modal (project modal) ---------- */
+    buildModal() {
+      if (cinema) return cinema;
+      const el = document.createElement('div'); el.className = 'cinema'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Project details'); el.setAttribute('aria-hidden', 'true');
+      el.innerHTML = '<i class="cinema__bar cinema__bar--t"></i><i class="cinema__bar cinema__bar--b"></i>' +
+        '<span class="cinema__count" aria-hidden="true"></span><button class="cinema__close" type="button" aria-label="Close project">×</button>' +
+        '<button class="cinema__nav cinema__nav--p" type="button" aria-label="Previous project">‹</button><button class="cinema__nav cinema__nav--n" type="button" aria-label="Next project">›</button>' +
+        '<div class="cinema__stage"><div class="cinema__media"></div><div class="cinema__info"><p class="eyebrow"></p><h2 class="cinema__title"></h2><p class="cinema__meta"></p><p class="cinema__desc"></p><div class="cinema__tech"></div><div class="cinema__links"></div></div></div>';
+      document.body.appendChild(el);
+      $('.cinema__close', el).addEventListener('click', () => Work.close());
+      $('.cinema__nav--p', el).addEventListener('click', () => Work.go(-1));
+      $('.cinema__nav--n', el).addEventListener('click', () => Work.go(1));
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { e.preventDefault(); Work.close(); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); Work.go(1); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); Work.go(-1); }
+        else if (e.key === ' ' && !e.target.closest('button, a, input')) { const v = $('video', el); if (v) { e.preventDefault(); v.paused ? v.play() : v.pause(); } }
+        else if (e.key === 'Tab') {
+          const f = $$('button, a[href], input, video[controls]', el).filter((x) => !x.disabled && x.offsetParent !== null); if (!f.length) return;
+          const a = f[0], b = f[f.length - 1];
+          if (e.shiftKey && document.activeElement === a) { e.preventDefault(); b.focus(); } else if (!e.shiftKey && document.activeElement === b) { e.preventDefault(); a.focus(); }
+        }
       });
+      Cursor && Cursor.refresh && Cursor.refresh();
+      cinema = el; return el;
     },
-
-    openModal(slug) {
-      const projects = (window.CONTENT && window.CONTENT.projects) || [];
-      const project = projects.find((p) => p.slug === slug);
-      if (!project) return;
-
-      activeModalSlug = slug;
-      const modal = document.querySelector('.modal-backdrop');
-      if (!modal) return;
-
-      modal.querySelector('.modal-num').textContent = project.n;
-      modal.querySelector('.modal-title').textContent = project.title;
-      modal.querySelector('.modal-meta').textContent = `${project.tag} · ${project.meta}`;
-      modal.querySelector('.modal-desc').textContent = project.desc;
-
-      // Tech pills
-      const techWrap = modal.querySelector('.modal-tech');
-      techWrap.innerHTML = (project.tech || []).map(t => `<span class="modal-tech-pill">${t}</span>`).join('');
-
-      // Media area (poster or image)
-      const mediaWrap = modal.querySelector('.modal-media');
-      const hue = (projects.indexOf(project) * 47) % 360;
-      const initials = project.title.replace(/[^A-Za-z0-9 ]/g, '').split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('');
-      mediaWrap.innerHTML = `
-        <div class="card__poster-inner" style="background:linear-gradient(135deg, hsl(${hue}, 60%, 14%), hsl(${hue}, 50%, 8%))">
-          <span class="card__poster-initials">${initials}</span>
-        </div>
-      `;
-
-      if (project.img) {
-        const img = new Image();
-        img.src = project.img;
-        img.onload = () => {
-          mediaWrap.innerHTML = `<img src="${project.img}" alt="${project.title}">`;
-        };
-      }
-
-      // Action buttons
-      const liveBtn = modal.querySelector('.modal-btn--live');
-      if (project.live) {
-        liveBtn.href = project.live;
-        liveBtn.style.display = 'inline-flex';
+    fill(i) {
+      const p = CONTENT.projects[i]; if (!p) return; current = i;
+      const el = cinema;
+      $('.cinema__count', el).textContent = p.n + ' / ' + String(CONTENT.projects.length).padStart(2, '0');
+      $('.eyebrow', el).textContent = p.tag; $('.cinema__title', el).textContent = p.title;
+      $('.cinema__meta', el).textContent = p.meta; $('.cinema__desc', el).textContent = p.desc;
+      const tech = $('.cinema__tech', el); tech.textContent = '';
+      p.tech.forEach((t) => { const c = document.createElement('span'); c.className = 'chip'; c.textContent = t; tech.appendChild(c); });
+      const links = $('.cinema__links', el); links.textContent = '';
+      if (p.live) { const a = document.createElement('a'); a.className = 'btn'; a.href = p.live; a.target = '_blank'; a.rel = 'noopener'; a.innerHTML = 'LIVE <span class="arr">↗</span>'; links.appendChild(a); }
+      if (p.repo) { const a = document.createElement('a'); a.className = 'btn btn--ghost'; a.href = p.repo; a.target = '_blank'; a.rel = 'noopener'; a.innerHTML = 'GITHUB <span class="arr">↗</span>'; links.appendChild(a); }
+      // media: a video if the project has one, else the image if it loads, else the generated code poster
+      const media = $('.cinema__media', el); media.textContent = '';
+      if (p.video && /\.(mp4|webm)$/i.test(p.video)) {
+        const v = document.createElement('video'); v.src = p.video; v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'none'; media.appendChild(v);
+        const ctl = document.createElement('div'); ctl.className = 'vctl'; ctl.innerHTML = '<button type="button" aria-label="Play or pause">▶</button><input type="range" min="0" max="100" value="0" aria-label="Seek">';
+        media.appendChild(ctl); const b = $('button', ctl), r = $('input', ctl);
+        b.addEventListener('click', () => { v.paused ? v.play() : v.pause(); }); v.addEventListener('timeupdate', () => { r.value = (v.currentTime / (v.duration || 1)) * 100; }); r.addEventListener('input', () => { v.currentTime = (r.value / 100) * (v.duration || 0); });
+      } else if (p.video && /(youtube\.com|youtu\.be|vimeo\.com)/.test(p.video)) {
+        const f = document.createElement('iframe'); f.src = p.video; f.allow = 'fullscreen'; f.loading = 'lazy'; f.title = p.title; media.appendChild(f);
       } else {
-        liveBtn.style.display = 'none';
+        const poster = document.createElement('span'); poster.className = 'card__poster'; decoratePoster(poster, p, i); media.appendChild(poster); tryImage(media, p, poster);
       }
-
-      const repoBtn = modal.querySelector('.modal-btn--repo');
-      if (project.repo) {
-        repoBtn.href = project.repo;
-        repoBtn.style.display = 'inline-flex';
-      } else {
-        repoBtn.style.display = 'none';
-      }
-
-      modal.classList.add('is-open');
-      modal.querySelector('.modal-close').focus();
-
-      if (history.pushState) {
-        history.pushState(null, '', `#work/${slug}`);
-      }
+      const pv = $('.cinema__nav--p', el), nx = $('.cinema__nav--n', el); pv.disabled = false; nx.disabled = false;
     },
-
-    closeModal() {
-      const modal = document.querySelector('.modal-backdrop');
-      if (modal) {
-        modal.classList.remove('is-open');
-      }
-      activeModalSlug = null;
-      if (history.pushState) {
-        history.pushState(null, '', window.location.pathname);
-      }
-      if (lastFocusedElement) {
-        lastFocusedElement.focus();
-      }
+    open(slug, push) {
+      const i = CONTENT.projects.findIndex((p) => p.slug === slug); if (i < 0) return;
+      lastFocus = document.activeElement; Work.buildModal(); Work.fill(i);
+      cinema.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
+      window.Scroll && Scroll.stop();
+      requestAnimationFrame(() => { cinema.classList.add('is-open'); setTimeout(() => { const c = $('.cinema__close', cinema); c && c.focus(); }, 60); });
+      if (push) { try { history.pushState(null, '', '#work/' + slug); } catch (e) { /* ignore */ } }
     },
-
-    navigateModal(direction) {
-      const projects = (window.CONTENT && window.CONTENT.projects) || [];
-      if (!projects.length || !activeModalSlug) return;
-      const idx = projects.findIndex((p) => p.slug === activeModalSlug);
-      if (idx === -1) return;
-
-      const nextIdx = (idx + direction + projects.length) % projects.length;
-      Work.openModal(projects[nextIdx].slug);
+    go(d) {
+      const n = CONTENT.projects.length, i = (current + d + n) % n;
+      Work.fill(i); try { history.replaceState(null, '', '#work/' + CONTENT.projects[i].slug); } catch (e) { /* ignore */ }
     },
-
-    checkUrlHash() {
-      const hash = window.location.hash;
-      if (hash && hash.startsWith('#work/')) {
-        const slug = hash.replace('#work/', '');
-        setTimeout(() => Work.openModal(slug), 500);
-      }
+    close() {
+      if (!cinema || !cinema.classList.contains('is-open')) return;
+      cinema.classList.remove('is-open'); cinema.setAttribute('aria-hidden', 'true');
+      const v = $('video', cinema); v && v.pause();
+      document.body.style.overflow = ''; window.Scroll && !building() && Scroll.start();
+      try { history.replaceState(null, '', '#work'); } catch (e) { /* ignore */ }
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
     },
+    /* deep link #work/<slug> opens the modal on load */
+    openFromHash() {
+      const m = location.hash.match(/^#work\/([\w-]+)/); if (m) Work.open(m[1], false);
+    },
+    isOpen() { return !!(cinema && cinema.classList.contains('is-open')); }
   };
-
+  window.addEventListener('hashchange', () => { const m = location.hash.match(/^#work\/([\w-]+)/); if (m && !building()) Work.open(m[1], false); else if (Work.isOpen() && !m) Work.close(); });
   window.Work = Work;
+  function li0() { return list && list[0] ? list[0] : document.body; }
 })();
