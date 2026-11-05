@@ -124,6 +124,13 @@
   const isOff = (v) => v.x > innerWidth + 4 || v.x + v.w < -4 || v.y > innerHeight + 260 || v.y + v.h < -260;
 
   const secName = (el) => { const s = el.closest('[data-swarm-section]'); return s ? s.dataset.swarmSection : 'page'; };
+  function getActiveSection() {
+    for (const [name, s] of S.sections.entries()) {
+      if (name === 'nav') continue;
+      if (s.built < s.total) return s;
+    }
+    return null;
+  }
   function collect() {
     const out = []; let i = 0;
     S.sections = new Map();
@@ -151,13 +158,14 @@
   }
   const remeasureFree = () => { for (const L of S.layers) if (!L.claimed) measure(L); };
 
-  /* next layer for an agent: reading order inside visible window, requiring >=3 cursors before advancing down */
+  /* next layer for an agent: prioritize active section and visible viewport, advancing section by section */
   function claim(a) {
     const L0 = S.layers, n = L0.length;
     while (S.firstFree < n && L0[S.firstFree].claimed) S.firstFree++;
     if (S.firstFree >= n) return null;
-    const lo = scrollY - 90, hi = scrollY + innerHeight + 60;
-    const focusLimit = scrollY + innerHeight * 0.74;
+    const curSec = getActiveSection();
+    const lo = scrollY - 90, hi = scrollY + innerHeight + 120;
+    const focusLimit = scrollY + innerHeight * 0.82;
 
     let best = null, bestScore = 1e12, seen = 0;
     let localBest = null, localScore = 1e12;
@@ -165,13 +173,15 @@
     for (let k = S.firstFree; k < n && seen < 44; k++) {
       const L = L0[k]; if (L.claimed) continue;
       const top = L.fixed ? scrollY + L.y : L.y;
-      if (top > hi) break; // never claim offscreen layers: wait for camera to arrive
+      if (top > hi && (!curSec || L.section !== curSec.name)) break;
       seen++;
       const v = vr(L);
       const dist = Math.hypot(v.x - a.x, v.y - a.y);
-      const score = (top - lo) * 1 + dist * 0.32 + L.k * 0.01;
+      const inSec = curSec && L.section === curSec.name;
+      // Strong preference for layers in the active section so the entire section builds together
+      const score = (top - lo) * 1 + dist * 0.32 + L.k * 0.01 - (inSec ? 600 : 0);
 
-      if (L.fixed || top <= focusLimit) {
+      if (L.fixed || top <= focusLimit || inSec) {
         if (score < localScore) {
           localScore = score;
           localBest = L;
@@ -183,7 +193,7 @@
       }
     }
 
-    // 1. If an unclaimed layer exists in the current viewport focus, claim it immediately (no waiting)
+    // 1. If an unclaimed layer exists in the current section or viewport focus, claim it immediately
     if (localBest) {
       if (S.downWaiting) S.downWaiting.delete(a.id);
       a.waitStart = 0;
@@ -192,38 +202,9 @@
       return localBest;
     }
 
-    // 2. If all layers in current focus are claimed, candidate layer is down below
+    // 2. If all layers in active section/focus are claimed, allow claiming forward
     if (best) {
-      const activeAbove = S.agents.filter((other) =>
-        other !== a &&
-        other.layer &&
-        !other.layer.done &&
-        !other.layer.fixed &&
-        other.layer.y <= focusLimit
-      );
-
-      // If other cursors are still working at the top / current view:
-      if (activeAbove.length > 0) {
-        if (!S.downWaiting) S.downWaiting = new Set();
-        S.downWaiting.add(a.id);
-
-        const needed = Math.min(3, activeAbove.length + S.downWaiting.size);
-        const starving = a.waitStart && (S.t - a.waitStart > 1600);
-        const gateOpen = S.downGateUntil && S.downGateUntil >= S.t;
-
-        if (S.downWaiting.size < needed && !starving && !gateOpen) {
-          // Wait for at least 3 cursors to finish before moving down together
-          if (!a.waitStart) a.waitStart = S.t;
-          return null;
-        }
-
-        // 3+ cursors ready to move down! Open the gate for companion cursors
-        S.downGateUntil = S.t + 1100;
-        S.downWaiting.delete(a.id);
-      } else {
-        if (S.downWaiting) S.downWaiting.delete(a.id);
-      }
-
+      if (S.downWaiting) S.downWaiting.delete(a.id);
       a.waitStart = 0;
       best.claimed = true;
       S.lastClaim = S.t;
@@ -581,26 +562,48 @@
     if (S.stop) return; let target = null;
     if (S.tourOverride) target = S.tourOverride();
     else if (S.tour && !S.userScrolled) {
-      // Coordinate camera with the advancing cluster of >=3 cursors
-      const active = S.agents.filter((a) => a.layer && !a.layer.fixed);
-      if (active.length >= 3) {
-        const ys = active.map((a) => a.layer.y).sort((p, q) => p - q);
-        const thirdY = ys[ys.length - 3];
-        target = thirdY <= innerHeight * 0.82 ? 0 : Math.max(0, thirdY - innerHeight * 0.34);
-      } else if (active.length > 0) {
-        const ys = active.map((a) => a.layer.y).sort((p, q) => p - q);
-        target = ys[0] <= innerHeight * 0.82 ? 0 : Math.max(0, ys[0] - innerHeight * 0.34);
+      const hero = S.sections.get('hero');
+      // 1. Keep camera strictly anchored at top while Hero is being built
+      if (hero && hero.built < hero.total) {
+        target = 0;
       } else {
-        let k = S.firstFree;
-        while (k < S.layers.length && S.layers[k].fixed) k++;
-        const L = S.layers[k] || S.layers[S.firstFree];
-        if (L) target = (L.fixed || L.y <= innerHeight * 0.82) ? 0 : Math.max(0, L.y - innerHeight * 0.34);
+        const curSec = getActiveSection();
+        if (!curSec || !curSec.el) {
+          target = document.documentElement.scrollHeight - innerHeight;
+        } else {
+          const r = curSec.el.getBoundingClientRect();
+          const secTop = r.top + scrollY;
+          const secH = curSec.el.offsetHeight || r.height;
+          const secBottom = secTop + secH;
+          const baseTarget = Math.max(0, secTop - 64);
+
+          // If the section fits within viewport, frame it cleanly from its top
+          if (secH <= innerHeight - 50) {
+            target = baseTarget;
+          } else {
+            // Tall section: check cluster position of active cursors in this section
+            const activeInSec = S.agents.filter((a) => a.layer && !a.layer.fixed && a.layer.section === curSec.name);
+            if (activeInSec.length >= 2) {
+              const ys = activeInSec.map((a) => a.layer.y).sort((p, q) => p - q);
+              const curY = ys[Math.min(ys.length - 1, 2)];
+              // Only scroll down when cursors pass 70% of viewport, keeping built content filling the screen
+              if (curY > baseTarget + innerHeight * 0.70) {
+                const maxSecScroll = Math.max(baseTarget, secBottom - innerHeight + 24);
+                target = clamp(curY - innerHeight * 0.70, baseTarget, maxSecScroll);
+              } else {
+                target = baseTarget;
+              }
+            } else {
+              target = baseTarget;
+            }
+          }
+        }
       }
     }
     if (target == null) return;
     const max = document.documentElement.scrollHeight - innerHeight; target = clamp(target, 0, Math.max(0, max));
     const d = target - scrollY; if (Math.abs(d) < 0.6) return;
-    const step = clamp(d * (1 - Math.exp(-dt / 520)), -0.85 * dt, 0.85 * dt); window.scrollTo(0, scrollY + step);
+    const step = clamp(d * (1 - Math.exp(-dt / 480)), -0.85 * dt, 0.85 * dt); window.scrollTo(0, scrollY + step);
   }
 
   function orbitStep(dt) {
