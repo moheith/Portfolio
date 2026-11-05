@@ -41,13 +41,36 @@ html.is-building body{overflow-x:hidden}
 #sw-guide.slow{transition-duration:.4s}
 
 /* ---------- 3. AGENT CURSORS ---------- */
-.sw-cursor{position:absolute;left:0;top:0;width:22px;height:22px;will-change:transform;filter:drop-shadow(0 2px 4px rgba(0,0,0,.55));margin:-2px 0 0 -3px}
-.sw-cursor svg{position:absolute;inset:0;width:22px;height:22px;overflow:visible;display:none}
-.sw-cursor[data-mode="arrow"] .g-arrow{display:block}
-.sw-cursor[data-mode="cross"] .g-cross{display:block}
-.sw-cursor[data-mode="ibeam"] .g-ibeam{display:block}
-.sw-cursor[data-mode="grab"] .g-arrow{display:block}
-.sw-cursor.is-click .g-arrow{transform:scale(.82);transform-origin:3px 2px}
+.sw-cursor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  will-change: transform;
+  filter: drop-shadow(0 0 2px var(--c, #00f0ff))
+          drop-shadow(0 0 6px var(--c, #00f0ff))
+          drop-shadow(0 0 12px var(--c, #00f0ff));
+  margin: -3.5px 0 0 -4.5px;
+  pointer-events: none;
+}
+.sw-cursor svg {
+  position: absolute;
+  inset: 0;
+  width: 28px;
+  height: 28px;
+  overflow: visible;
+  display: none;
+}
+.sw-cursor[data-mode="arrow"] .g-arrow { display: block; }
+.sw-cursor[data-mode="cross"] .g-cross { display: block; }
+.sw-cursor[data-mode="ibeam"] .g-ibeam { display: block; }
+.sw-cursor[data-mode="grab"] .g-arrow { display: block; }
+.sw-cursor.is-click .g-arrow {
+  transform: scale(0.85);
+  transform-origin: 4.5px 3.5px;
+  filter: brightness(1.35) drop-shadow(0 0 16px var(--c, #00f0ff));
+}
 
 /* click ripple (double-click = two of them) */
 .sw-ripple{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border:1.5px solid var(--blue,#2f8cff);border-radius:50%;animation:swRipple calc(.45s / var(--sw-speed,1)) ease-out both}

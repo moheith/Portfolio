@@ -8,7 +8,20 @@
   'use strict';
 
   /* ======================================================================= 0. CONFIG + STATE */
-  const COLORS = ['#5eead4', '#fb923c', '#ffffff', '#a78bfa', '#7dd3fc', '#fda4af', '#fcd34d', '#86efac'];
+  const COLORS = [
+    '#00f0ff', // Neon Cyan
+    '#ff2d55', // Neon Red
+    '#ff7a00', // Neon Orange
+    '#ffe600', // Neon Gold Amber
+    '#a6ff00', // Neon Lime
+    '#00ff88', // Neon Emerald
+    '#00a2ff', // Neon Electric Blue
+    '#a855f7', // Neon Violet
+    '#ff00aa', // Neon Magenta
+    '#38bdf8', // Neon Sky Blue
+    '#ffffff', // Neon White
+    '#ff2d78'  // Neon Hot Pink
+  ];
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const ABORT = { abort: true };
 
@@ -206,10 +219,11 @@
       this.id = id; this.color = COLORS[id % COLORS.length]; this.x = x; this.y = y; this.rot = 0; this.mode = 'arrow';
       this.vx = (R() - 0.5) * 2; this.vy = (R() - 0.5) * 2; this.track = null; this.idle = true; this.run = S.run; this.theta = 0; this.radius = 100; this.flock = null;
       const el = this.el = mk('div', 'sw-cursor', agentsEl()); el.dataset.mode = 'arrow';
+      el.style.setProperty('--c', this.color);
       el.innerHTML =
-        `<svg class="g-arrow" viewBox="0 0 24 24"><path d="M2.5 1.5 L2.5 18 L7.2 13.8 L11.2 22.2 L13.8 21 L9.8 12.6 L16.8 12.6 Z" fill="${this.color}" stroke="#ffffff" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/><path d="M2.5 1.5 L2.5 18 L7.2 13.8 L9.8 12.6 Z" fill="rgba(255,255,255,0.28)"/><circle cx="2.5" cy="1.5" r="1.1" fill="#fff"/></svg>` +
-        `<svg class="g-cross" viewBox="0 0 24 24"><g transform="translate(-9 -10)"><circle cx="12" cy="12" r="2" fill="${this.color}" stroke="#fff" stroke-width="0.8"/><path d="M12 3V8M12 16V21M3 12H8M16 12H21" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/><path d="M12 3V8M12 16V21M3 12H8M16 12H21" stroke="${this.color}" stroke-width="0.7" stroke-linecap="round"/></g></svg>` +
-        `<svg class="g-ibeam" viewBox="0 0 24 24"><g transform="translate(-9 -10)"><path d="M8.5 4H15.5M8.5 20H15.5M12 4V20" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"/><circle cx="12" cy="12" r="1.1" fill="${this.color}"/></g></svg>`;
+        `<svg class="g-arrow" viewBox="0 0 28 28"><path d="M 4.5 3.5 L 4.5 22.5 Q 4.5 23.5 5.5 23 L 13.5 17.5 Q 14.2 17 15 17.2 L 23.5 15.2 Q 24.5 15 24 14.2 L 5.5 3.2 Q 4.5 2.6 4.5 3.5 Z" fill="rgba(6, 12, 18, 0.85)"/><path d="M 4.5 3.5 Q 12 7 23.5 15.2 C 16 11 9 7.5 4.5 3.5 Z" fill="rgba(255, 255, 255, 0.22)"/><path d="M 4.5 3.5 L 4.5 22.5 Q 4.5 23.5 5.5 23 L 13.5 17.5 Q 14.2 17 15 17.2 L 23.5 15.2 Q 24.5 15 24 14.2 L 5.5 3.2 Q 4.5 2.6 4.5 3.5 Z" fill="none" stroke="${this.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M 4.5 3.5 L 4.5 22.5 Q 4.5 23.5 5.5 23 L 13.5 17.5 Q 14.2 17 15 17.2 L 23.5 15.2 Q 24.5 15 24 14.2 L 5.5 3.2 Q 4.5 2.6 4.5 3.5 Z" fill="none" stroke="#ffffff" stroke-width="0.9" stroke-linejoin="round" stroke-linecap="round"/></svg>` +
+        `<svg class="g-cross" viewBox="0 0 28 28"><g transform="translate(-5 -4)"><circle cx="14" cy="14" r="3" fill="${this.color}" stroke="#fff" stroke-width="0.8"/><path d="M14 4V9M14 19V24M4 14H9M19 14H24" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M14 4V9M14 19V24M4 14H9M19 14H24" stroke="${this.color}" stroke-width="0.8" stroke-linecap="round"/></g></svg>` +
+        `<svg class="g-ibeam" viewBox="0 0 28 28"><g transform="translate(-5 -4)"><path d="M10 5H18M10 23H18M14 5V23" stroke="#fff" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M10 5H18M10 23H18M14 5V23" stroke="${this.color}" stroke-width="0.8" stroke-linecap="round" fill="none"/><circle cx="14" cy="14" r="1.4" fill="${this.color}"/></g></svg>`;
       this.draw();
     }
     setMode(m) { this.mode = m; this.el.dataset.mode = m; }

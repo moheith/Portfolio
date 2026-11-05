@@ -379,17 +379,43 @@ ul, ol {
   position: fixed;
   top: 0;
   left: 0;
-  width: 6px;
-  height: 6px;
-  margin: -3px 0 0 -3px;
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 0 10px var(--red), 0 0 20px rgba(255, 59, 48, .8), inset 0 0 2px #fff;
+  width: 28px;
+  height: 28px;
+  margin: -3.5px 0 0 -4.5px;
   pointer-events: none;
   z-index: var(--z-cursor, 95);
   display: none;
-  mix-blend-mode: normal;
-  transition: transform .14s ease-out, background-color .2s ease;
+  filter: drop-shadow(0 0 2px var(--red))
+          drop-shadow(0 0 6px var(--red))
+          drop-shadow(0 0 12px rgba(255, 59, 48, .7));
+  will-change: transform;
+  transition: transform .06s ease-out, filter .2s ease;
+}
+.cur-arrow {
+  width: 28px;
+  height: 28px;
+  overflow: visible;
+  display: block;
+}
+.cur-glass {
+  fill: rgba(22, 6, 8, 0.85);
+}
+.cur-sheen {
+  fill: rgba(255, 255, 255, 0.22);
+}
+.cur-tube {
+  fill: none;
+  stroke: var(--red, #ff3b30);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.cur-core {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 0.9;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 .cur-ring {
   position: fixed;
