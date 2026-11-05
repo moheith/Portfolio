@@ -14,9 +14,9 @@
 
   const S = window.Swarm = {
     cfg: {
-      startAgents: 18, maxAgents: 30,
+      startAgents: 10, maxAgents: 14,
       targetSeconds: 51.4,                                   // total run time at 1x (the pace controller steers to this)
-      joins: [[6, 19], [12, 23], [17, 24], [31, 28], [39, 29], [48, 30]],   // [seconds at 1x, agent count] (measured from the reference)
+      joins: [[10, 11], [20, 12], [30, 13], [40, 14]],   // [seconds at 1x, agent count]
       editRate: 0.34,                                        // share of long text layers that get a select-and-retype / typo-fix pass
       resizeRate: 0.5,                                       // share of images/cards that are first drawn too small, then resized
       moveRate: 0.35,                                        // share of cards/shapes first drawn off-position, then dragged into place
@@ -672,16 +672,21 @@
   async function finale(run) {
     document.querySelectorAll('.sw-box, .sw-pre, .sw-sweep, .sw-swatches, .sw-ripple').forEach((e) => e.remove());
     S.doneSeconds = Math.round(S.real / 100) / 10;                          // wall-clock seconds from the first frame to the last layer
-    while (S.agents.length < S.cfg.maxAgents) spawn(true);                   // the last agents always arrive before "Rebuilt by 30 agents"
+    while (S.agents.length < S.cfg.maxAgents) spawn(true);
     emit('agents', S.agents.length);
     S.tourOverride = () => { const el = $(S.cfg.finaleTarget); if (!el) return null; const r = el.getBoundingClientRect(); return scrollY + r.top - (innerHeight - r.height) / 2; };
     setState('finale'); Sound.chime();
     const r0 = ($(S.cfg.finaleTarget) || document.body).getBoundingClientRect(); const cx = r0.left + r0.width / 2, cy = r0.top + r0.height / 2;
-    S.agents.forEach((a, i) => { a.theta = Math.atan2(a.y - cy, a.x - cx); a.radius = 105 + (i % 4) * 36; a.peel = false; a.track = null; a.idle = false; });
+    S.agents.forEach((a, i) => { a.theta = Math.atan2(a.y - cy, a.x - cx); a.radius = 110 + (i % 3) * 32; a.peel = false; a.track = null; a.idle = false; });
     S.orbit = { t0: S.t };
-    /* a few agents peel off to the top-right corner, staggered */
-    const peelers = S.agents.slice(-5);
-    peelers.forEach((a, k) => { sleep(1400 + k * 380).then(async () => { if (S.run !== run || S.state !== 'finale') return; a.peel = true; await a.flyTo(() => [innerWidth + 40, -40], 900); }); });
+
+    // Circle for ~5 seconds then smoothly go back to normal at the top
+    if (S.finaleTimer) clearTimeout(S.finaleTimer);
+    S.finaleTimer = setTimeout(async () => {
+      if (S.run === run && S.state === 'finale') {
+        await S.goLive();
+      }
+    }, 5000 / Math.max(0.5, S.speed));
   }
 
   const onResize = () => { clearTimeout(S.rz); S.rz = setTimeout(() => { remeasureFree(); buildRulers(); }, 150); };
@@ -699,6 +704,7 @@
   }
 
   async function teardown(forRestart) {
+    if (S.finaleTimer) { clearTimeout(S.finaleTimer); S.finaleTimer = null; }
     S.stop = true; S.run++; flush(); await new Promise((r) => setTimeout(r, 0));
     followers.clear(); tasks.clear(); pending.clear(); previews.clear(); clearInterval(remeasureTimer);
     window.removeEventListener('wheel', onUserScroll); window.removeEventListener('touchmove', onUserScroll); window.removeEventListener('keydown', onKey); window.removeEventListener('resize', onResize);
@@ -713,12 +719,16 @@
   S.start = start;
   S.abort = async () => {                                                  // the ✕ button: reveal everything instantly
     if (S.state === 'live' || S.state === 'abort' || S.state === 'idle') return; const had = S.layers.length;
+    if (S.finaleTimer) { clearTimeout(S.finaleTimer); S.finaleTimer = null; }
     await teardown(false); if (had) restoreAll(true); document.documentElement.classList.remove('is-building'); setState('abort'); emit('end', 'abort');
   };
   S.goLive = async () => {                                                 // "Go live" after the finale
-    if (S.state !== 'finale') return; const run = S.run; S.orbit = null; setState('live');
-    S.agents.forEach((a, i) => { sleep(i * 25).then(() => a.flyTo(() => [innerWidth + 60, -60], 700 + (i % 5) * 80)); });
-    window.scrollTo({ top: 0, behavior: 'smooth' }); await sleep(1100); if (S.run !== run) return;
+    if (S.state !== 'finale') return; const run = S.run;
+    if (S.finaleTimer) { clearTimeout(S.finaleTimer); S.finaleTimer = null; }
+    S.orbit = null; S.tourOverride = null; S.tour = false; setState('live');
+    S.agents.forEach((a, i) => { sleep(i * 20).then(() => a.flyTo(() => [innerWidth + 70, -60 - (i % 3) * 20], 650 + (i % 4) * 60)); });
+    window.scrollTo({ top: 0, behavior: 'smooth' }); await sleep(1200); if (S.run !== run) return;
+    window.scrollTo(0, 0);
     await teardown(false); document.documentElement.classList.remove('is-building'); emit('end', 'live');
   };
   S.replay = async () => {

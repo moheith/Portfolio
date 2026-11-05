@@ -33,10 +33,10 @@ const snap = (p) => p.evaluate(() => ({
   let s = await snap(p);
   ok('layer count between 300 and 450', s.total >= 300 && s.total <= 450, `(${s.total})`);
   ok('every layer built', s.built === s.total && s.unbuilt === 0);
-  ok('30 agents at the finale', s.agents === 30, `(${s.agents})`);
+  ok('agents at the finale', s.agents >= 12 && s.agents <= 16, `(${s.agents})`);
   ok('no stray boxes/previews/sweeps', s.strays === 0, `(${s.strays})`);
   ok('no half-typed text left (caret/rest/selection spans)', s.dirtyText === 0, `(${s.dirtyText})`);
-  ok('HUD shows "Rebuilt by 30 agents in …s" + Go live + Replay', /Rebuilt by 30 agents in [\d.]+s/.test(s.hud) && /Go live/.test(s.hud) && /Replay/.test(s.hud), s.hud);
+  ok('HUD shows "Rebuilt by … agents in …s" + Go live + Replay', /Rebuilt by \d+ agents in [\d.]+s/.test(s.hud) && /Go live/.test(s.hud) && /Replay/.test(s.hud), s.hud);
   await p.screenshot({ path: 'tests-out-finale.png' });
   await p.click('#sw-hud [data-a=live]'); await p.waitForFunction(() => Swarm.state === 'live', null, { timeout: 8000 }); await p.waitForTimeout(2200); s = await snap(p);
   ok('Go live: overlay gone, is-building removed, cursors removed', !s.building && !s.hudOn && s.cursors === 0 && s.unbuilt === 0);
