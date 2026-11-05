@@ -680,13 +680,30 @@
     S.agents.forEach((a, i) => { a.theta = Math.atan2(a.y - cy, a.x - cx); a.radius = 110 + (i % 3) * 32; a.peel = false; a.track = null; a.idle = false; });
     S.orbit = { t0: S.t };
 
-    // Circle for ~5 seconds then smoothly go back to normal at the top
+    // Circle for ~5 seconds, then a cursor peels off, flies down, and clicks the "Go live" button
     if (S.finaleTimer) clearTimeout(S.finaleTimer);
     S.finaleTimer = setTimeout(async () => {
-      if (S.run === run && S.state === 'finale') {
+      if (S.run !== run || S.state !== 'finale') return;
+      const btn = document.querySelector('#sw-hud [data-a="live"]');
+      const clicker = S.agents[0];
+      if (btn && clicker) {
+        clicker.peel = true; clicker.setMode('arrow'); clicker.track = null;
+        await clicker.flyTo(() => {
+          const r = btn.getBoundingClientRect();
+          return [r.left + r.width / 2, r.top + r.height / 2];
+        }, 520);
+        if (S.run !== run || S.state !== 'finale') return;
+        btn.style.transform = 'scale(0.92)';
+        clicker.click();
+        Sound.tick();
+        await sleep(140);
+        if (btn) btn.style.transform = '';
+        if (S.run !== run || S.state !== 'finale') return;
+        btn.click();
+      } else {
         await S.goLive();
       }
-    }, 5000 / Math.max(0.5, S.speed));
+    }, 4400 / Math.max(0.5, S.speed));
   }
 
   const onResize = () => { clearTimeout(S.rz); S.rz = setTimeout(() => { remeasureFree(); buildRulers(); }, 150); };
