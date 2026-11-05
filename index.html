@@ -194,25 +194,27 @@
         <img src="assets/img/raw-final.jpg" alt="" onerror="this.remove()">
         <div class="fakeui" aria-hidden="true">
           <div class="fakeui__chrome">
-            <div class="fakeui__dots"><span class="fakeui__dot fakeui__dot--r"></span><span class="fakeui__dot fakeui__dot--y"></span><span class="fakeui__dot fakeui__dot--g"></span></div>
-            <div class="fakeui__tabs">
-              <span class="fakeui__tab fakeui__tab--active">GameWorld.ts</span>
-              <span class="fakeui__tab">Scene.viewport</span>
-              <span class="fakeui__tab">Shaders.glsl</span>
+            <div class="fakeui__chromegroup">
+              <div class="fakeui__dots"><span class="fakeui__dot fakeui__dot--r"></span><span class="fakeui__dot fakeui__dot--y"></span><span class="fakeui__dot fakeui__dot--g"></span></div>
+              <div class="fakeui__tabs">
+                <span class="fakeui__tab fakeui__tab--active">GameWorld.ts</span>
+                <span class="fakeui__tab">Scene.viewport</span>
+                <span class="fakeui__tab">Shaders.glsl</span>
+              </div>
             </div>
-            <span class="fakeui__title">https://studio.yulya.me/editor</span>
+            <div class="fakeui__url"><span>🔒</span> https://studio.yulya.me/editor</div>
             <span class="fakeui__status fakeui__status--live">● LIVE (60.0 FPS · 0.4ms)</span>
           </div>
           <div class="fakeui__toolbar">
             <div class="fakeui__toolgroup">
-              <span class="fakeui__toolbtn fakeui__toolbtn--play">▶ PLAY</span>
+              <span class="fakeui__toolbtn fakeui__toolbtn--play">▶ RUN_SIM</span>
               <span class="fakeui__toolbtn">❚❚ PAUSE</span>
               <span class="fakeui__toolbtn">↺ RESET</span>
             </div>
             <div class="fakeui__toolgroup">
               <span class="fakeui__toolbadge">VIEWPORT: 3D PERSPECTIVE</span>
-              <span class="fakeui__toolbadge">CAM: [0, 4, 12]</span>
-              <span class="fakeui__toolbadge">PBR: ON</span>
+              <span class="fakeui__toolbadge">CAM: [0.0, 4.2, 12.0]</span>
+              <span class="fakeui__toolbadge fakeui__toolbadge--accent">PBR: ACTIVE</span>
             </div>
           </div>
           <div class="fakeui__inner">
@@ -223,16 +225,31 @@
                 <div class="fakeui__treeitem"><span class="fakeui__tag fakeui__tag--gl">GL</span> ParticleSystem.ts</div>
                 <div class="fakeui__treeitem"><span class="fakeui__tag fakeui__tag--ai">AI</span> NeuralCompanion.ts</div>
                 <div class="fakeui__treeitem"><span class="fakeui__tag fakeui__tag--bin">BIN</span> yulya_core.onnx</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag fakeui__tag--pbr">PBR</span> KeyLight_Core</div>
               </div>
             </div>
             <div class="fakeui__main">
               <div class="fakeui__canvas">
-                <div class="fakeui__sun"></div>
                 <div class="fakeui__canvas--grid"></div>
-                <div class="fakeui__radar"></div>
-                <div class="fakeui__reticle"></div>
-                <div class="fakeui__craft"></div>
-                <div class="fakeui__telemetry">ENTITIES: 2,480 · DRAW CALLS: 14 · VERTICES: 48.2K · MEM: 38MB</div>
+                <div class="fakeui__holo">
+                  <div class="fakeui__sun"></div>
+                  <div class="fakeui__ring"></div>
+                  <div class="fakeui__craft"></div>
+                  <div class="fakeui__reticle"></div>
+                </div>
+                <svg class="fakeui__gizmo" viewBox="0 0 40 40">
+                  <line x1="20" y1="20" x2="36" y2="20" stroke="#ef4444" stroke-width="1.8" />
+                  <line x1="20" y1="20" x2="20" y2="4" stroke="#22c55e" stroke-width="1.8" />
+                  <line x1="20" y1="20" x2="10" y2="30" stroke="#3b82f6" stroke-width="1.8" />
+                  <circle cx="20" cy="20" r="2.2" fill="#ffffff" />
+                  <text x="36" y="23" fill="#ef4444" font-size="6" font-weight="bold">X</text>
+                  <text x="18" y="4" fill="#22c55e" font-size="6" font-weight="bold">Y</text>
+                  <text x="6" y="34" fill="#3b82f6" font-size="6" font-weight="bold">Z</text>
+                </svg>
+                <div class="fakeui__telemetry">
+                  <span>BOUNDS: 800×480 · FOV: 60°</span>
+                  <span>ENTITIES: 2,480 · DRAW CALLS: 14 · MEM: 38MB</span>
+                </div>
               </div>
               <div class="fakeui__editor">
                 <div class="fakeui__code">
@@ -245,10 +262,21 @@
             </div>
             <div class="fakeui__panel">
               <div class="fakeui__panelhead">INSPECTOR · ENTITY_01</div>
-              <div class="fakeui__row"><span class="fakeui__rowlabel">TRANSFORM</span><span class="fakeui__rowval">[ 0.0 , 4.2 , 12.0 ]</span></div>
-              <div class="fakeui__row"><span class="fakeui__rowlabel">NEURAL ATTN</span><span class="fakeui__rowval">98.4% ACTIVE</span></div>
+              <div class="fakeui__sectitle">TRANSFORM (3D)</div>
+              <div class="fakeui__row">
+                <span class="fakeui__rowlabel">POS</span>
+                <div class="fakeui__pills">
+                  <span class="fakeui__axis fakeui__axis--x">0.0</span>
+                  <span class="fakeui__axis fakeui__axis--y">4.2</span>
+                  <span class="fakeui__axis fakeui__axis--z">12.0</span>
+                </div>
+              </div>
+              <div class="fakeui__sectitle">NEURAL ATTENTION</div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">WEIGHTS</span><span class="fakeui__rowval fakeui__rowval--active">98.4% ACTIVE</span></div>
+              <div class="fakeui__sectitle">MATERIAL & SHADING</div>
               <div class="fakeui__row"><span class="fakeui__rowlabel">SHADER PBR</span><span class="fakeui__toggle fakeui__toggle--on"></span></div>
-              <div class="fakeui__row"><span class="fakeui__rowlabel">GPU FRAME</span><div class="fakeui__meter"><div class="fakeui__meterbar"></div></div></div>
+              <div class="fakeui__sectitle">PERFORMANCE METRICS</div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">GPU LATENCY</span><div class="fakeui__meter"><div class="fakeui__meterbar"></div></div></div>
               <div class="fakeui__row"><span class="fakeui__rowlabel">PHYSICS TICK</span><span class="fakeui__rowval">16.6ms FIXED</span></div>
             </div>
           </div>
@@ -258,14 +286,16 @@
         <img src="assets/img/raw-wireframe.jpg" alt="" onerror="this.remove()">
         <div class="fakeui fakeui--wire" aria-hidden="true">
           <div class="fakeui__chrome">
-            <div class="fakeui__dots"><span class="fakeui__dot"></span><span class="fakeui__dot"></span><span class="fakeui__dot"></span></div>
-            <div class="fakeui__tabs">
-              <span class="fakeui__tab fakeui__tab--active">GameWorld.ts</span>
-              <span class="fakeui__tab">Scene.viewport</span>
-              <span class="fakeui__tab">Shaders.glsl</span>
+            <div class="fakeui__chromegroup">
+              <div class="fakeui__dots"><span class="fakeui__dot"></span><span class="fakeui__dot"></span><span class="fakeui__dot"></span></div>
+              <div class="fakeui__tabs">
+                <span class="fakeui__tab fakeui__tab--active">GameWorld.ts</span>
+                <span class="fakeui__tab">Scene.viewport</span>
+                <span class="fakeui__tab">Shaders.glsl</span>
+              </div>
             </div>
-            <span class="fakeui__title">[BLUEPRINT] studio.yulya.me/editor</span>
-            <span class="fakeui__status">STAGE: WIREFRAME / CAD</span>
+            <div class="fakeui__url"><span>[CAD]</span> studio.yulya.me/editor</div>
+            <span class="fakeui__status fakeui__status--wire">WIREFRAME / CAD</span>
           </div>
           <div class="fakeui__toolbar">
             <div class="fakeui__toolgroup">
@@ -274,9 +304,9 @@
               <span class="fakeui__toolbtn">↺ RESET</span>
             </div>
             <div class="fakeui__toolgroup">
-              <span class="fakeui__toolbadge">BOUNDS: 800 x 480</span>
+              <span class="fakeui__toolbadge">BOUNDS: 800×480</span>
               <span class="fakeui__toolbadge">ORTHOGRAPHIC</span>
-              <span class="fakeui__toolbadge">HAIRLINE: 1px</span>
+              <span class="fakeui__toolbadge">GRID: 24px CAD</span>
             </div>
           </div>
           <div class="fakeui__inner">
@@ -287,15 +317,31 @@
                 <div class="fakeui__treeitem"><span class="fakeui__tag">OBJ</span> GameWorld.ts</div>
                 <div class="fakeui__treeitem"><span class="fakeui__tag">OBJ</span> ParticleSystem.ts</div>
                 <div class="fakeui__treeitem"><span class="fakeui__tag">OBJ</span> NeuralCompanion.ts</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag">OBJ</span> KeyLight_Core</div>
               </div>
             </div>
             <div class="fakeui__main">
               <div class="fakeui__canvas">
                 <div class="fakeui__canvas--grid"></div>
-                <div class="fakeui__radar"></div>
-                <div class="fakeui__reticle"></div>
-                <div class="fakeui__craft"></div>
-                <div class="fakeui__telemetry">BOUNDS: 800 x 480 · AXIS: (0,0) · WIREFRAME MESH</div>
+                <div class="fakeui__holo">
+                  <div class="fakeui__sun"></div>
+                  <div class="fakeui__ring"></div>
+                  <div class="fakeui__craft"></div>
+                  <div class="fakeui__reticle"></div>
+                </div>
+                <svg class="fakeui__gizmo" viewBox="0 0 40 40">
+                  <line x1="20" y1="20" x2="36" y2="20" stroke="#38bdf8" stroke-dasharray="2,2" stroke-width="1.5" />
+                  <line x1="20" y1="20" x2="20" y2="4" stroke="#38bdf8" stroke-dasharray="2,2" stroke-width="1.5" />
+                  <line x1="20" y1="20" x2="10" y2="30" stroke="#38bdf8" stroke-dasharray="2,2" stroke-width="1.5" />
+                  <circle cx="20" cy="20" r="2.2" stroke="#38bdf8" fill="none" />
+                  <text x="36" y="23" fill="#38bdf8" font-size="6">X</text>
+                  <text x="18" y="4" fill="#38bdf8" font-size="6">Y</text>
+                  <text x="6" y="34" fill="#38bdf8" font-size="6">Z</text>
+                </svg>
+                <div class="fakeui__telemetry">
+                  <span>BOUNDS: 800×480 · AXIS: (0,0)</span>
+                  <span>WIREFRAME MESH: 48.2K · MEM: 38MB</span>
+                </div>
               </div>
               <div class="fakeui__editor">
                 <div class="fakeui__skel fakeui__skel--short"></div>
@@ -306,10 +352,15 @@
             </div>
             <div class="fakeui__panel">
               <div class="fakeui__panelhead">PROPERTIES · MESH_01</div>
-              <div class="fakeui__row"><span class="fakeui__rowlabel">X / Y POS</span><span class="fakeui__rowval">[ 400 , 240 ]</span></div>
-              <div class="fakeui__row"><span class="fakeui__rowlabel">COLLISION</span><span class="fakeui__rowval">BOX 32x32</span></div>
+              <div class="fakeui__sectitle">GEOMETRY (CAD)</div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">POS</span><span class="fakeui__rowval">[ 0.0 , 4.2 , 12.0 ]</span></div>
+              <div class="fakeui__sectitle">COLLISION / SIM</div>
               <div class="fakeui__row"><span class="fakeui__rowlabel">SIMULATION</span><span class="fakeui__toggle"></span></div>
-              <div class="fakeui__row"><span class="fakeui__rowlabel">MEMORY</span><div class="fakeui__meter"><div class="fakeui__meterbar"></div></div></div>
+              <div class="fakeui__sectitle">SHADING MODEL</div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">RENDER</span><span class="fakeui__rowval">WIREFRAME 1px</span></div>
+              <div class="fakeui__sectitle">MEMORY BUFFER</div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">BUFFER</span><div class="fakeui__meter"><div class="fakeui__meterbar"></div></div></div>
+              <div class="fakeui__sectitle">FRAME BUDGET</div>
               <div class="fakeui__row"><span class="fakeui__rowlabel">FRAME CAP</span><span class="fakeui__rowval">60 FPS CAD</span></div>
             </div>
           </div>
@@ -441,7 +492,7 @@
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <div id="modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Project details"></div>
 <div id="palette" class="palette" aria-hidden="true" role="dialog" aria-label="Command palette"></div>
-<div id="cursorDot" class="cur-dot" aria-hidden="true"><svg class="cur-arrow" viewBox="0 0 28 28"><path class="cur-glass" d="M 4.0 4.2 C 4.0 3.1, 4.7 2.6, 5.7 3.2 Q 13.6 9.0, 21.2 14.8 C 22.4 15.8, 22.0 17.0, 20.7 16.9 Q 16.5 16.0, 13.3 15.8 C 12.3 15.6, 11.6 16.2, 11.0 17.2 Q 7.9 20.4, 5.6 23.0 C 4.6 24.2, 4.0 23.6, 4.0 22.2 Z"/><path class="cur-tint" d="M 4.0 4.2 C 4.0 3.1, 4.7 2.6, 5.7 3.2 Q 13.6 9.0, 21.2 14.8 C 22.4 15.8, 22.0 17.0, 20.7 16.9 Q 16.5 16.0, 13.3 15.8 C 12.3 15.6, 11.6 16.2, 11.0 17.2 Q 7.9 20.4, 5.6 23.0 C 4.6 24.2, 4.0 23.6, 4.0 22.2 Z"/><path class="cur-sheen" d="M 4 4.2 Q 12 7 21.2 14.8 C 14 11 8 8 4 4.2 Z"/><path class="cur-bounce" d="M 4 9 Q 8 13.5 13.3 15.8 Q 7.9 20.4 5.6 23.0 C 4.6 24.2 4 23.6 4 22.2 Z"/><path class="cur-tube" d="M 4.0 4.2 C 4.0 3.1, 4.7 2.6, 5.7 3.2 Q 13.6 9.0, 21.2 14.8 C 22.4 15.8, 22.0 17.0, 20.7 16.9 Q 16.5 16.0, 13.3 15.8 C 12.3 15.6, 11.6 16.2, 11.0 17.2 Q 7.9 20.4, 5.6 23.0 C 4.6 24.2, 4.0 23.6, 4.0 22.2 Z"/><path class="cur-core" d="M 4.0 4.2 C 4.0 3.1, 4.7 2.6, 5.7 3.2 Q 13.6 9.0, 21.2 14.8 C 22.4 15.8, 22.0 17.0, 20.7 16.9 Q 16.5 16.0, 13.3 15.8 C 12.3 15.6, 11.6 16.2, 11.0 17.2 Q 7.9 20.4, 5.6 23.0 C 4.6 24.2, 4.0 23.6, 4.0 22.2 Z"/></svg></div><div id="cursorRing" class="cur-ring" aria-hidden="true"><span></span></div>
+<div id="cursorDot" class="cur-dot" aria-hidden="true"><svg class="cur-arrow" viewBox="0 0 28 28"><path class="cur-glass" d="M 4.0 4.2 C 4.0 3.1, 4.7 2.6, 5.7 3.2 Q 13.6 9.0, 21.2 14.8 C 22.4 15.8, 22.0 17.0, 20.7 16.9 Q 16.5 16.0, 13.3 15.8 C 12.3 15.6, 11.6 16.2, 11.0 17.2 Q 7.9 20.4, 5.6 23.0 C 4.6 24.2, 4.0 23.6, 4.0 22.2 Z"/><path class="cur-tint" d="M 4.0 4.2 C 4.0 3.1, 4.7 2.6, 5.7 3.2 Q 13.6 9.0, 21.2 14.8 C 22.4 15.8, 22.0 17.0, 20.7 16.9 Q 16.5 16.0, 13.3 15.8 C 12.3 15.6, 11.6 16.2, 11.0 17.2 Q 7.9 20.4, 5.6 23.0 C 4.6 24.2, 4.0 23.6, 4.0 22.2 Z"/><path class="cur-sheen" d="M 4 4.2 Q 12 7 21.2 14.8 C 14 11 8 8 4 4.2 Z"/><path class="cur-bounce" d="M 4 9 Q 8 13.5 13.3 15.8 Q 7.9 20.4 5.6 23.0 C 4.6 24.2 4 23.6 4 22.2 Z"/><path class="cur-tube" d="M 4.0 4.2 C 4.0 3.1, 4.7 2.6, 5.7 3.2 Q 13.6 9.0, 21.2 14.8 C 22.4 15.8, 22.0 17.0, 20.7 16.9 Q 16.5 16.0, 13.3 15.8 C 12.3 15.6, 11.6 16.2, 11.0 17.2 Q 7.9 20.4, 5.6 23.0 C 4.6 24.2, 4.0 23.6, 4.0 22.2 Z"/><path class="cur-core" d="M 4.0 4.2 C 4.0 3.1, 4.7 2.6, 5.7 3.2 Q 13.6 9.0, 21.2 14.8 C 22.4 15.8, 22.0 17.0, 20.7 16.9 Q 16.5 16.0, 13.3 15.8 C 12.3 15.6, 11.6 16.2, 11.0 17.2 Q 7.9 20.4, 5.6 23.0 C 4.6 24.2, 4.0 23.6, 4.0 22.2 Z"/></svg></div>
 
 <!-- SWARM OVERLAY: everything the agents draw lives in here (aria-hidden, pointer-events:none) -->
 <div id="swarm-root" aria-hidden="true">
