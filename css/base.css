@@ -381,7 +381,7 @@ ul, ol {
   left: 0;
   width: 28px;
   height: 28px;
-  margin: -3.5px 0 0 -4.5px;
+  margin: -3px 0 0 -4px;
   pointer-events: none;
   z-index: var(--z-cursor, 95);
   display: none;
@@ -398,22 +398,30 @@ ul, ol {
   display: block;
 }
 .cur-glass {
-  fill: rgba(22, 6, 8, 0.85);
+  fill: rgba(15, 5, 8, 0.75);
+}
+.cur-tint {
+  fill: var(--red, #ff3b30);
+  fill-opacity: 0.32;
 }
 .cur-sheen {
-  fill: rgba(255, 255, 255, 0.22);
+  fill: rgba(255, 255, 255, 0.28);
+}
+.cur-bounce {
+  fill: var(--red, #ff3b30);
+  fill-opacity: 0.18;
 }
 .cur-tube {
   fill: none;
   stroke: var(--red, #ff3b30);
-  stroke-width: 2.5;
+  stroke-width: 2.3;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 .cur-core {
   fill: none;
   stroke: #ffffff;
-  stroke-width: 0.9;
+  stroke-width: 0.85;
   stroke-linejoin: round;
   stroke-linecap: round;
 }

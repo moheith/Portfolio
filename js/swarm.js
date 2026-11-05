@@ -220,9 +220,17 @@
       this.vx = (R() - 0.5) * 2; this.vy = (R() - 0.5) * 2; this.track = null; this.idle = true; this.run = S.run; this.theta = 0; this.radius = 100; this.flock = null;
       const el = this.el = mk('div', 'sw-cursor', agentsEl()); el.dataset.mode = 'arrow';
       el.style.setProperty('--c', this.color);
+      const d = 'M 4.0 4.5 C 4.0 3.2, 4.8 2.6, 5.8 3.2 Q 13.8 9.2, 21.2 14.6 C 22.6 15.7, 22.2 17.2, 20.8 17.0 Q 16.2 15.2, 12.8 13.6 C 11.8 13.1, 11.0 13.6, 10.4 14.8 Q 7.6 19.6, 5.3 23.4 C 4.4 24.8, 4.0 24.2, 4.0 22.6 Z';
       el.innerHTML =
-        `<svg class="g-arrow" viewBox="0 0 28 28"><path d="M 4.5 3.5 L 4.5 22.5 Q 4.5 23.5 5.5 23 L 13.5 17.5 Q 14.2 17 15 17.2 L 23.5 15.2 Q 24.5 15 24 14.2 L 5.5 3.2 Q 4.5 2.6 4.5 3.5 Z" fill="rgba(6, 12, 18, 0.85)"/><path d="M 4.5 3.5 Q 12 7 23.5 15.2 C 16 11 9 7.5 4.5 3.5 Z" fill="rgba(255, 255, 255, 0.22)"/><path d="M 4.5 3.5 L 4.5 22.5 Q 4.5 23.5 5.5 23 L 13.5 17.5 Q 14.2 17 15 17.2 L 23.5 15.2 Q 24.5 15 24 14.2 L 5.5 3.2 Q 4.5 2.6 4.5 3.5 Z" fill="none" stroke="${this.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M 4.5 3.5 L 4.5 22.5 Q 4.5 23.5 5.5 23 L 13.5 17.5 Q 14.2 17 15 17.2 L 23.5 15.2 Q 24.5 15 24 14.2 L 5.5 3.2 Q 4.5 2.6 4.5 3.5 Z" fill="none" stroke="#ffffff" stroke-width="0.9" stroke-linejoin="round" stroke-linecap="round"/></svg>` +
-        `<svg class="g-cross" viewBox="0 0 28 28"><g transform="translate(-5 -4)"><circle cx="14" cy="14" r="3" fill="${this.color}" stroke="#fff" stroke-width="0.8"/><path d="M14 4V9M14 19V24M4 14H9M19 14H24" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M14 4V9M14 19V24M4 14H9M19 14H24" stroke="${this.color}" stroke-width="0.8" stroke-linecap="round"/></g></svg>` +
+        `<svg class="g-arrow" viewBox="0 0 28 28">` +
+          `<path class="g-glass" d="${d}" fill="rgba(10, 4, 6, 0.75)"/>` +
+          `<path class="g-tint" d="${d}" fill="${this.color}" fill-opacity="0.32"/>` +
+          `<path class="g-sheen" d="M 4 4.5 Q 12 7 21.2 14.6 C 14 11 8 8 4 4.5 Z" fill="rgba(255, 255, 255, 0.28)"/>` +
+          `<path class="g-bounce" d="M 4 9 Q 8 13 12.8 13.6 Q 7.6 19.6 5.3 23.4 C 4.4 24.8 4 24.2 4 22.6 Z" fill="${this.color}" fill-opacity="0.18"/>` +
+          `<path class="g-tube" d="${d}" fill="none" stroke="${this.color}" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"/>` +
+          `<path class="g-core" d="${d}" fill="none" stroke="#ffffff" stroke-width="0.85" stroke-linejoin="round" stroke-linecap="round"/>` +
+        `</svg>` +
+        `<svg class="g-cross" viewBox="0 0 28 28"><g transform="translate(-5 -4)"><circle cx="14" cy="14" r="3" fill="${this.color}" fill-opacity="0.35" stroke="#fff" stroke-width="0.8"/><path d="M14 4V9M14 19V24M4 14H9M19 14H24" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M14 4V9M14 19V24M4 14H9M19 14H24" stroke="${this.color}" stroke-width="0.8" stroke-linecap="round"/></g></svg>` +
         `<svg class="g-ibeam" viewBox="0 0 28 28"><g transform="translate(-5 -4)"><path d="M10 5H18M10 23H18M14 5V23" stroke="#fff" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M10 5H18M10 23H18M14 5V23" stroke="${this.color}" stroke-width="0.8" stroke-linecap="round" fill="none"/><circle cx="14" cy="14" r="1.4" fill="${this.color}"/></g></svg>`;
       this.draw();
     }
