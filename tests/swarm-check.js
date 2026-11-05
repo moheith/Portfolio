@@ -38,8 +38,7 @@ const snap = (p) => p.evaluate(() => ({
   ok('no half-typed text left (caret/rest/selection spans)', s.dirtyText === 0, `(${s.dirtyText})`);
   ok('HUD shows "Rebuilt by … agents in …s" + Go live + Replay', /Rebuilt by \d+ agents in [\d.]+s/.test(s.hud) && /Go live/.test(s.hud) && /Replay/.test(s.hud), s.hud);
   await p.screenshot({ path: 'tests-out-finale.png' });
-  try { await p.click('#sw-hud [data-a=live]', { timeout: 4000 }); } catch (e) { /* auto-clicked by finale agent */ }
-  await p.waitForFunction(() => Swarm.state === 'live', null, { timeout: 8000 }); await p.waitForTimeout(2200); s = await snap(p);
+  await p.click('#sw-hud [data-a=live]'); await p.waitForFunction(() => Swarm.state === 'live', null, { timeout: 8000 }); await p.waitForTimeout(2200); s = await snap(p);
   ok('Go live: overlay gone, is-building removed, cursors removed', !s.building && !s.hudOn && s.cursors === 0 && s.unbuilt === 0);
   ok('no page errors during the run', p.errs.length === 0, p.errs.join(' | '));
   /* 2. replay then abort mid-run (via the HUD buttons) */
