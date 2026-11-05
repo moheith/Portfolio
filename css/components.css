@@ -34,6 +34,20 @@
   outline-color: var(--red);
   box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 59, 48, 0.4), 0 0 35px rgba(255, 59, 48, 0.16);
 }
+.card::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 2px;
+  background: radial-gradient(360px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 59, 48, 0.16), transparent 60%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .35s ease;
+  z-index: 5;
+}
+.card:hover::after {
+  opacity: 1;
+}
 .card:hover .card__media {
   border-color: rgba(255, 59, 48, 0.45);
 }
@@ -231,12 +245,21 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 8px rgba(88, 101, 242, .5);
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease);
+}
+.card:hover .poster__avatar {
+  transform: scale(1.1);
+  box-shadow: 0 0 24px rgba(88, 101, 242, .9), 0 0 0 4px rgba(88, 101, 242, .3);
 }
 .poster__avatar--lg {
   width: 44px;
   height: 44px;
   font-size: 16px;
   box-shadow: 0 0 16px rgba(88, 101, 242, .6);
+}
+.card:hover .poster__avatar--lg {
+  transform: scale(1.08);
+  box-shadow: 0 0 28px rgba(88, 101, 242, .95), 0 0 0 5px rgba(88, 101, 242, .35);
 }
 .poster__msg {
   display: flex;
@@ -270,16 +293,53 @@
   background: rgba(0, 0, 0, .3);
   border-radius: 4px;
   border: 1px solid rgba(88, 101, 242, .2);
+  transition: border-color .3s ease, box-shadow .3s ease;
+}
+.card:hover .poster__waveform {
+  border-color: rgba(88, 101, 242, .55);
+  box-shadow: 0 0 24px rgba(88, 101, 242, .25);
 }
 .poster__waveform i {
   width: 4px;
   height: 25%;
   background: #5865f2;
   border-radius: 2px;
+  transform-origin: center;
+  transition: transform .25s ease;
 }
 .poster__waveform i:nth-child(even) { height: 60%; background: #00f0ff; }
 .poster__waveform i:nth-child(3n) { height: 95%; background: var(--red); }
 .poster__waveform i:nth-child(4n) { height: 40%; background: #34d399; }
+
+@keyframes waveformPulse {
+  0% {
+    transform: scaleY(0.2);
+    filter: brightness(0.8);
+  }
+  100% {
+    transform: scaleY(1.25);
+    filter: brightness(1.35);
+  }
+}
+.card:hover .poster__waveform i {
+  animation: waveformPulse .65s ease-in-out infinite alternate;
+}
+.card:hover .poster__waveform i:nth-child(1) { animation-delay: 0.04s; }
+.card:hover .poster__waveform i:nth-child(2) { animation-delay: 0.22s; }
+.card:hover .poster__waveform i:nth-child(3) { animation-delay: 0.11s; }
+.card:hover .poster__waveform i:nth-child(4) { animation-delay: 0.38s; }
+.card:hover .poster__waveform i:nth-child(5) { animation-delay: 0.18s; }
+.card:hover .poster__waveform i:nth-child(6) { animation-delay: 0.44s; }
+.card:hover .poster__waveform i:nth-child(7) { animation-delay: 0.08s; }
+.card:hover .poster__waveform i:nth-child(8) { animation-delay: 0.31s; }
+.card:hover .poster__waveform i:nth-child(9) { animation-delay: 0.24s; }
+.card:hover .poster__waveform i:nth-child(10) { animation-delay: 0.41s; }
+.card:hover .poster__waveform i:nth-child(11) { animation-delay: 0.14s; }
+.card:hover .poster__waveform i:nth-child(12) { animation-delay: 0.35s; }
+.card:hover .poster__waveform i:nth-child(13) { animation-delay: 0.27s; }
+.card:hover .poster__waveform i:nth-child(14) { animation-delay: 0.47s; }
+.card:hover .poster__waveform i:nth-child(15) { animation-delay: 0.09s; }
+.card:hover .poster__waveform i:nth-child(16) { animation-delay: 0.29s; }
 .poster__chips {
   display: flex;
   gap: 5px;
@@ -378,6 +438,11 @@
   border: 1px dashed rgba(0, 240, 255, .35);
   pointer-events: none;
   animation: radarSweep 4s linear infinite;
+  transition: border-color .3s ease;
+}
+.card:hover .poster__radar {
+  animation-duration: 1.8s;
+  border-color: rgba(0, 240, 255, .8);
 }
 .poster__reticle {
   position: absolute;
@@ -395,6 +460,11 @@
   transform: rotate(45deg);
   box-shadow: 0 0 10px #00f0ff;
   z-index: 2;
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease);
+}
+.card:hover .poster__craft {
+  transform: rotate(45deg) scale(1.25);
+  box-shadow: 0 0 20px #00f0ff, 0 0 40px rgba(0, 240, 255, .55);
 }
 .poster__sun {
   position: absolute;
@@ -437,6 +507,11 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  transition: border-color .3s ease, box-shadow .3s ease, transform .3s var(--ease);
+}
+.card:hover .poster__card {
+  border-color: rgba(16, 185, 129, .5);
+  box-shadow: 0 0 20px rgba(16, 185, 129, .2);
 }
 .poster__sub {
   font-size: 7px;
@@ -453,6 +528,13 @@
   font-size: 16px;
   color: #38bdf8;
   font-weight: bold;
+  display: inline-block;
+  transition: transform .45s var(--ease), color .3s ease, text-shadow .3s ease;
+}
+.card:hover .poster__swap {
+  transform: rotate(180deg) scale(1.25);
+  color: #34d399;
+  text-shadow: 0 0 12px rgba(52, 211, 153, .7);
 }
 .poster__models {
   display: flex;

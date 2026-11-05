@@ -1,4 +1,4 @@
-/* js/cursor.js — Site cursor + magnetic pull + letter-roll */
+/* js/cursor.js — Site cursor + magnetic pull + letter-roll + 3D card tilt & parallax */
 (() => {
   'use strict';
 
@@ -52,8 +52,12 @@
       document.addEventListener('mouseover', (e) => {
         if (!enabled) return;
         const card = e.target.closest('.card');
-        const openLink = e.target.closest('a[href^="http"], .hero__live, .poster__btn, .cta');
+        const chip = e.target.closest('.chip');
+        const tile = e.target.closest('.tile');
+        const step = e.target.closest('.step');
+        const tlItem = e.target.closest('.tl__item');
         const dragArea = e.target.closest('.slider, .compare');
+        const openLink = e.target.closest('a[href^="http"], .hero__live, .poster__btn, .cta');
         const closeBtn = e.target.closest('.modal__close');
 
         const r = ring();
@@ -69,13 +73,40 @@
           r.style.borderColor = 'rgba(255, 59, 48, .75)';
           span.textContent = currentLabel;
           span.style.opacity = '1';
-        } else if (openLink) {
-          currentLabel = 'OPEN';
-          r.style.width = '52px';
-          r.style.height = '52px';
-          r.style.margin = '-26px 0 0 -26px';
+        } else if (chip) {
+          currentLabel = 'STACK';
+          r.style.width = '48px';
+          r.style.height = '48px';
+          r.style.margin = '-24px 0 0 -24px';
+          r.style.background = 'radial-gradient(circle, rgba(255, 59, 48, .18) 0%, rgba(10, 10, 15, .4) 100%)';
+          r.style.borderColor = 'rgba(255, 59, 48, .7)';
+          span.textContent = currentLabel;
+          span.style.opacity = '1';
+        } else if (tile) {
+          currentLabel = 'TOOL';
+          r.style.width = '46px';
+          r.style.height = '46px';
+          r.style.margin = '-23px 0 0 -23px';
           r.style.background = 'radial-gradient(circle, rgba(255, 59, 48, .2) 0%, rgba(10, 10, 15, .4) 100%)';
-          r.style.borderColor = 'rgba(255, 59, 48, .6)';
+          r.style.borderColor = 'rgba(255, 59, 48, .7)';
+          span.textContent = currentLabel;
+          span.style.opacity = '1';
+        } else if (step) {
+          currentLabel = 'STEP';
+          r.style.width = '46px';
+          r.style.height = '46px';
+          r.style.margin = '-23px 0 0 -23px';
+          r.style.background = 'radial-gradient(circle, rgba(255, 59, 48, .2) 0%, rgba(10, 10, 15, .4) 100%)';
+          r.style.borderColor = 'rgba(255, 59, 48, .7)';
+          span.textContent = currentLabel;
+          span.style.opacity = '1';
+        } else if (tlItem) {
+          currentLabel = 'EXP';
+          r.style.width = '44px';
+          r.style.height = '44px';
+          r.style.margin = '-22px 0 0 -22px';
+          r.style.background = 'radial-gradient(circle, rgba(255, 59, 48, .2) 0%, rgba(10, 10, 15, .4) 100%)';
+          r.style.borderColor = 'rgba(255, 59, 48, .7)';
           span.textContent = currentLabel;
           span.style.opacity = '1';
         } else if (dragArea) {
@@ -85,6 +116,15 @@
           r.style.margin = '-27px 0 0 -27px';
           r.style.background = 'radial-gradient(circle, rgba(0, 240, 255, .22) 0%, rgba(10, 10, 15, .4) 100%)';
           r.style.borderColor = 'rgba(0, 240, 255, .7)';
+          span.textContent = currentLabel;
+          span.style.opacity = '1';
+        } else if (openLink) {
+          currentLabel = 'OPEN';
+          r.style.width = '52px';
+          r.style.height = '52px';
+          r.style.margin = '-26px 0 0 -26px';
+          r.style.background = 'radial-gradient(circle, rgba(255, 59, 48, .2) 0%, rgba(10, 10, 15, .4) 100%)';
+          r.style.borderColor = 'rgba(255, 59, 48, .6)';
           span.textContent = currentLabel;
           span.style.opacity = '1';
         } else if (closeBtn) {
@@ -109,6 +149,8 @@
       });
 
       this.setupMagnetics();
+      this.setupCardTilt();
+      this.setupHeroParallax();
       this.setupLetterRoll();
     },
 
@@ -119,7 +161,7 @@
     },
 
     setupMagnetics() {
-      const magneticTargets = [...document.querySelectorAll('.btn, .nav__links a, .footer__social a, .cta, .poster__btn')];
+      const magneticTargets = [...document.querySelectorAll('.btn, .nav__links a, .footer__social a, .cta, .poster__btn, .hero__live, .nav__motion, .compare__handle')];
       magneticTargets.forEach((btn) => {
         btn.addEventListener('mousemove', (e) => {
           if (!enabled) return;
@@ -134,8 +176,63 @@
           }
         });
         btn.addEventListener('mouseleave', () => {
-          btn.style.transform = 'translate3d(0, 0, 0)';
+          btn.style.transform = '';
         });
+      });
+    },
+
+    setupCardTilt() {
+      const cards = document.querySelectorAll('.card');
+      cards.forEach((card) => {
+        card.addEventListener('mousemove', (e) => {
+          if (!enabled) return;
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          card.style.setProperty('--mouse-x', `${x}px`);
+          card.style.setProperty('--mouse-y', `${y}px`);
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          const rotX = -((y - centerY) / centerY) * 5;
+          const rotY = ((x - centerX) / centerX) * 5;
+          card.style.transform = `perspective(800px) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) translateY(-8px) scale3d(1.015, 1.015, 1.015)`;
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = '';
+          card.style.removeProperty('--mouse-x');
+          card.style.removeProperty('--mouse-y');
+        });
+      });
+    },
+
+    setupHeroParallax() {
+      const hero = document.getElementById('home');
+      const img = document.getElementById('heroImg');
+      const glow = document.querySelector('.hero__glow');
+      if (!hero || !img) return;
+
+      hero.addEventListener('mousemove', (e) => {
+        if (!enabled) return;
+        const rect = hero.getBoundingClientRect();
+        const relX = (e.clientX - rect.left) / rect.width - 0.5;
+        const relY = (e.clientY - rect.top) / rect.height - 0.5;
+        const shiftX = (relX * 12).toFixed(2);
+        const shiftY = (relY * 8).toFixed(2);
+        img.style.transform = `translate3d(${shiftX}px, ${shiftY}px, 0) scale(1.02)`;
+        img.style.transition = 'transform 0.15s ease-out';
+        if (glow) {
+          glow.style.transform = `translate(calc(-50% + ${shiftX * 1.5}px), calc(-50% + ${shiftY * 1.5}px))`;
+          glow.style.transition = 'transform 0.2s ease-out';
+        }
+      });
+
+      hero.addEventListener('mouseleave', () => {
+        img.style.transform = '';
+        img.style.transition = 'transform 0.5s ease-out';
+        if (glow) {
+          glow.style.transform = 'translate(-50%, -50%)';
+          glow.style.transition = 'transform 0.5s ease-out';
+        }
       });
     },
 

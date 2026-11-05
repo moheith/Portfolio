@@ -211,12 +211,44 @@ ul, ol {
   background: var(--btn);
   width: 190px;
   min-width: 190px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(255, 59, 48, 0.25);
+  transition: background .25s var(--ease), transform .25s var(--ease), box-shadow .25s var(--ease);
+}
+.btn--primary::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -75%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: rotate(25deg);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 .btn--primary:hover {
   background: #f7584e;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 59, 48, 0.45);
+}
+.btn--primary:hover::after {
+  opacity: 1;
+  animation: btnShimmer 1.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
 }
 .btn--primary:hover .btn__arrow {
-  transform: translateY(4px);
+  transform: translateY(5px);
+  animation: arrowBounce 0.9s ease-in-out infinite alternate;
+}
+@keyframes btnShimmer {
+  0% { transform: translateX(0) rotate(25deg); }
+  100% { transform: translateX(500%) rotate(25deg); }
+}
+@keyframes arrowBounce {
+  from { transform: translateY(2px); }
+  to { transform: translateY(6px); }
 }
 .btn__label {
   display: inline-block;

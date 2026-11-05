@@ -332,6 +332,10 @@
   gap: 12px;
   z-index: var(--z-hero-text, 3);
   text-decoration: none;
+  transition: transform .25s var(--ease);
+}
+.hero__live:hover {
+  transform: translateX(4px);
 }
 .hero__live-ring {
   width: 36px;
@@ -343,21 +347,28 @@
   justify-content: center;
   color: #fff;
   font-size: 14px;
-  transition: background .2s ease, transform .2s var(--ease);
+  transition: background .25s ease, transform .25s var(--ease), box-shadow .25s ease;
 }
 .hero__live:hover .hero__live-ring {
   background: var(--red);
-  transform: scale(1.05);
+  transform: scale(1.12) rotate(45deg);
+  box-shadow: 0 0 25px rgba(255, 59, 48, 0.65), 0 0 0 4px rgba(255, 59, 48, 0.2);
 }
 .hero__live-txt {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-.hero__live-txt span:first-child {
+.hero__live-txt span:first-child,
+.hero__live-txt b {
   font: 800 11px/1 var(--f-body);
   text-transform: uppercase;
   color: #fff;
+  transition: color .2s ease, text-shadow .2s ease;
+}
+.hero__live:hover .hero__live-txt b {
+  color: var(--red);
+  text-shadow: 0 0 10px rgba(255, 59, 48, 0.4);
 }
 .hero__live-txt span:last-child {
   font: 500 9px/1 var(--f-ui);
@@ -1409,6 +1420,10 @@ img + .fakeui {
   background: #fff;
   z-index: 3;
   pointer-events: none;
+  transition: box-shadow .25s ease;
+}
+.compare:hover .compare__line {
+  box-shadow: 0 0 10px rgba(255, 255, 255, .8), 0 0 20px rgba(255, 59, 48, .6);
 }
 .compare__handle {
   position: absolute;
@@ -1427,6 +1442,11 @@ img + .fakeui {
   font-size: 14px;
   z-index: 4;
   pointer-events: none;
+  transition: transform .25s var(--ease), box-shadow .25s ease;
+}
+.compare:hover .compare__handle {
+  transform: translate(-50%, -50%) scale(1.15);
+  box-shadow: 0 0 0 8px rgba(255, 59, 48, .2), 0 0 28px rgba(255, 59, 48, .7);
 }
 .compare__lab {
   position: absolute;
@@ -1530,6 +1550,15 @@ img + .fakeui {
   padding: 5px 9px;
   color: var(--text);
   background: rgba(255, 255, 255, .02);
+  transition: transform .25s var(--ease), border-color .25s ease, background .25s ease, color .25s ease, box-shadow .25s ease;
+  cursor: default;
+}
+.chip:hover {
+  transform: translateY(-3px) scale(1.05);
+  border-color: var(--red);
+  background: rgba(255, 59, 48, 0.12);
+  color: #fff;
+  box-shadow: 0 6px 18px -4px rgba(255, 59, 48, 0.35);
 }
 .tiles {
   display: flex;
@@ -1546,11 +1575,14 @@ img + .fakeui {
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, .02);
-  transition: border-color .2s ease, transform .2s ease;
+  transition: border-color .25s ease, transform .25s var(--ease), box-shadow .25s ease, background .25s ease;
+  cursor: pointer;
 }
 .tile:hover {
-  border-color: var(--line-strong);
-  transform: translateY(-2px);
+  border-color: var(--red);
+  background: rgba(255, 59, 48, 0.08);
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 10px 24px -6px rgba(255, 59, 48, 0.35);
 }
 .tile__ico {
   width: 24px;
@@ -1584,12 +1616,22 @@ img + .fakeui {
   grid-template-columns: 38px 10px 1fr;
   gap: 14px;
   align-items: flex-start;
+  transition: transform .25s var(--ease);
+  cursor: default;
+}
+.step:hover {
+  transform: translateX(4px);
 }
 .step__n {
   font-family: var(--f-display);
   font-size: 22px;
   line-height: 1;
   color: var(--red);
+  transition: transform .25s var(--ease), text-shadow .25s ease;
+}
+.step:hover .step__n {
+  transform: scale(1.1);
+  text-shadow: 0 0 14px rgba(255, 59, 48, 0.6);
 }
 .step__node {
   width: 8px;
@@ -1598,7 +1640,12 @@ img + .fakeui {
   border: 2px solid var(--red);
   background: var(--bg);
   margin-top: 4px;
-  transition: background .3s ease, box-shadow .3s ease;
+  transition: background .3s ease, box-shadow .3s ease, transform .25s var(--ease);
+}
+.step:hover .step__node {
+  background: var(--red);
+  box-shadow: 0 0 14px 3px rgba(255, 59, 48, 0.85);
+  transform: scale(1.2);
 }
 .step__node.is-lit {
   background: var(--red);
@@ -1616,6 +1663,10 @@ img + .fakeui {
   text-transform: uppercase;
   color: #fff;
   letter-spacing: .06em;
+  transition: color .2s ease;
+}
+.step:hover .step__title {
+  color: var(--red);
 }
 .step__desc {
   font: 400 11px/1.6 var(--f-body);
@@ -1701,8 +1752,14 @@ img + .fakeui {
 .tl__item {
   display: grid;
   grid-template-columns: 140px 1fr;
-  padding: 20px 0;
+  padding: 20px 8px;
   border-bottom: 1px solid var(--line);
+  border-radius: 4px;
+  transition: background .25s ease, padding-left .25s var(--ease);
+}
+.tl__item:hover {
+  background: rgba(255, 255, 255, .025);
+  padding-left: 12px;
 }
 .tl__date {
   font: 700 10px/1 var(--f-ui);
@@ -1741,6 +1798,11 @@ img + .fakeui {
   font-size: 22px;
   color: #fff;
   line-height: 1.1;
+  transition: transform .25s var(--ease), text-shadow .25s ease;
+}
+.tl__item:hover .tl__role {
+  text-shadow: 0 0 14px rgba(255, 59, 48, .35);
+  transform: translateX(4px);
 }
 .tl__sub {
   font: 400 12px/1.4 var(--f-body);
@@ -1753,8 +1815,14 @@ img + .fakeui {
   transition: transform .3s var(--ease);
   display: inline-block;
 }
+.tl__item:hover .tl__plus {
+  transform: scale(1.2);
+}
 .tl__item.is-open .tl__plus {
   transform: rotate(45deg);
+}
+.tl__item.is-open:hover .tl__plus {
+  transform: rotate(45deg) scale(1.2);
 }
 .tl__panel {
   display: grid;
@@ -1848,6 +1916,10 @@ img + .fakeui {
   cursor: pointer;
   width: fit-content;
   margin-top: 6px;
+  transition: transform .25s var(--ease);
+}
+.cta:hover {
+  transform: translateX(4px);
 }
 .cta__ring {
   width: 44px;
@@ -1859,18 +1931,24 @@ img + .fakeui {
   justify-content: center;
   color: var(--red);
   font-size: 16px;
-  transition: background .2s ease, color .2s ease, transform .2s var(--ease);
+  transition: background .25s ease, color .25s ease, transform .25s var(--ease), box-shadow .25s ease;
 }
 .cta__txt {
   font: 800 11px/1 var(--f-ui);
   text-transform: uppercase;
   letter-spacing: .12em;
   color: var(--red);
+  transition: text-shadow .25s ease, transform .25s var(--ease);
 }
 .cta:hover .cta__ring {
   background: var(--red);
   color: #fff;
-  transform: scale(1.05);
+  transform: scale(1.12) rotate(45deg);
+  box-shadow: 0 0 25px rgba(255, 59, 48, 0.65), 0 0 0 4px rgba(255, 59, 48, 0.2);
+}
+.cta:hover .cta__txt {
+  text-shadow: 0 0 14px rgba(255, 59, 48, 0.6);
+  transform: translateX(3px);
 }
 
 .contact__rows {
