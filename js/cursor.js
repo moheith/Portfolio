@@ -61,34 +61,34 @@
         if (!r || !span) return;
 
         if (card) {
-          currentLabel = 'VIEW';
-          r.style.width = '80px';
-          r.style.height = '80px';
-          r.style.margin = '-40px 0 0 -40px';
-          r.style.background = 'rgba(255, 59, 48, .2)';
-          r.style.borderColor = 'var(--red)';
+          currentLabel = 'EXPLORE';
+          r.style.width = '78px';
+          r.style.height = '78px';
+          r.style.margin = '-39px 0 0 -39px';
+          r.style.background = 'radial-gradient(circle, rgba(255, 59, 48, .26) 0%, rgba(20, 20, 28, .5) 100%)';
+          r.style.borderColor = 'rgba(255, 59, 48, .75)';
           span.textContent = currentLabel;
           span.style.opacity = '1';
         } else if (openLink) {
           currentLabel = 'OPEN';
-          r.style.width = '56px';
-          r.style.height = '56px';
-          r.style.margin = '-28px 0 0 -28px';
-          r.style.background = 'rgba(255, 59, 48, .15)';
-          r.style.borderColor = 'var(--red)';
+          r.style.width = '52px';
+          r.style.height = '52px';
+          r.style.margin = '-26px 0 0 -26px';
+          r.style.background = 'radial-gradient(circle, rgba(255, 59, 48, .2) 0%, rgba(10, 10, 15, .4) 100%)';
+          r.style.borderColor = 'rgba(255, 59, 48, .6)';
           span.textContent = currentLabel;
           span.style.opacity = '1';
         } else if (dragArea) {
-          currentLabel = 'DRAG';
-          r.style.width = '56px';
-          r.style.height = '56px';
-          r.style.margin = '-28px 0 0 -28px';
-          r.style.background = 'rgba(47, 140, 255, .2)';
-          r.style.borderColor = 'var(--blue)';
+          currentLabel = 'SLIDE';
+          r.style.width = '54px';
+          r.style.height = '54px';
+          r.style.margin = '-27px 0 0 -27px';
+          r.style.background = 'radial-gradient(circle, rgba(0, 240, 255, .22) 0%, rgba(10, 10, 15, .4) 100%)';
+          r.style.borderColor = 'rgba(0, 240, 255, .7)';
           span.textContent = currentLabel;
           span.style.opacity = '1';
         } else if (closeBtn) {
-          currentLabel = '✕';
+          currentLabel = 'ESC';
           r.style.width = '44px';
           r.style.height = '44px';
           r.style.margin = '-22px 0 0 -22px';
@@ -98,11 +98,11 @@
           span.style.opacity = '1';
         } else {
           currentLabel = '';
-          r.style.width = '36px';
-          r.style.height = '36px';
-          r.style.margin = '-18px 0 0 -18px';
-          r.style.background = 'transparent';
-          r.style.borderColor = 'rgba(255, 255, 255, .5)';
+          r.style.width = '34px';
+          r.style.height = '34px';
+          r.style.margin = '-17px 0 0 -17px';
+          r.style.background = 'radial-gradient(circle, rgba(255, 59, 48, .06) 0%, rgba(255, 255, 255, .02) 100%)';
+          r.style.borderColor = 'rgba(255, 255, 255, .4)';
           span.textContent = '';
           span.style.opacity = '0';
         }

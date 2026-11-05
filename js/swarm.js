@@ -14,9 +14,9 @@
 
   const S = window.Swarm = {
     cfg: {
-      startAgents: 10, maxAgents: 14,
+      startAgents: 14, maxAgents: 18,
       targetSeconds: 51.4,                                   // total run time at 1x (the pace controller steers to this)
-      joins: [[10, 11], [20, 12], [30, 13], [40, 14]],   // [seconds at 1x, agent count]
+      joins: [[8, 15], [16, 16], [24, 17], [34, 18]],   // [seconds at 1x, agent count]
       editRate: 0.34,                                        // share of long text layers that get a select-and-retype / typo-fix pass
       resizeRate: 0.5,                                       // share of images/cards that are first drawn too small, then resized
       moveRate: 0.35,                                        // share of cards/shapes first drawn off-position, then dragged into place
@@ -240,9 +240,9 @@
       this.vx = (R() - 0.5) * 2; this.vy = (R() - 0.5) * 2; this.track = null; this.idle = true; this.run = S.run; this.theta = 0; this.radius = 100; this.flock = null;
       const el = this.el = mk('div', 'sw-cursor', agentsEl()); el.dataset.mode = 'arrow';
       el.innerHTML =
-        `<svg class="g-arrow" viewBox="0 0 24 24"><path d="M3 2 L3 19 L7.6 14.8 L10.6 21.6 L13.4 20.4 L10.4 13.6 L16.6 13.6 Z" fill="${this.color}" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>` +
-        `<svg class="g-cross" viewBox="0 0 24 24"><g transform="translate(-9 -10)"><path d="M12 5V19M5 12H19" stroke="#fff" stroke-width="1.6" stroke-linecap="square"/><path d="M12 5V19M5 12H19" stroke="${this.color}" stroke-width=".6" opacity=".9"/></g></svg>` +
-        `<svg class="g-ibeam" viewBox="0 0 24 24"><g transform="translate(-9 -10)"><path d="M9.5 4H14.5M9.5 20H14.5M12 4V20" stroke="#fff" stroke-width="1.6" stroke-linecap="round" fill="none"/></g></svg>`;
+        `<svg class="g-arrow" viewBox="0 0 24 24"><path d="M2.5 1.5 L2.5 18 L7.2 13.8 L11.2 22.2 L13.8 21 L9.8 12.6 L16.8 12.6 Z" fill="${this.color}" stroke="#ffffff" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/><path d="M2.5 1.5 L2.5 18 L7.2 13.8 L9.8 12.6 Z" fill="rgba(255,255,255,0.28)"/><circle cx="2.5" cy="1.5" r="1.1" fill="#fff"/></svg>` +
+        `<svg class="g-cross" viewBox="0 0 24 24"><g transform="translate(-9 -10)"><circle cx="12" cy="12" r="2" fill="${this.color}" stroke="#fff" stroke-width="0.8"/><path d="M12 3V8M12 16V21M3 12H8M16 12H21" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/><path d="M12 3V8M12 16V21M3 12H8M16 12H21" stroke="${this.color}" stroke-width="0.7" stroke-linecap="round"/></g></svg>` +
+        `<svg class="g-ibeam" viewBox="0 0 24 24"><g transform="translate(-9 -10)"><path d="M8.5 4H15.5M8.5 20H15.5M12 4V20" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"/><circle cx="12" cy="12" r="1.1" fill="${this.color}"/></g></svg>`;
       this.draw();
     }
     setMode(m) { this.mode = m; this.el.dataset.mode = m; }

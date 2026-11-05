@@ -32,12 +32,28 @@ const Render = (() => {
     }
     if (slug === 'yulya-studio') {
       return `<div class="card__poster card__poster--yulya-studio" aria-hidden="true">
-        <div class="poster__head"><span class="poster__dot"></span><span class="poster__title">studio.yulya.me</span><span class="poster__badge">60 FPS</span></div>
-        <div class="poster__ide">
-          <div class="poster__code"><span class="poster__kw">import</span> { Studio } <span class="poster__kw">from</span> <span class="poster__str">'yulya'</span>;<br><span class="poster__kw">const</span> game = <span class="poster__kw">new</span> <span class="poster__fn">Studio</span>();<br>game.<span class="poster__fn">spawn</span>(<span class="poster__str">"companion"</span>);<br>game.<span class="poster__fn">run</span>();</div>
-          <div class="poster__stage"><div class="poster__grid"></div><div class="poster__craft"></div><div class="poster__sun"></div></div>
+        <div class="poster__head">
+          <div class="poster__head-left"><span class="poster__dot"></span><span class="poster__title">studio.yulya.me</span></div>
+          <div class="poster__head-tabs"><span class="poster__tab is-active">GameLoop.ts</span><span class="poster__tab">Scene.3d</span></div>
+          <span class="poster__badge">60.0 FPS</span>
         </div>
-        <div class="poster__chips"><span class="poster__chip">WebGL2</span><span class="poster__chip">Vite / React</span><span class="poster__chip">Monaco</span></div>
+        <div class="poster__ide">
+          <div class="poster__code">
+            <span class="poster__ln">01</span><span class="poster__kw">import</span> { Engine3D, NeuralAgent } <span class="poster__kw">from</span> <span class="poster__str">'@yulya/core'</span>;<br>
+            <span class="poster__ln">02</span><span class="poster__kw">const</span> engine = <span class="poster__kw">new</span> <span class="poster__fn">Engine3D</span>({ <span class="poster__p">fps</span>: <span class="poster__n">60</span> });<br>
+            <span class="poster__ln">03</span><span class="poster__kw">const</span> drone = <span class="poster__kw">await</span> engine.<span class="poster__fn">spawn</span>(NeuralAgent);<br>
+            <span class="poster__ln">04</span>drone.<span class="poster__fn">onTick</span>((dt) =&gt; drone.<span class="poster__fn">render</span>(dt));
+          </div>
+          <div class="poster__stage">
+            <div class="poster__grid"></div>
+            <div class="poster__radar"></div>
+            <div class="poster__reticle"></div>
+            <div class="poster__craft"></div>
+            <div class="poster__sun"></div>
+            <span class="poster__telemetry">ENTITIES: 2,480 · 0.4ms</span>
+          </div>
+        </div>
+        <div class="poster__chips"><span class="poster__chip">WebGL2</span><span class="poster__chip">TypeScript</span><span class="poster__chip">ONNX Runtime</span><span class="poster__chip">PBR Shader</span></div>
       </div>`;
     }
     if (slug === 'learnexa') {

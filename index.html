@@ -87,9 +87,6 @@
     <svg class="hero__fallback" viewBox="0 0 400 500" aria-hidden="true"><defs><radialGradient id="hg" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#5a0f12"/><stop offset="1" stop-color="#07070a"/></radialGradient></defs><rect width="400" height="500" fill="url(#hg)"/><circle cx="200" cy="170" r="82" fill="#000"/><path d="M40 500 C40 360 110 300 200 300 C290 300 360 360 360 500Z" fill="#000"/></svg>
   </div>
 
-  <p class="hero__tag hero__tag--tl" data-layer="text">FULL STACK DEV / DESIGNER</p>
-  <p class="hero__tag hero__tag--tl2" data-layer="text">GRAPHICS · UI · AI</p>
-
   <div class="hero__left">
     <p class="hero__hello" data-layer="text">Hello, I'm</p>
     <h2 class="hero__name"><span data-layer="text">MOHIETH</span><i class="hero__period" aria-hidden="true"></i></h2>
@@ -107,11 +104,16 @@
   </a>
 
   <div class="hero__right">
-    <p class="hero__tagline"><span class="hero__star" data-layer="icon" aria-hidden="true">✳</span><span class="line" data-layer="text">Designed to feel.</span><span class="line" data-layer="text">Built to last.</span></p>
+    <div class="hero__badge" data-layer="chip">SYSTEMS · CREATIVE DEV · AI</div>
+    <div class="hero__lead">
+      <span class="hero__star" data-layer="icon" aria-hidden="true">✳</span>
+      <h3 class="hero__statement" data-layer="text">ENGINEERING DIGITAL REALITIES AT PRODUCTION SCALE</h3>
+      <p class="hero__subdesc" data-layer="text">Specializing in high-performance WebGL2 creative development, autonomous multi-agent networks, and resilient full-stack systems.</p>
+    </div>
     <ul class="stats">
-      <li class="stat"><i class="stat__line" data-layer="line"></i><b class="stat__n" data-layer="text" data-count="4" data-suffix="+">4+</b><span class="stat__l" data-layer="text">Years of building &amp; designing</span></li>
-      <li class="stat"><i class="stat__line" data-layer="line"></i><b class="stat__n" data-layer="text" data-count="10" data-suffix="+">10+</b><span class="stat__l" data-layer="text">Projects shipped</span></li>
-      <li class="stat"><i class="stat__line" data-layer="line"></i><b class="stat__n" data-layer="text" data-count="8" id="statModels">8</b><span class="stat__l" data-layer="text">AI models published</span></li>
+      <li class="stat"><i class="stat__line" data-layer="line"></i><b class="stat__n" data-layer="text" data-count="4" data-suffix="+">4+</b><span class="stat__l" data-layer="text">Years of Engineering</span></li>
+      <li class="stat"><i class="stat__line" data-layer="line"></i><b class="stat__n" data-layer="text" data-count="10" data-suffix="+">10+</b><span class="stat__l" data-layer="text">Projects Shipped</span></li>
+      <li class="stat"><i class="stat__line" data-layer="line"></i><b class="stat__n" data-layer="text" data-count="8" id="statModels">8</b><span class="stat__l" data-layer="text">AI Models Deployed</span></li>
     </ul>
     <a class="hero__cv" id="cvLink" href="assets/Mayura-CV.pdf" download><span data-layer="icon" aria-hidden="true">↓</span><span data-layer="text">DOWNLOAD CV</span></a>
   </div>
@@ -194,39 +196,61 @@
         <div class="fakeui" aria-hidden="true">
           <div class="fakeui__chrome">
             <div class="fakeui__dots"><span class="fakeui__dot fakeui__dot--r"></span><span class="fakeui__dot fakeui__dot--y"></span><span class="fakeui__dot fakeui__dot--g"></span></div>
+            <div class="fakeui__tabs">
+              <span class="fakeui__tab fakeui__tab--active">GameWorld.ts</span>
+              <span class="fakeui__tab">Scene.viewport</span>
+              <span class="fakeui__tab">Shaders.glsl</span>
+            </div>
             <span class="fakeui__title">https://studio.yulya.me/editor</span>
-            <span class="fakeui__status fakeui__status--live">● LIVE (60 FPS)</span>
+            <span class="fakeui__status fakeui__status--live">● LIVE (60.0 FPS · 0.4ms)</span>
+          </div>
+          <div class="fakeui__toolbar">
+            <div class="fakeui__toolgroup">
+              <span class="fakeui__toolbtn fakeui__toolbtn--play">▶ PLAY</span>
+              <span class="fakeui__toolbtn">❚❚ PAUSE</span>
+              <span class="fakeui__toolbtn">↺ RESET</span>
+            </div>
+            <div class="fakeui__toolgroup">
+              <span class="fakeui__toolbadge">VIEWPORT: 3D PERSPECTIVE</span>
+              <span class="fakeui__toolbadge">CAM: [0, 4, 12]</span>
+              <span class="fakeui__toolbadge">PBR: ON</span>
+            </div>
           </div>
           <div class="fakeui__inner">
             <div class="fakeui__side">
-              <div class="fakeui__sidehead">EXPLORER</div>
+              <div class="fakeui__sidehead">SCENE HIERARCHY</div>
               <div class="fakeui__tree">
-                <div class="fakeui__treeitem fakeui__treeitem--active"><span class="fakeui__tag fakeui__tag--ts">TS</span> GameLoop.ts</div>
+                <div class="fakeui__treeitem fakeui__treeitem--active"><span class="fakeui__tag fakeui__tag--ts">TS</span> GameWorld.ts</div>
                 <div class="fakeui__treeitem"><span class="fakeui__tag fakeui__tag--gl">GL</span> ParticleSystem.ts</div>
-                <div class="fakeui__treeitem"><span class="fakeui__tag fakeui__tag--ai">AI</span> NeuralAgent.ts</div>
-                <div class="fakeui__treeitem"><span class="fakeui__tag fakeui__tag--bin">BIN</span> yulya_model.bin</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag fakeui__tag--ai">AI</span> NeuralCompanion.ts</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag fakeui__tag--bin">BIN</span> yulya_core.onnx</div>
               </div>
             </div>
             <div class="fakeui__main">
               <div class="fakeui__canvas">
                 <div class="fakeui__sun"></div>
                 <div class="fakeui__canvas--grid"></div>
+                <div class="fakeui__radar"></div>
+                <div class="fakeui__reticle"></div>
                 <div class="fakeui__craft"></div>
-                <div class="fakeui__telemetry">ENTITIES: 1,420 · DRAW CALLS: 12</div>
+                <div class="fakeui__telemetry">ENTITIES: 2,480 · DRAW CALLS: 14 · VERTICES: 48.2K · MEM: 38MB</div>
               </div>
               <div class="fakeui__editor">
                 <div class="fakeui__code">
-                  <span class="fakeui__k">const</span> agent = <span class="fakeui__k">await</span> Yulya.<span class="fakeui__f">spawn</span>({ <span class="fakeui__p">mode</span>: <span class="fakeui__s">"companion"</span>, <span class="fakeui__p">fps</span>: <span class="fakeui__n">60</span> });<br>
-                  agent.<span class="fakeui__f">onTick</span>((dt) =&gt; agent.<span class="fakeui__f">renderPhysics</span>(dt));
+                  <div class="fakeui__codeline"><span class="fakeui__ln">01</span><span class="fakeui__k">import</span> { Engine3D, NeuralAgent } <span class="fakeui__k">from</span> <span class="fakeui__s">'@yulya/core'</span>;</div>
+                  <div class="fakeui__codeline"><span class="fakeui__ln">02</span><span class="fakeui__k">const</span> world = <span class="fakeui__k">new</span> <span class="fakeui__f">Engine3D</span>({ <span class="fakeui__p">fps</span>: <span class="fakeui__n">60</span>, <span class="fakeui__p">renderer</span>: <span class="fakeui__s">'webgl2'</span> });</div>
+                  <div class="fakeui__codeline"><span class="fakeui__ln">03</span><span class="fakeui__k">const</span> companion = <span class="fakeui__k">await</span> world.<span class="fakeui__f">spawn</span>(NeuralAgent, { <span class="fakeui__p">model</span>: <span class="fakeui__s">'yulya-v3'</span> });</div>
+                  <div class="fakeui__codeline"><span class="fakeui__ln">04</span>companion.<span class="fakeui__f">onTick</span>((dt) =&gt; companion.<span class="fakeui__f">evaluatePhysics</span>(dt));<span class="fakeui__cursor"></span></div>
                 </div>
               </div>
             </div>
             <div class="fakeui__panel">
-              <div class="fakeui__panelhead">INSPECTOR</div>
-              <div class="fakeui__row"><span class="fakeui__rowlabel">RIGIDBODY</span><span class="fakeui__rowval">DYNAMIC</span></div>
-              <div class="fakeui__row"><span class="fakeui__rowlabel">VELOCITY</span><span class="fakeui__rowval">240 PX/S</span></div>
-              <div class="fakeui__row"><span class="fakeui__rowlabel">PHYSICS</span><span class="fakeui__toggle fakeui__toggle--on"></span></div>
-              <div class="fakeui__row"><span class="fakeui__rowlabel">STABILITY</span><div class="fakeui__meter"><div class="fakeui__meterbar"></div></div></div>
+              <div class="fakeui__panelhead">INSPECTOR · ENTITY_01</div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">TRANSFORM</span><span class="fakeui__rowval">[ 0.0 , 4.2 , 12.0 ]</span></div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">NEURAL ATTN</span><span class="fakeui__rowval">98.4% ACTIVE</span></div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">SHADER PBR</span><span class="fakeui__toggle fakeui__toggle--on"></span></div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">GPU FRAME</span><div class="fakeui__meter"><div class="fakeui__meterbar"></div></div></div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">PHYSICS TICK</span><span class="fakeui__rowval">16.6ms FIXED</span></div>
             </div>
           </div>
         </div>
@@ -236,38 +260,58 @@
         <div class="fakeui fakeui--wire" aria-hidden="true">
           <div class="fakeui__chrome">
             <div class="fakeui__dots"><span class="fakeui__dot"></span><span class="fakeui__dot"></span><span class="fakeui__dot"></span></div>
+            <div class="fakeui__tabs">
+              <span class="fakeui__tab fakeui__tab--active">GameWorld.ts</span>
+              <span class="fakeui__tab">Scene.viewport</span>
+              <span class="fakeui__tab">Shaders.glsl</span>
+            </div>
             <span class="fakeui__title">[BLUEPRINT] studio.yulya.me/editor</span>
-            <span class="fakeui__status">STAGE: WIREFRAME</span>
+            <span class="fakeui__status">STAGE: WIREFRAME / CAD</span>
+          </div>
+          <div class="fakeui__toolbar">
+            <div class="fakeui__toolgroup">
+              <span class="fakeui__toolbtn">▶ RUN_SIM</span>
+              <span class="fakeui__toolbtn">❚❚ PAUSE</span>
+              <span class="fakeui__toolbtn">↺ RESET</span>
+            </div>
+            <div class="fakeui__toolgroup">
+              <span class="fakeui__toolbadge">BOUNDS: 800 x 480</span>
+              <span class="fakeui__toolbadge">ORTHOGRAPHIC</span>
+              <span class="fakeui__toolbadge">HAIRLINE: 1px</span>
+            </div>
           </div>
           <div class="fakeui__inner">
             <div class="fakeui__side">
-              <div class="fakeui__sidehead">SCHEMATIC</div>
+              <div class="fakeui__sidehead">SCHEMATIC GRAPH</div>
               <div class="fakeui__tree">
-                <div class="fakeui__treeitem fakeui__treeitem--active"><span class="fakeui__tag">DIR</span> /src</div>
-                <div class="fakeui__treeitem"><span class="fakeui__tag">OBJ</span> GameLoop.ts</div>
+                <div class="fakeui__treeitem fakeui__treeitem--active"><span class="fakeui__tag">DIR</span> /src/engine</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag">OBJ</span> GameWorld.ts</div>
                 <div class="fakeui__treeitem"><span class="fakeui__tag">OBJ</span> ParticleSystem.ts</div>
-                <div class="fakeui__treeitem"><span class="fakeui__tag">OBJ</span> NeuralAgent.ts</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag">OBJ</span> NeuralCompanion.ts</div>
               </div>
             </div>
             <div class="fakeui__main">
               <div class="fakeui__canvas">
                 <div class="fakeui__canvas--grid"></div>
+                <div class="fakeui__radar"></div>
                 <div class="fakeui__reticle"></div>
                 <div class="fakeui__craft"></div>
-                <div class="fakeui__telemetry">BOUNDS: 800 x 480 · AXIS: (0,0)</div>
+                <div class="fakeui__telemetry">BOUNDS: 800 x 480 · AXIS: (0,0) · WIREFRAME MESH</div>
               </div>
               <div class="fakeui__editor">
                 <div class="fakeui__skel fakeui__skel--short"></div>
                 <div class="fakeui__skel fakeui__skel--med"></div>
                 <div class="fakeui__skel fakeui__skel--long"></div>
+                <div class="fakeui__skel fakeui__skel--med"></div>
               </div>
             </div>
             <div class="fakeui__panel">
-              <div class="fakeui__panelhead">PROPERTIES</div>
+              <div class="fakeui__panelhead">PROPERTIES · MESH_01</div>
               <div class="fakeui__row"><span class="fakeui__rowlabel">X / Y POS</span><span class="fakeui__rowval">[ 400 , 240 ]</span></div>
               <div class="fakeui__row"><span class="fakeui__rowlabel">COLLISION</span><span class="fakeui__rowval">BOX 32x32</span></div>
               <div class="fakeui__row"><span class="fakeui__rowlabel">SIMULATION</span><span class="fakeui__toggle"></span></div>
               <div class="fakeui__row"><span class="fakeui__rowlabel">MEMORY</span><div class="fakeui__meter"><div class="fakeui__meterbar"></div></div></div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">FRAME CAP</span><span class="fakeui__rowval">60 FPS CAD</span></div>
             </div>
           </div>
         </div>
