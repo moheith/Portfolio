@@ -151,23 +151,86 @@
   }
   const remeasureFree = () => { for (const L of S.layers) if (!L.claimed) measure(L); };
 
-  /* next layer for an agent: reading order inside the visible window, biased to the agent's position */
+  /* next layer for an agent: reading order inside visible window, requiring >=3 cursors before advancing down */
   function claim(a) {
     const L0 = S.layers, n = L0.length;
     while (S.firstFree < n && L0[S.firstFree].claimed) S.firstFree++;
     if (S.firstFree >= n) return null;
     const lo = scrollY - 90, hi = scrollY + innerHeight + 60;
+    const focusLimit = scrollY + innerHeight * 0.74;
+
     let best = null, bestScore = 1e12, seen = 0;
+    let localBest = null, localScore = 1e12;
+
     for (let k = S.firstFree; k < n && seen < 44; k++) {
       const L = L0[k]; if (L.claimed) continue;
       const top = L.fixed ? scrollY + L.y : L.y;
       if (top > hi) break; // never claim offscreen layers: wait for camera to arrive
       seen++;
-      const v = vr(L); const score = (top - lo) * 1 + Math.hypot(v.x - a.x, v.y - a.y) * 0.32 + L.k * 0.01;
-      if (score < bestScore) { bestScore = score; best = L; }
+      const v = vr(L);
+      const dist = Math.hypot(v.x - a.x, v.y - a.y);
+      const score = (top - lo) * 1 + dist * 0.32 + L.k * 0.01;
+
+      if (L.fixed || top <= focusLimit) {
+        if (score < localScore) {
+          localScore = score;
+          localBest = L;
+        }
+      }
+      if (score < bestScore) {
+        bestScore = score;
+        best = L;
+      }
     }
-    if (best) { best.claimed = true; S.lastClaim = S.t; }
-    return best;
+
+    // 1. If an unclaimed layer exists in the current viewport focus, claim it immediately (no waiting)
+    if (localBest) {
+      if (S.downWaiting) S.downWaiting.delete(a.id);
+      a.waitStart = 0;
+      localBest.claimed = true;
+      S.lastClaim = S.t;
+      return localBest;
+    }
+
+    // 2. If all layers in current focus are claimed, candidate layer is down below
+    if (best) {
+      const activeAbove = S.agents.filter((other) =>
+        other !== a &&
+        other.layer &&
+        !other.layer.done &&
+        !other.layer.fixed &&
+        other.layer.y <= focusLimit
+      );
+
+      // If other cursors are still working at the top / current view:
+      if (activeAbove.length > 0) {
+        if (!S.downWaiting) S.downWaiting = new Set();
+        S.downWaiting.add(a.id);
+
+        const needed = Math.min(3, activeAbove.length + S.downWaiting.size);
+        const starving = a.waitStart && (S.t - a.waitStart > 1600);
+        const gateOpen = S.downGateUntil && S.downGateUntil >= S.t;
+
+        if (S.downWaiting.size < needed && !starving && !gateOpen) {
+          // Wait for at least 3 cursors to finish before moving down together
+          if (!a.waitStart) a.waitStart = S.t;
+          return null;
+        }
+
+        // 3+ cursors ready to move down! Open the gate for companion cursors
+        S.downGateUntil = S.t + 1100;
+        S.downWaiting.delete(a.id);
+      } else {
+        if (S.downWaiting) S.downWaiting.delete(a.id);
+      }
+
+      a.waitStart = 0;
+      best.claimed = true;
+      S.lastClaim = S.t;
+      return best;
+    }
+
+    return null;
   }
 
   /* ======================================================================= 6. AGENT (cursor) */
@@ -462,10 +525,27 @@
   async function agentLoop(a) {
     while (!S.stop && S.run === a.run) {
       const L = claim(a);
-      if (!L) { if (S.layers.every((l) => l.claimed)) break; if (!a.idle) { a.cx = a.x; a.cy = a.y; } a.idle = true; a.track = null; await sleep(110); continue; }
+      if (!L) {
+        if (S.layers.every((l) => l.claimed)) break;
+        if (!a.idle) { a.cx = a.x; a.cy = a.y; }
+        a.idle = true; a.track = null;
+        await sleep(90);
+        continue;
+      }
+      a.layer = L;
       a.idle = false;
-      try { await build(a, L); } catch (e) { if (e !== ABORT) { console.error('[swarm] build failed, forcing layer visible', e, L.el); finish(L, null); } else break; }
+      try {
+        await build(a, L);
+      } catch (e) {
+        if (e !== ABORT) {
+          console.error('[swarm] build failed, forcing layer visible', e, L.el);
+          finish(L, null);
+        } else break;
+      } finally {
+        a.layer = null;
+      }
     }
+    a.layer = null;
     a.idle = true; a.track = null; a.setMode('arrow'); a.draw();
   }
 
@@ -501,16 +581,26 @@
     if (S.stop) return; let target = null;
     if (S.tourOverride) target = S.tourOverride();
     else if (S.tour && !S.userScrolled) {
-      // Guide camera by first unbuilt layer: keeps camera steady at top until hero layers finish
-      let idx = 0, n = S.layers.length;
-      while (idx < n && (S.layers[idx].done || S.layers[idx].fixed)) idx++;
-      const L = S.layers[idx];
-      if (L) target = Math.max(0, L.y - innerHeight * 0.38);
+      // Coordinate camera with the advancing cluster of >=3 cursors
+      const active = S.agents.filter((a) => a.layer && !a.layer.fixed);
+      if (active.length >= 3) {
+        const ys = active.map((a) => a.layer.y).sort((p, q) => p - q);
+        const thirdY = ys[ys.length - 3];
+        target = thirdY <= innerHeight * 0.82 ? 0 : Math.max(0, thirdY - innerHeight * 0.34);
+      } else if (active.length > 0) {
+        const ys = active.map((a) => a.layer.y).sort((p, q) => p - q);
+        target = ys[0] <= innerHeight * 0.82 ? 0 : Math.max(0, ys[0] - innerHeight * 0.34);
+      } else {
+        let k = S.firstFree;
+        while (k < S.layers.length && S.layers[k].fixed) k++;
+        const L = S.layers[k] || S.layers[S.firstFree];
+        if (L) target = (L.fixed || L.y <= innerHeight * 0.82) ? 0 : Math.max(0, L.y - innerHeight * 0.34);
+      }
     }
     if (target == null) return;
     const max = document.documentElement.scrollHeight - innerHeight; target = clamp(target, 0, Math.max(0, max));
     const d = target - scrollY; if (Math.abs(d) < 0.6) return;
-    const step = clamp(d * (1 - Math.exp(-dt / 480)), -1.1 * dt, 1.1 * dt); window.scrollTo(0, scrollY + step);
+    const step = clamp(d * (1 - Math.exp(-dt / 520)), -0.85 * dt, 0.85 * dt); window.scrollTo(0, scrollY + step);
   }
 
   function orbitStep(dt) {
@@ -541,6 +631,7 @@
     window.__swarmStarted = true; html.classList.add('is-building'); S.stop = false; const run = ++S.run;
     R = mulberry(S.cfg.seed); S.speed = S.cfg.speed || 1; document.documentElement.style.setProperty('--sw-speed', S.speed);
     S.pace = 1.8; S.t = 0; S.real = 0; S.userScrolled = false; S.tourOverride = null; S.orbit = null; S.tour = true; S.agents = []; loops = []; S.guideOwner = null; S.lastClaim = 0;
+    S.downWaiting = new Set(); S.downGateUntil = 0;
     try { await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))]); } catch (e) { /* ignore */ }
     window.scrollTo(0, 0);
     collect(); buildRulers(); root.classList.add('on'); layerEl().innerHTML = ''; agentsEl().innerHTML = '';
@@ -614,7 +705,7 @@
     const l = layerEl(), g = agentsEl(); if (l) l.innerHTML = ''; if (g) g.innerHTML = '';
     ['#sw-ruler-top', '#sw-ruler-left'].forEach((s) => { const e = $(s); if (e) e.classList.remove('on'); });
     const gd = $('#sw-guide'); if (gd) gd.classList.remove('on');
-    S.agents = []; S.orbit = null; S.tourOverride = null; loops = [];
+    S.agents = []; S.orbit = null; S.tourOverride = null; loops = []; S.downWaiting = null; S.downGateUntil = 0;
     if (!forRestart) { stopClock(); const root = $('#swarm-root'); if (root) root.classList.remove('on'); }
   }
 
