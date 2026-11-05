@@ -385,9 +385,8 @@ ul, ol {
   pointer-events: none;
   z-index: var(--z-cursor, 95);
   display: none;
-  filter: drop-shadow(0 0 2px var(--red))
-          drop-shadow(0 0 6px var(--red))
-          drop-shadow(0 0 12px rgba(255, 59, 48, .7));
+  filter: drop-shadow(0 0 1.5px var(--red, #ff3b30))
+          drop-shadow(0 0 4.5px var(--red, #ff3b30));
   will-change: transform;
   transition: transform .06s ease-out, filter .2s ease;
 }

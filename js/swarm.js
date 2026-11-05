@@ -220,13 +220,13 @@
       this.vx = (R() - 0.5) * 2; this.vy = (R() - 0.5) * 2; this.track = null; this.idle = true; this.run = S.run; this.theta = 0; this.radius = 100; this.flock = null;
       const el = this.el = mk('div', 'sw-cursor', agentsEl()); el.dataset.mode = 'arrow';
       el.style.setProperty('--c', this.color);
-      const d = 'M 4.0 4.5 C 4.0 3.2, 4.8 2.6, 5.8 3.2 Q 13.8 9.2, 21.2 14.6 C 22.6 15.7, 22.2 17.2, 20.8 17.0 Q 16.2 15.2, 12.8 13.6 C 11.8 13.1, 11.0 13.6, 10.4 14.8 Q 7.6 19.6, 5.3 23.4 C 4.4 24.8, 4.0 24.2, 4.0 22.6 Z';
+      const d = 'M 4.0 4.2 C 4.0 3.1, 4.7 2.6, 5.7 3.2 Q 13.6 9.0, 21.2 14.8 C 22.4 15.8, 22.0 17.0, 20.7 16.9 Q 16.5 16.0, 13.3 15.8 C 12.3 15.6, 11.6 16.2, 11.0 17.2 Q 7.9 20.4, 5.6 23.0 C 4.6 24.2, 4.0 23.6, 4.0 22.2 Z';
       el.innerHTML =
         `<svg class="g-arrow" viewBox="0 0 28 28">` +
           `<path class="g-glass" d="${d}" fill="rgba(10, 4, 6, 0.75)"/>` +
           `<path class="g-tint" d="${d}" fill="${this.color}" fill-opacity="0.32"/>` +
-          `<path class="g-sheen" d="M 4 4.5 Q 12 7 21.2 14.6 C 14 11 8 8 4 4.5 Z" fill="rgba(255, 255, 255, 0.28)"/>` +
-          `<path class="g-bounce" d="M 4 9 Q 8 13 12.8 13.6 Q 7.6 19.6 5.3 23.4 C 4.4 24.8 4 24.2 4 22.6 Z" fill="${this.color}" fill-opacity="0.18"/>` +
+          `<path class="g-sheen" d="M 4 4.2 Q 12 7 21.2 14.8 C 14 11 8 8 4 4.2 Z" fill="rgba(255, 255, 255, 0.28)"/>` +
+          `<path class="g-bounce" d="M 4 9 Q 8 13.5 13.3 15.8 Q 7.9 20.4 5.6 23.0 C 4.6 24.2 4 23.6 4 22.2 Z" fill="${this.color}" fill-opacity="0.18"/>` +
           `<path class="g-tube" d="${d}" fill="none" stroke="${this.color}" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"/>` +
           `<path class="g-core" d="${d}" fill="none" stroke="#ffffff" stroke-width="0.85" stroke-linejoin="round" stroke-linecap="round"/>` +
         `</svg>` +
