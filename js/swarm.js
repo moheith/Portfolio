@@ -158,51 +158,37 @@
   }
   const remeasureFree = () => { for (const L of S.layers) if (!L.claimed) measure(L); };
 
-  /* next layer for an agent: prioritize active section and visible viewport, advancing section by section */
+  /* next layer for an agent: strictly build current section and visible viewport, never claiming offscreen layers */
   function claim(a) {
     const L0 = S.layers, n = L0.length;
     while (S.firstFree < n && L0[S.firstFree].claimed) S.firstFree++;
     if (S.firstFree >= n) return null;
     const curSec = getActiveSection();
-    const lo = scrollY - 90, hi = scrollY + innerHeight + 120;
-    const focusLimit = scrollY + innerHeight * 0.82;
+    const lo = scrollY - 60, hi = scrollY + innerHeight + 60;
 
     let best = null, bestScore = 1e12, seen = 0;
-    let localBest = null, localScore = 1e12;
 
     for (let k = S.firstFree; k < n && seen < 44; k++) {
       const L = L0[k]; if (L.claimed) continue;
       const top = L.fixed ? scrollY + L.y : L.y;
-      if (top > hi && (!curSec || L.section !== curSec.name)) break;
+      // Never claim layers that are offscreen below current view: wait for camera to arrive
+      if (top > hi) break;
+      // Strictly focus on active section: do not advance to next section until current section finishes
+      if (curSec && L.section !== curSec.name && !L.fixed && L.section !== 'nav') {
+        if (curSec.built < curSec.total) break;
+      }
       seen++;
       const v = vr(L);
       const dist = Math.hypot(v.x - a.x, v.y - a.y);
       const inSec = curSec && L.section === curSec.name;
-      // Strong preference for layers in the active section so the entire section builds together
-      const score = (top - lo) * 1 + dist * 0.32 + L.k * 0.01 - (inSec ? 600 : 0);
+      const score = (top - lo) * 1 + dist * 0.32 + L.k * 0.01 - (inSec ? 400 : 0);
 
-      if (L.fixed || top <= focusLimit || inSec) {
-        if (score < localScore) {
-          localScore = score;
-          localBest = L;
-        }
-      }
       if (score < bestScore) {
         bestScore = score;
         best = L;
       }
     }
 
-    // 1. If an unclaimed layer exists in the current section or viewport focus, claim it immediately
-    if (localBest) {
-      if (S.downWaiting) S.downWaiting.delete(a.id);
-      a.waitStart = 0;
-      localBest.claimed = true;
-      S.lastClaim = S.t;
-      return localBest;
-    }
-
-    // 2. If all layers in active section/focus are claimed, allow claiming forward
     if (best) {
       if (S.downWaiting) S.downWaiting.delete(a.id);
       a.waitStart = 0;
@@ -418,7 +404,9 @@
     const W = async (p) => { await p; chk(); };
     sectionStart(L); dropPreview(L);
     let v = vr(L);
-    if (isOff(v)) { await W(sleep(50)); finish(L, null); return; }                          // far off-screen (slider overflow etc.): just appear
+    // Only horizontally overflowing slider items (like cards scrolled off to the right in overflow tracks) just appear:
+    const isHorizOverflow = (v.x > innerWidth + 40 || v.x + v.w < -40) && (v.y >= -120 && v.y <= innerHeight + 120);
+    if (isHorizOverflow) { await W(sleep(50)); finish(L, null); return; }
 
     if (L.type === 'logo') return buildLogoRow(a, L, chk);
 
@@ -562,40 +550,32 @@
     if (S.stop) return; let target = null;
     if (S.tourOverride) target = S.tourOverride();
     else if (S.tour && !S.userScrolled) {
-      const hero = S.sections.get('hero');
-      // 1. Keep camera strictly anchored at top while Hero is being built
-      if (hero && hero.built < hero.total) {
-        target = 0;
+      const curSec = getActiveSection();
+      if (!curSec || !curSec.el) {
+        target = document.documentElement.scrollHeight - innerHeight;
       } else {
-        const curSec = getActiveSection();
-        if (!curSec || !curSec.el) {
-          target = document.documentElement.scrollHeight - innerHeight;
-        } else {
-          const r = curSec.el.getBoundingClientRect();
-          const secTop = r.top + scrollY;
-          const secH = curSec.el.offsetHeight || r.height;
-          const secBottom = secTop + secH;
-          const baseTarget = Math.max(0, secTop - 64);
+        const r = curSec.el.getBoundingClientRect();
+        const secTop = r.top + scrollY;
+        const secH = curSec.el.offsetHeight || r.height;
+        const secBottom = secTop + secH;
+        const isHero = curSec.name === 'hero';
+        const baseTarget = isHero ? 0 : Math.max(0, secTop - 64);
 
-          // If the section fits within viewport, frame it cleanly from its top
-          if (secH <= innerHeight - 50) {
-            target = baseTarget;
+        // If the section fits within viewport, frame it cleanly from its top
+        if (secH <= innerHeight - (isHero ? 0 : 50)) {
+          target = baseTarget;
+        } else {
+          // Tall section (e.g. mobile Hero, long section): track first unbuilt layer in this section
+          let firstUnbuilt = null;
+          for (let i = S.firstFree; i < S.layers.length; i++) {
+            const l = S.layers[i];
+            if (!l.done && !l.fixed && l.section === curSec.name) { firstUnbuilt = l; break; }
+          }
+          if (firstUnbuilt && firstUnbuilt.y > baseTarget + innerHeight * 0.70) {
+            const maxSecScroll = Math.max(baseTarget, secBottom - innerHeight + 24);
+            target = clamp(firstUnbuilt.y - innerHeight * 0.55, baseTarget, maxSecScroll);
           } else {
-            // Tall section: check cluster position of active cursors in this section
-            const activeInSec = S.agents.filter((a) => a.layer && !a.layer.fixed && a.layer.section === curSec.name);
-            if (activeInSec.length >= 2) {
-              const ys = activeInSec.map((a) => a.layer.y).sort((p, q) => p - q);
-              const curY = ys[Math.min(ys.length - 1, 2)];
-              // Only scroll down when cursors pass 70% of viewport, keeping built content filling the screen
-              if (curY > baseTarget + innerHeight * 0.70) {
-                const maxSecScroll = Math.max(baseTarget, secBottom - innerHeight + 24);
-                target = clamp(curY - innerHeight * 0.70, baseTarget, maxSecScroll);
-              } else {
-                target = baseTarget;
-              }
-            } else {
-              target = baseTarget;
-            }
+            target = baseTarget;
           }
         }
       }
