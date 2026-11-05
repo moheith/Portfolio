@@ -31,7 +31,7 @@
     state: 'idle',                                           // idle | scan | build | finale | live | abort
     agents: [], layers: [], sections: new Map(),
     built: 0, total: 0, run: 0, stop: false,
-    doneSeconds: 0, userScrolled: false
+    doneSeconds: 0, userScrolled: false, scrollingUp: false
   };
 
   /* ---- tiny event emitter ---- */
@@ -172,7 +172,7 @@
       const L = L0[k]; if (L.claimed) continue;
       const top = L.fixed ? scrollY + L.y : L.y;
       // Never claim layers that are offscreen below current view: wait for camera to arrive
-      if (top > hi) break;
+      if (!S.scrollingUp && top > hi) break;
       // Strictly focus on active section: do not advance to next section until current section finishes
       if (curSec && L.section !== curSec.name && !L.fixed && L.section !== 'nav') {
         if (curSec.built < curSec.total) break;
@@ -548,34 +548,50 @@
 
   function tourStep(dt) {
     if (S.stop) return; let target = null;
-    if (S.tourOverride) target = S.tourOverride();
-    else if (S.tour && !S.userScrolled) {
-      const curSec = getActiveSection();
-      if (!curSec || !curSec.el) {
-        target = document.documentElement.scrollHeight - innerHeight;
-      } else {
-        const r = curSec.el.getBoundingClientRect();
-        const secTop = r.top + scrollY;
-        const secH = curSec.el.offsetHeight || r.height;
-        const secBottom = secTop + secH;
-        const isHero = curSec.name === 'hero';
-        const baseTarget = isHero ? 0 : Math.max(0, secTop - 64);
+    if (S.tour && !S.userScrolled) {
+      // Trigger slow scroll up when fewer than 2 cursors are working on something towards completion
+      if (!S.scrollingUp && scrollY > 150 && (S.built >= S.total * 0.75 || S.state === 'finale')) {
+        let workingCount = 0;
+        for (let i = 0; i < S.agents.length; i++) {
+          if (S.agents[i].layer && !S.agents[i].idle) workingCount++;
+        }
+        if (workingCount < 2) {
+          S.scrollingUp = true;
+        }
+      }
 
-        // If the section fits within viewport, frame it cleanly from its top
-        if (secH <= innerHeight - (isHero ? 0 : 50)) {
-          target = baseTarget;
+      if (S.scrollingUp || S.state === 'finale') {
+        target = 0;
+      } else if (S.tourOverride) {
+        target = S.tourOverride();
+      } else {
+        const curSec = getActiveSection();
+        if (!curSec || !curSec.el) {
+          target = 0;
         } else {
-          // Tall section (e.g. mobile Hero, long section): track first unbuilt layer in this section
-          let firstUnbuilt = null;
-          for (let i = S.firstFree; i < S.layers.length; i++) {
-            const l = S.layers[i];
-            if (!l.done && !l.fixed && l.section === curSec.name) { firstUnbuilt = l; break; }
-          }
-          if (firstUnbuilt && firstUnbuilt.y > baseTarget + innerHeight * 0.70) {
-            const maxSecScroll = Math.max(baseTarget, secBottom - innerHeight + 24);
-            target = clamp(firstUnbuilt.y - innerHeight * 0.55, baseTarget, maxSecScroll);
-          } else {
+          const r = curSec.el.getBoundingClientRect();
+          const secTop = r.top + scrollY;
+          const secH = curSec.el.offsetHeight || r.height;
+          const secBottom = secTop + secH;
+          const isHero = curSec.name === 'hero';
+          const baseTarget = isHero ? 0 : Math.max(0, secTop - 64);
+
+          // If the section fits within viewport, frame it cleanly from its top
+          if (secH <= innerHeight - (isHero ? 0 : 50)) {
             target = baseTarget;
+          } else {
+            // Tall section (e.g. mobile Hero, long section): track first unbuilt layer in this section
+            let firstUnbuilt = null;
+            for (let i = S.firstFree; i < S.layers.length; i++) {
+              const l = S.layers[i];
+              if (!l.done && !l.fixed && l.section === curSec.name) { firstUnbuilt = l; break; }
+            }
+            if (firstUnbuilt && firstUnbuilt.y > baseTarget + innerHeight * 0.70) {
+              const maxSecScroll = Math.max(baseTarget, secBottom - innerHeight + 24);
+              target = clamp(firstUnbuilt.y - innerHeight * 0.55, baseTarget, maxSecScroll);
+            } else {
+              target = baseTarget;
+            }
           }
         }
       }
@@ -583,11 +599,17 @@
     if (target == null) return;
     const max = document.documentElement.scrollHeight - innerHeight; target = clamp(target, 0, Math.max(0, max));
     const d = target - scrollY; if (Math.abs(d) < 0.6) return;
-    const step = clamp(d * (1 - Math.exp(-dt / 480)), -0.85 * dt, 0.85 * dt); window.scrollTo(0, scrollY + step);
+    const isUp = d < 0;
+    const maxSpeed = isUp ? 0.55 * dt : 0.85 * dt;
+    const easeFactor = isUp ? 850 : 480;
+    const step = clamp(d * (1 - Math.exp(-dt / easeFactor)), -maxSpeed, maxSpeed);
+    window.scrollTo(0, scrollY + step);
   }
 
   function orbitStep(dt) {
-    const o = S.orbit, el = $(S.cfg.finaleTarget) || document.body, r = el.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const o = S.orbit;
+    const cx = innerWidth > 768 ? innerWidth * 0.72 : innerWidth * 0.65;
+    const cy = innerHeight * 0.46;
     S.agents.forEach((a, i) => {
       if (a.peel) { return; }
       a.theta += (0.0018 + (i % 3) * 0.0005) * dt;
@@ -614,6 +636,7 @@
     window.__swarmStarted = true; html.classList.add('is-building'); S.stop = false; const run = ++S.run;
     R = mulberry(S.cfg.seed); S.speed = S.cfg.speed || 1; document.documentElement.style.setProperty('--sw-speed', S.speed);
     S.pace = 1.8; S.t = 0; S.real = 0; S.userScrolled = false; S.tourOverride = null; S.orbit = null; S.tour = true; S.agents = []; loops = []; S.guideOwner = null; S.lastClaim = 0;
+    S.scrollingUp = false;
     S.downWaiting = new Set(); S.downGateUntil = 0;
     try { await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))]); } catch (e) { /* ignore */ }
     window.scrollTo(0, 0);
@@ -657,9 +680,11 @@
     S.doneSeconds = Math.round(S.real / 100) / 10;                          // wall-clock seconds from the first frame to the last layer
     while (S.agents.length < S.cfg.maxAgents) spawn(true);
     emit('agents', S.agents.length);
-    S.tourOverride = () => { const el = $(S.cfg.finaleTarget); if (!el) return null; const r = el.getBoundingClientRect(); return scrollY + r.top - (innerHeight - r.height) / 2; };
+    S.scrollingUp = true;
+    S.tourOverride = () => 0;
     setState('finale'); Sound.chime();
-    const r0 = ($(S.cfg.finaleTarget) || document.body).getBoundingClientRect(); const cx = r0.left + r0.width / 2, cy = r0.top + r0.height / 2;
+    const cx = innerWidth > 768 ? innerWidth * 0.72 : innerWidth * 0.65;
+    const cy = innerHeight * 0.46;
     S.agents.forEach((a, i) => { a.theta = Math.atan2(a.y - cy, a.x - cx); a.radius = 110 + (i % 3) * 32; a.peel = false; a.track = null; a.idle = false; });
     S.orbit = { t0: S.t };
 
@@ -686,7 +711,7 @@
       } else {
         await S.goLive();
       }
-    }, 4400 / Math.max(0.5, S.speed));
+    }, 4800);
   }
 
   const onResize = () => { clearTimeout(S.rz); S.rz = setTimeout(() => { remeasureFree(); buildRulers(); }, 150); };
@@ -711,7 +736,7 @@
     const l = layerEl(), g = agentsEl(); if (l) l.innerHTML = ''; if (g) g.innerHTML = '';
     ['#sw-ruler-top', '#sw-ruler-left'].forEach((s) => { const e = $(s); if (e) e.classList.remove('on'); });
     const gd = $('#sw-guide'); if (gd) gd.classList.remove('on');
-    S.agents = []; S.orbit = null; S.tourOverride = null; loops = []; S.downWaiting = null; S.downGateUntil = 0;
+    S.agents = []; S.orbit = null; S.tourOverride = null; loops = []; S.downWaiting = null; S.downGateUntil = 0; S.scrollingUp = false;
     if (!forRestart) { stopClock(); const root = $('#swarm-root'); if (root) root.classList.remove('on'); }
   }
 
