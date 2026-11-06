@@ -154,6 +154,16 @@
           submit();
         });
       }
+
+      const posterBtn = document.querySelector('.poster__btn');
+      if (posterBtn) {
+        posterBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const brief = document.getElementById('brief');
+          if (brief) brief.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if (input) setTimeout(() => input.focus(), 350);
+        });
+      }
     },
 
     setupEmailCopy() {
