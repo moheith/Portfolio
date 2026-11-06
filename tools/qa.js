@@ -7,7 +7,7 @@ const { chromium } = require('playwright');
   const b = await chromium.launch({ executablePath: chromePath, args: ['--no-sandbox'] });
   let fail = 0;
   const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fail++; };
-  const url = 'http://localhost:8765/index.html?swarm=off';
+  const url = (process.env.BASE || 'http://localhost:8765') + '/index.html?swarm=off';
 
   // 1. Horizontal scroll test across 8 viewports
   for (const w of [360, 390, 768, 1024, 1280, 1440, 1920, 2560]) {

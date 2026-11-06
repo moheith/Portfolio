@@ -243,6 +243,7 @@
         { label: 'Open LinkedIn', sub: 'Link', run: () => window.open(CONTENT.meta.links.linkedin, '_blank', 'noopener') },
         { label: 'Open X (Twitter)', sub: 'Link', run: () => window.open(CONTENT.meta.links.x, '_blank', 'noopener') },
         { label: 'Copy Email Address', sub: 'Action', run: () => { navigator.clipboard.writeText(CONTENT.meta.email); Extras.toast('Email copied ✓'); } },
+        { label: 'Save Contact (.vcf)', sub: 'Action', run: () => window.Polish && Polish.vcard() },
         { label: 'Download CV', sub: 'Action', run: () => Extras.toast('CV coming soon') },
         { label: 'Replay Agent Swarm Rebuild', sub: 'Action', run: () => window.PortfolioBoot && PortfolioBoot.replay() },
         { label: 'Switch Accent: Crimson', sub: 'Theme', run: () => this.switchAccent('crimson') },

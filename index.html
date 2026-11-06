@@ -10,22 +10,23 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Mayura — Full Stack Developer &amp; Designer">
 <meta property="og:description" content="I design it, I build it, I ship it. Watch a swarm of AI agents build this portfolio in real time.">
-<meta property="og:image" content="https://moheith.tech/assets/img/hero-cutout.png">
+<meta property="og:image" content="https://moheith.tech/assets/img/og.jpg">
 <meta property="og:url" content="https://moheith.tech/">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://moheith.tech/assets/img/og.jpg">
 <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://cdn.simpleicons.org" crossorigin>
 <link rel="preload" as="image" href="assets/img/hero-cutout.webp" type="image/webp">
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@500&family=Inter:wght@400;500;600;700&family=Nothing+You+Could+Do&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/anton-latin-400-normal.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2" crossorigin>
+<link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/layout.css">
 <link rel="stylesheet" href="css/components.css">
 <link rel="stylesheet" href="css/swarm.css">
+<link rel="stylesheet" href="css/polish.css">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Person","name":"Mohieth Mayura S Y","alternateName":"Mayura","jobTitle":"Full Stack Developer & Designer",
  "address":{"@type":"PostalAddress","addressLocality":"Bengaluru","addressCountry":"IN"},
@@ -45,6 +46,7 @@
 </script>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
 <a class="skip" href="#main">Skip to content</a>
 <canvas id="grain" aria-hidden="true"></canvas>
 <div class="vignette" aria-hidden="true"></div>
@@ -524,9 +526,9 @@
 
 <noscript><style>html.is-building [data-layer]:not(.is-built){visibility:visible!important}</style></noscript>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" defer></script>
+<script src="assets/vendor/gsap.min.js" defer></script>
+<script src="assets/vendor/ScrollTrigger.min.js" defer></script>
+<script src="assets/vendor/lenis.min.js" defer></script>
 <script src="js/content.js" defer></script>
 <script src="js/render.js" defer></script>
 <script src="js/swarm.js" defer></script>
@@ -538,6 +540,7 @@
 <script src="js/compare.js" defer></script>
 <script src="js/journey.js" defer></script>
 <script src="js/extras.js" defer></script>
+<script src="js/polish.js" defer></script>
 <script src="js/main.js" defer></script>
 </body>
 </html>

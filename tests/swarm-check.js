@@ -33,7 +33,7 @@ const snap = (p) => p.evaluate(() => ({
   let s = await snap(p);
   ok('layer count between 300 and 450', s.total >= 300 && s.total <= 450, `(${s.total})`);
   ok('every layer built', s.built === s.total && s.unbuilt === 0);
-  ok('agents at the finale', s.agents >= 14 && s.agents <= 20, `(${s.agents})`);
+  ok('agents at the finale', s.agents >= 29 && s.agents <= 30, `(${s.agents})`);
   ok('no stray boxes/previews/sweeps', s.strays === 0, `(${s.strays})`);
   ok('no half-typed text left (caret/rest/selection spans)', s.dirtyText === 0, `(${s.dirtyText})`);
   ok('HUD shows "Rebuilt by … agents in …s" + Go live + Replay', /Rebuilt by \d+ agents in [\d.]+s/.test(s.hud) && /Go live/.test(s.hud) && /Replay/.test(s.hud), s.hud);

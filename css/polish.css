@@ -1,0 +1,123 @@
+/* css/polish.css — loaded LAST. Responsive fixes, accessibility, and extra finish.
+   Nothing here removes a feature: it only repairs layout bugs and adds polish on top of layout.css / components.css. */
+
+/* ---------------------------------------------------------------- 0. safety nets */
+html { scroll-padding-top: 76px; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { overflow-x: clip; }
+img, svg, video { max-width: 100%; }
+.proof > *, .raw > *, .contact > *, .journey__grid > *, .about__cols > *, .work > * { min-width: 0; }
+
+/* ---------------------------------------------------------------- 1. accessibility */
+.skip-link {
+  position: fixed; left: 12px; top: -60px; z-index: 200; padding: 10px 16px;
+  background: var(--red); color: #fff; font: 700 12px/1 var(--f-ui); letter-spacing: .08em; text-transform: uppercase;
+  border-radius: 4px; transition: top .2s ease;
+}
+.skip-link:focus { top: 12px; outline: 2px solid #fff; outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; border-radius: 2px; }
+.card:focus-visible { outline-offset: 4px; }
+::selection { background: var(--red); color: #fff; }
+
+/* ---------------------------------------------------------------- 2. scroll readout: vertical on the left rail, never over content */
+#playheadReadout {
+  left: 7px; bottom: 22px; font-size: 9px; letter-spacing: .16em;
+  writing-mode: vertical-rl; transform: rotate(180deg); opacity: .75; mix-blend-mode: normal;
+}
+
+/* ---------------------------------------------------------------- 3. compare slider: the 'final' / 'wire' UI used `img + .fakeui`, which broke once the (missing) <img> was removed */
+.compare .fakeui {
+  position: absolute; inset: 0; background: #07090e; display: flex; flex-direction: column; overflow: hidden;
+  font-family: var(--f-mono, ui-monospace, monospace); font-size: 10px; color: #94a3b8; user-select: none;
+}
+.compare .fakeui--wire { background: #040914; color: #38bdf8; }
+.compare__final, .compare__wire { overflow: hidden; }
+
+/* ---------------------------------------------------------------- 4. project modal poster (used when a project has no screenshot) */
+.modal__poster { position: absolute; inset: 0; display: grid; place-items: center; background: #0c0f17; }
+.modal__poster .card__poster { position: absolute; inset: 0; padding: clamp(14px, 3vw, 34px); transform: none !important; filter: none !important; }
+.modal__poster .card__poster > * { transform-origin: top left; }
+@media (min-width: 900px) {
+  .modal__poster .card__poster { font-size: 1.35em; }
+}
+
+/* ---------------------------------------------------------------- 5. responsive repairs */
+@media (max-width: 1280px) {
+  .contact { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .contact .poster { grid-column: 1 / -1; order: 0; min-height: 380px; }
+  .brief { flex-wrap: wrap; }
+  .brief__field { min-width: 0; }
+}
+@media (max-width: 1100px) {
+  .contact { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+  .contact .poster { order: 3; }
+}
+@media (max-width: 1024px) {
+  .about__cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; }
+  .about__head { flex-direction: column; align-items: flex-start; gap: 18px; margin-bottom: 36px; }
+  .about__text { max-width: 560px; font-size: 13px; }
+  .compare { aspect-ratio: 16 / 11; }
+}
+@media (max-width: 760px) {
+  .about__cols { grid-template-columns: minmax(0, 1fr); gap: 44px; }
+  .about__col--quote { grid-column: auto; }
+  .quote { min-height: 0; padding-block: 36px; }
+  .proof__panel { padding: 32px 24px; }
+  .proof__num { font-size: clamp(84px, 24vw, 120px); }
+  .hl { column-gap: 10px; }
+  .hl__title { font-size: 17px; line-height: 1.25; }
+  .hl__val { font-size: 28px; }
+  .compare { aspect-ratio: 4 / 5; }
+  .compare .fakeui { font-size: 9px; }
+  .tl__item { grid-template-columns: 74px 1fr; }
+  .tl__spine { left: 74px; }
+  .brief { gap: 12px; }
+  .contact .poster { min-height: 340px; }
+}
+@media (max-width: 420px) {
+  .work__tabs, .tabs { scrollbar-width: none; }
+  .hl__metric { min-width: 0; }
+  .hl__sub { font-size: 11px; }
+  .poster__title, .poster .h-display { font-size: clamp(40px, 13vw, 64px); }
+}
+
+/* the tab row scrolls sideways on narrow screens instead of widening the page */
+.tabs, .work__tabs { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.tabs::-webkit-scrollbar, .work__tabs::-webkit-scrollbar { display: none; }
+
+/* ---------------------------------------------------------------- 6. finish */
+/* images never flash while they decode */
+.hero__photo img { image-rendering: auto; }
+/* smoother hover on every interactive surface */
+a, button, .card, .crow, .hl, .tl__item { -webkit-tap-highlight-color: transparent; }
+/* print: a clean one-page résumé-style printout */
+@media print {
+  #sw-hud, #sw-watermark, #playhead, #playheadReadout, .nav, .cursor, .toast, .grain, #palette, #modal { display: none !important; }
+  html, body { background: #fff !important; color: #000 !important; }
+  * { color: #000 !important; text-shadow: none !important; box-shadow: none !important; }
+  [data-layer] { visibility: visible !important; }
+}
+
+/* ---------------------------------------------------------------- 7. new: modal navigation, back-to-top */
+.modal__pager { display: flex; align-items: center; gap: 14px; margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.08); }
+.modal__pstep {
+  width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,.18); background: transparent; color: #fff;
+  font-size: 16px; cursor: pointer; transition: background .2s, border-color .2s, transform .2s;
+}
+.modal__pstep:hover { background: var(--red); border-color: var(--red); transform: translateY(-1px); }
+.modal__pcount { font: 600 11px/1 var(--f-mono, ui-monospace, monospace); letter-spacing: .18em; color: rgba(255,255,255,.6); }
+#toTop {
+  position: fixed; right: 20px; bottom: 20px; z-index: 90; width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.18); background: rgba(10,10,14,.7); color: #fff; font-size: 18px; cursor: pointer;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .3s, transform .3s, background .2s;
+}
+#toTop.is-on { opacity: 1; transform: none; pointer-events: auto; }
+#toTop:hover { background: var(--red); border-color: var(--red); }
+@media (max-width: 760px) { #toTop { right: 14px; bottom: 76px; } .tl__item { grid-template-columns: 92px 1fr; } .tl__spine { left: 92px; } }
+
+/* modal buttons: the secondary 'Code Repo' button had no padding */
+.modal__content .btn:not(.btn--primary) {
+  display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 22px; color: #fff;
+  font: 700 12px/1 var(--f-ui); letter-spacing: .08em; text-transform: uppercase; transition: background .2s, border-color .2s;
+}
+.modal__content .btn:not(.btn--primary):hover { background: var(--red); border-color: var(--red) !important; }

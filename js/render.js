@@ -9,7 +9,7 @@ const Render = (() => {
   /* simple-icons logo with a text-wordmark fallback (also used when slug is "") */
   function iconHTML(label, slug, hex, cls) {
     if (!slug) return `<span class="${cls} ${cls}--word" style="color:#${hex}">${esc(label)}</span>`;
-    return `<img class="${cls}" src="https://cdn.simpleicons.org/${slug}/${hex}" alt="" loading="lazy" decoding="async" width="28" height="28"
+    return `<img class="${cls}" src="assets/icons/tech/${slug}.svg" alt="" loading="lazy" decoding="async" width="28" height="28"
       onerror="this.outerHTML='<span class=&quot;${cls} ${cls}--word&quot; style=&quot;color:#${hex}&quot;>${esc(label)}</span>'">`;
   }
 

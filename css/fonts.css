@@ -1,0 +1,6 @@
+/* css/fonts.css — self-hosted fonts (no Google Fonts request, works offline, no layout flash). */
+@font-face{font-family:'Anton';font-style:normal;font-weight:400;font-display:swap;src:url(../assets/fonts/anton-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:200 800;font-display:swap;src:url(../assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2) format('woff2')}
+@font-face{font-family:'Inter';font-style:normal;font-weight:100 900;font-display:swap;src:url(../assets/fonts/inter-latin-wght-normal.woff2) format('woff2')}
+@font-face{font-family:'Nothing You Could Do';font-style:normal;font-weight:400;font-display:swap;src:url(../assets/fonts/nothing-you-could-do-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Caveat';font-style:normal;font-weight:400 700;font-display:swap;src:url(../assets/fonts/caveat-latin-wght-normal.woff2) format('woff2')}

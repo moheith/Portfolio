@@ -27,9 +27,9 @@
 
   const S = window.Swarm = {
     cfg: {
-      startAgents: 14, maxAgents: 18,
+      startAgents: 18, maxAgents: 30,
       targetSeconds: 51.4,                                   // total run time at 1x (the pace controller steers to this)
-      joins: [[8, 15], [16, 16], [24, 17], [34, 18]],   // [seconds at 1x, agent count]
+      joins: [[6, 19], [12, 23], [17, 24], [31, 28], [39, 29], [48, 30]],   // [seconds at 1x, agent count]
       editRate: 0.34,                                        // share of long text layers that get a select-and-retype / typo-fix pass
       resizeRate: 0.5,                                       // share of images/cards that are first drawn too small, then resized
       moveRate: 0.35,                                        // share of cards/shapes first drawn off-position, then dragged into place
@@ -177,7 +177,7 @@
     while (S.firstFree < n && L0[S.firstFree].claimed) S.firstFree++;
     if (S.firstFree >= n) return null;
     const curSec = getActiveSection();
-    const lo = scrollY - 60, hi = scrollY + innerHeight + 60;
+    const lo = scrollY - 60, hi = scrollY + innerHeight + 60, starving = a.waitStart && S.t - a.waitStart > 420;   // soft rule: stay in view; an agent that has nothing to do for ~0.4s may look one half-screen ahead
 
     let best = null, bestScore = 1e12, seen = 0;
 
@@ -185,11 +185,7 @@
       const L = L0[k]; if (L.claimed) continue;
       const top = L.fixed ? scrollY + L.y : L.y;
       // Never claim layers that are offscreen below current view: wait for camera to arrive
-      if (top > hi) break;
-      // Strictly focus on active section: do not advance to next section until current section finishes
-      if (curSec && L.section !== curSec.name && !L.fixed && L.section !== 'nav') {
-        if (curSec.built < curSec.total) break;
-      }
+      if (top > hi + (starving ? innerHeight * 0.7 : 0)) break;
       seen++;
       const v = vr(L);
       const dist = Math.hypot(v.x - a.x, v.y - a.y);
@@ -512,15 +508,45 @@
     a.track = null; a.setMode('arrow'); await tween(160, null); chk();
   }
 
+  /* ======================================================================= 10a. ASSIST (idle agents do a visible QA pass)
+     An agent with nothing left to claim flies to a finished layer in view, drags a selection box around it (handles + W x H pill),
+     clicks, holds a beat and releases. If nothing is reviewable it shadows a busy agent. Purely visual: it never touches progress. */
+  async function assist(a) {
+    const run = a.run, chk = () => { if (S.stop || S.run !== run) throw ABORT; };
+    const pick = S.layers.filter((l) => {
+      if (!l.done || l.type === 'logo' || (l.rev && S.t - l.rev < 7000)) return false;
+      const v = vr(l); return v.w >= 28 && v.h >= 12 && v.x >= 0 && v.x + v.w <= innerWidth - 8 && v.y >= 72 && v.y + v.h <= innerHeight - 56;
+    });
+    if (!pick.length) {
+      const busy = S.agents.filter((o) => o !== a && o.layer && !o.idle);
+      if (!busy.length) { await tween(260, null); chk(); return; }
+      const o = busy[(R() * busy.length) | 0], dx = (R() < 0.5 ? -1 : 1) * (60 + R() * 60), dy = 36 + R() * 40;
+      await a.flyTo(() => [clamp(o.x + dx, 24, innerWidth - 24), clamp(o.y + dy, 80, innerHeight - 70)], 520); chk();
+      await tween(380 + R() * 380, null); chk(); return;
+    }
+    const L = pick[(R() * pick.length) | 0]; L.rev = S.t;
+    await a.flyTo(() => { const r = vr(L); return [r.x, r.y]; }, flightMs(a, L)); chk();
+    const box = new Box(L.type === 'shape' && L.w > 280 && L.h > 160 ? 'card' : boxKind(L), L);
+    try {
+      await drawBox(a, L, box, 'drag', chk);
+      a.setMode('arrow'); a.click(); await tween(380 + R() * 420, null); chk();
+      box.fade();
+    } catch (e) { box.kill(); throw e; }
+  }
+
   /* ======================================================================= 10. LOOPS */
   async function agentLoop(a) {
     while (!S.stop && S.run === a.run) {
       const L = claim(a);
       if (!L) {
+        if (!a.waitStart) a.waitStart = S.t;
         if (S.layers.every((l) => l.claimed)) break;
         if (!a.idle) { a.cx = a.x; a.cy = a.y; }
         a.idle = true; a.track = null;
-        await sleep(90);
+        if (S.state === 'build' && S.t - a.waitStart > 220) {          // never loiter: run a visible QA pass instead
+          try { await assist(a); } catch (e) { if (e === ABORT) break; console.error('[swarm] assist', e); }
+          a.cx = a.x; a.cy = a.y;
+        } else await sleep(90);
         continue;
       }
       a.layer = L;
@@ -547,7 +573,7 @@
     S.agents.forEach((a, i) => {
       if (S.orbit) return;
       if (a.track) { const p = a.track(); if (p) { a.x = p.x; a.y = p.y; } a.draw(); }
-      else if (a.idle && S.state !== 'scan' && S.state !== 'live') flockStep(a, dt, a.cx || innerWidth / 2, a.cy || innerHeight / 2, 0.00012);
+      else if (a.idle && S.state !== 'scan' && S.state !== 'live') flockStep(a, dt, a.cx || innerWidth / 2, a.cy || innerHeight / 2, 0.0007);
       else if (S.state === 'scan' && a.flock) flockStep(a, dt, a.flock.x * innerWidth, a.flock.y * innerHeight, 0.0007);
     });
     if (S.state === 'build' || S.state === 'finale') tourStep(dt);
@@ -605,7 +631,7 @@
     if (target == null) return;
     const max = document.documentElement.scrollHeight - innerHeight; target = clamp(target, 0, Math.max(0, max));
     const d = target - scrollY; if (Math.abs(d) < 0.6) return;
-    const step = clamp(d * (1 - Math.exp(-dt / 480)), -0.85 * dt, 0.85 * dt); window.scrollTo(0, scrollY + step);
+    const step = clamp(d * (1 - Math.exp(-dt / 360)), -1.9 * dt, 1.9 * dt); window.scrollTo(0, scrollY + step);
   }
 
   function orbitStep(dt) {

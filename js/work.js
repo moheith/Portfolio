@@ -204,9 +204,9 @@
 
       const mediaHtml = p.video
         ? `<video src="${p.video}" controls playsinline autoplay loop></video>`
-        : (p.img
-          ? `<img src="${p.img}" alt="${Render.esc(p.title)}" onerror="this.outerHTML='<div class=&quot;card__initials&quot; style=&quot;font-size:180px;opacity:.15;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)&quot;>${p.n}</div>'">`
-          : (Render.posterHTML ? Render.posterHTML(p) : `<div class="card__initials" style="font-size:180px;opacity:.15;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)">${p.n}</div>`));
+        : p.img
+          ? `<img src="${p.img}" alt="${Render.esc(p.title)}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'modal__poster',innerHTML:'<span class=card__initials>${p.n}</span>'}))">`
+          : `<div class="modal__poster card__media--inline">${Render.posterHTML(p)}</div>`;
 
       const liveBtn = p.url
         ? `<a class="btn btn--primary" href="${p.url}" target="_blank" rel="noopener"><span>Live Project ↗</span></a>`
