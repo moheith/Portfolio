@@ -21,7 +21,7 @@
       this.setupClock();
       this.setupCommandPalette();
       this.setupKeyboardShortcuts();
-      this.setupGlitchText();
+      this.setupRolodexHeadings();
     },
 
     toast(msg) {
@@ -380,13 +380,29 @@
       });
     },
 
-    setupGlitchText() {
-      document.querySelectorAll('.h-display .line').forEach(line => {
-        line.setAttribute('data-text', line.textContent);
+    setupRolodexHeadings() {
+      const sel = '.h-display .line, .h-bold, .poster__title .line, .hero__role .line, .link-all span:first-child';
+      const sync = () => {
+        document.querySelectorAll(sel).forEach(el => {
+          const txt = el.textContent.trim();
+          if (txt && el.getAttribute('data-text') !== txt) {
+            el.setAttribute('data-text', txt);
+          }
+        });
+      };
+      sync();
+      document.addEventListener('swarm:done', sync);
+      window.addEventListener('load', sync);
+      document.addEventListener('mouseover', (e) => {
+        const target = e.target.closest(sel);
+        if (target && !target.getAttribute('data-text')) {
+          target.setAttribute('data-text', target.textContent.trim());
+        }
       });
     },
 
     afterIntro(how) {
+      this.setupRolodexHeadings();
       this.fetchLiveStats();
       this.setupIdleCompanions();
     },

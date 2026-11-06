@@ -2491,6 +2491,128 @@ img + .fakeui {
 }
 
 /* =======================================================================
+   6.10b DUAL-LAYER ROLODEX SLIDE HOVER (HEADINGS & WORDS)
+   ======================================================================= */
+.h-display .line,
+.h-bold,
+.poster__title .line,
+.hero__role .line,
+.link-all span:first-child {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  vertical-align: bottom;
+}
+
+.h-display .line,
+.poster__title .line,
+.hero__role .line {
+  display: block;
+}
+
+.h-bold,
+.link-all span:first-child {
+  display: inline-block;
+}
+
+html:not(.is-building) .h-display .line[data-text],
+html:not(.is-building) .h-bold[data-text],
+html:not(.is-building) .poster__title .line[data-text],
+html:not(.is-building) .hero__role .line[data-text],
+html:not(.is-building) .link-all span:first-child[data-text] {
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+html:not(.is-building) .h-display .line[data-text]::before,
+html:not(.is-building) .h-bold[data-text]::before,
+html:not(.is-building) .poster__title .line[data-text]::before,
+html:not(.is-building) .hero__role .line[data-text]::before,
+html:not(.is-building) .link-all span:first-child[data-text]::before {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
+  transition: transform 0.42s cubic-bezier(0.76, 0, 0.24, 1);
+  pointer-events: none;
+  line-height: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  white-space: inherit;
+}
+
+html:not(.is-building) .h-display .line[data-text]::after,
+html:not(.is-building) .h-bold[data-text]::after,
+html:not(.is-building) .poster__title .line[data-text]::after,
+html:not(.is-building) .hero__role .line[data-text]::after,
+html:not(.is-building) .link-all span:first-child[data-text]::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--red, #ff3b30);
+  -webkit-text-fill-color: var(--red, #ff3b30);
+  transition: transform 0.42s cubic-bezier(0.76, 0, 0.24, 1);
+  pointer-events: none;
+  line-height: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  white-space: inherit;
+}
+
+/* For elements that are already red or accent: roll reveals white */
+html:not(.is-building) .h-display .line.accent[data-text]::before,
+html:not(.is-building) .poster__title .line.red[data-text]::before {
+  color: var(--red, #ff3b30);
+  -webkit-text-fill-color: var(--red, #ff3b30);
+}
+
+html:not(.is-building) .h-display .line.accent[data-text]::after,
+html:not(.is-building) .poster__title .line.red[data-text]::after {
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
+}
+
+/* Rolodex Hover Trigger */
+html:not(.is-building) .h-display .line[data-text]:hover::before,
+html:not(.is-building) .h-bold[data-text]:hover::before,
+html:not(.is-building) .poster__title .line[data-text]:hover::before,
+html:not(.is-building) .hero__role .line[data-text]:hover::before,
+html:not(.is-building) .link-all span:first-child[data-text]:hover::before {
+  transform: translateY(-100%);
+}
+
+html:not(.is-building) .h-display .line[data-text]:hover::after,
+html:not(.is-building) .h-bold[data-text]:hover::after,
+html:not(.is-building) .poster__title .line[data-text]:hover::after,
+html:not(.is-building) .hero__role .line[data-text]:hover::after,
+html:not(.is-building) .link-all span:first-child[data-text]:hover::after {
+  transform: translateY(-100%);
+}
+
+/* Accessibility / Motion-Off support */
+html.motion-off .h-display .line[data-text]::before,
+html.motion-off .h-display .line[data-text]::after,
+html.motion-off .h-bold[data-text]::before,
+html.motion-off .h-bold[data-text]::after,
+html.motion-off .poster__title .line[data-text]::before,
+html.motion-off .poster__title .line[data-text]::after,
+html.motion-off .hero__role .line[data-text]::before,
+html.motion-off .hero__role .line[data-text]::after,
+html.motion-off .link-all span:first-child[data-text]::before,
+html.motion-off .link-all span:first-child[data-text]::after {
+  transition: none !important;
+}
+
+/* =======================================================================
    6.11 RESPONSIVE RULES (1280 / 1024 / 860 / 640 / 390 / 360)
    ======================================================================= */
 @media (max-width: 1280px) {
