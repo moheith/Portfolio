@@ -172,7 +172,7 @@ const Render = (() => {
     host.innerHTML = list.map((p) => `
       <article class="card" data-layer="card" data-slug="${p.slug}" tabindex="0" role="link" aria-label="${esc(p.title)} — open project details">
         <div class="card__media" data-layer="image">
-          <img class="card__img" src="${p.img}" alt="" loading="lazy" decoding="async" onerror="this.remove()">
+          ${p.img ? `<img class="card__img" src="${p.img}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ''}
           ${posterHTML(p)}
           <span class="card__tag" data-layer="chip">${esc(p.tag)}</span>
         </div>
@@ -253,6 +253,6 @@ const Render = (() => {
   }
 
   function all() { cards(); stack(); highlights(); education(); toolkit(); process(); timeline(); milestones(); }
-  return { all, cards, esc };
+  return { all, cards, esc, posterHTML };
 })();
 if (typeof module !== 'undefined') module.exports = Render;

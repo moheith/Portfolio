@@ -905,7 +905,7 @@
   height: 100%;
   object-fit: cover;
 }
-img + .fakeui {
+.fakeui, img + .fakeui {
   position: absolute;
   inset: 0;
   background: #07090e;
