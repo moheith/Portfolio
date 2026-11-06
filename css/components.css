@@ -203,7 +203,7 @@
   background: #22c55e;
   box-shadow: 0 0 6px #22c55e;
 }
-.poster__title {
+.card__poster .poster__title {
   color: #64748b;
   letter-spacing: .05em;
   font-size: 8.5px;
@@ -627,7 +627,7 @@
   color: var(--muted);
   text-transform: uppercase;
 }
-.poster__btn {
+.card__poster .poster__btn {
   font-size: 8.5px;
   font-weight: 700;
   color: #fff;
@@ -747,7 +747,7 @@
   color: #fff;
   letter-spacing: -0.02em;
 }
-.poster__brand {
+.card__poster .poster__brand {
   display: flex;
   flex-direction: column;
   gap: 12px;
