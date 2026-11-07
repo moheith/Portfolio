@@ -229,6 +229,11 @@
       const list = palette.querySelector('.palette__list');
 
       const actions = [
+        { label: 'Open Developer Terminal (~)', sub: 'Shell', run: () => window.Terminal && Terminal.open() },
+        { label: 'Terminal: cat resume', sub: 'Shell', run: () => { window.Terminal && Terminal.open(); setTimeout(() => Terminal.execute('cat resume'), 120); } },
+        { label: 'Terminal: skills matrix', sub: 'Shell', run: () => { window.Terminal && Terminal.open(); setTimeout(() => Terminal.execute('skills'), 120); } },
+        { label: 'Terminal: projects directory', sub: 'Shell', run: () => { window.Terminal && Terminal.open(); setTimeout(() => Terminal.execute('projects'), 120); } },
+        { label: 'Toggle UI Sound FX', sub: 'Audio', run: () => window.SoundFX && SoundFX.toggle() },
         { label: 'Jump to Hero', sub: 'Section', run: () => window.Scroll && Scroll.to('#home') },
         { label: 'Jump to Selected Work', sub: 'Section', run: () => window.Scroll && Scroll.to('#work') },
         { label: 'Jump to Proof of Work', sub: 'Section', run: () => window.Scroll && Scroll.to('#proof') },
