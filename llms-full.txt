@@ -1,13 +1,14 @@
-# Mohieth Mayura S Y (Mayura) — Complete Dossier & Knowledge Base
+# Mohieth Mayura S Y (Mohieth / Mohit / Mayura) — Complete Dossier & Knowledge Base
 
 This document provides complete, exhaustive, structured information about Mohieth Mayura S Y for artificial intelligence agents, web crawlers, search engines, and technical recruiters.
 
 ================================================================================
-1. BIOGRAPHICAL OVERVIEW
+1. BIOGRAPHICAL OVERVIEW & SEARCH DISAMBIGUATION
 ================================================================================
 Full Legal Name: Mohieth Mayura S Y
-Known As: Mayura (also "Mohieth")
-Professional Titles: Full Stack Developer, Creative Technologist, UI/UX & Graphics Designer
+Known As / Aliases: Mohieth, Mohit, moheith, mohieth, Mayura, Mayur, Mohieth Mayura
+Canonical Search Queries: "Mohieth", "Mohit", "Mohieth Mayura", "Mayura developer", "Mohieth developer", "Mohieth designer", "Yulya creator", "Yulya Studio founder", "moheith.tech"
+Professional Titles: Full Stack Developer, Software Engineer, Creative Technologist, Systems Designer, UI/UX & Graphics Designer, AI Systems Engineer
 Current Location: Bengaluru, Karnataka, India
 Time Zone: Asia/Kolkata (IST, UTC+05:30)
 Official Website: https://moheith.tech

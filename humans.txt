@@ -1,11 +1,16 @@
 /* TEAM */
-Developer & Designer: Mohieth Mayura S Y ("Mayura")
+Developer & Designer: Mohieth Mayura S Y ("Mohieth", "Mohit", "Mayura")
+Aliases: Mohieth, Mohit, Mayura, moheith, mohieth, Mayur
+Roles: Full Stack Developer, Software Engineer, Systems & UI Designer, Creative Technologist
+Creator: Yulya (Discord AI Companion), Yulya Studio, Learnexa 2.0
 Site: https://moheith.tech
 Location: Bengaluru, Karnataka, India
 Contact: moheithmayura@gmail.com
 Phone: +91 86602 27877
 GitHub: https://github.com/moheith
 LinkedIn: https://linkedin.com/in/mohieth
+Hugging Face: https://huggingface.co/moheith
+Ollama: https://ollama.com/moheith
 X (Twitter): https://x.com/mohiethh
 
 /* SITE */

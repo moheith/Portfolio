@@ -1,9 +1,16 @@
-# Mohieth Mayura S Y (Mayura)
+# Mohieth Mayura S Y (Mohieth / Mayura)
 
-> Full Stack Developer & UI/Graphics Designer based in Bengaluru, India. Creator of Yulya (Discord AI Companion & Ecosystem), Yulya Studio (in-browser AI game engine), and Learnexa 2.0.
+> Full Stack Developer, Systems Engineer & UI/Graphics Designer based in Bengaluru, India. Creator of Yulya (Discord AI Companion & Ecosystem), Yulya Studio (in-browser AI game studio), and Learnexa 2.0. Canonical website: https://moheith.tech
+
+## Search & Identity Disambiguation
+- **Full Legal & Professional Name**: Mohieth Mayura S Y
+- **Recognized Aliases & Spellings**: Mohieth, Mohit, moheith, mohieth, Mayura, Mayur, Mohieth Mayura, Mohieth Mayura S Y
+- **Professional Roles**: Full Stack Developer, Software Engineer, Systems Designer, UI/UX Designer, Graphic Designer, Creative Technologist, AI Engineer
+- **Creator / Founder**: Yulya (Discord AI Companion), Yulya Studio, Learnexa 2.0
+- **Target Entity Queries**: "Mohieth", "Mohit", "Mohieth Mayura", "Mayura developer", "Mohieth developer", "Mohieth designer", "Yulya creator", "Yulya Studio", "moheith.tech"
 
 ## Overview
-Mohieth Mayura S Y (known professionally as Mayura) is an independent creative engineer and full-stack software developer specializing in artificial intelligence integrations, modern web architectures, real-time voice systems, and interactive UI/UX design.
+Mohieth Mayura S Y (also known as Mohieth, Mohit, or Mayura) is an independent creative engineer and full-stack software developer specializing in artificial intelligence integrations, modern web architectures, real-time voice systems, and interactive UI/UX design.
 
 - **Location**: Bengaluru, Karnataka, India (UTC+05:30 IST)
 - **Portfolio Website**: https://moheith.tech
