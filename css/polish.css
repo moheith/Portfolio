@@ -155,16 +155,16 @@ html.is-building, html.is-building body { overflow-anchor: none; }
 /* ---------------------------------------------------------------- 10. hero portrait aura */
 @keyframes heroAuraPulse {
   0%, 100% {
-    filter: drop-shadow(0 18px 42px rgba(0, 0, 0, .88))
-            drop-shadow(0 0 14px rgba(255, 65, 54, .48))
-            drop-shadow(0 0 34px rgba(255, 60, 50, .30))
-            drop-shadow(0 0 72px rgba(255, 59, 48, .16));
+    filter: drop-shadow(0 15px 35px rgba(0, 0, 0, .85))
+            drop-shadow(0 0 9px rgba(255, 65, 54, .40))
+            drop-shadow(0 0 22px rgba(255, 59, 48, .22))
+            drop-shadow(0 0 42px rgba(255, 59, 48, .10));
   }
   50% {
-    filter: drop-shadow(0 22px 48px rgba(0, 0, 0, .92))
-            drop-shadow(0 0 20px rgba(255, 75, 65, .62))
-            drop-shadow(0 0 48px rgba(255, 65, 54, .40))
-            drop-shadow(0 0 98px rgba(255, 59, 48, .26));
+    filter: drop-shadow(0 18px 40px rgba(0, 0, 0, .90))
+            drop-shadow(0 0 13px rgba(255, 75, 65, .52))
+            drop-shadow(0 0 28px rgba(255, 60, 50, .30))
+            drop-shadow(0 0 54px rgba(255, 59, 48, .16));
   }
 }
 html:not(.is-building):not([data-motion="off"]) #heroImg {
@@ -172,9 +172,9 @@ html:not(.is-building):not([data-motion="off"]) #heroImg {
 }
 @media (hover: hover) {
   html:not(.is-building) .hero:hover #heroImg {
-    filter: drop-shadow(0 22px 50px rgba(0, 0, 0, .94))
-            drop-shadow(0 0 22px rgba(255, 85, 75, .68))
-            drop-shadow(0 0 54px rgba(255, 65, 54, .46))
-            drop-shadow(0 0 110px rgba(255, 59, 48, .30));
+    filter: drop-shadow(0 18px 42px rgba(0, 0, 0, .92))
+            drop-shadow(0 0 16px rgba(255, 80, 70, .58))
+            drop-shadow(0 0 34px rgba(255, 65, 54, .36))
+            drop-shadow(0 0 65px rgba(255, 59, 48, .20));
   }
 }
