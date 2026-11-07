@@ -201,8 +201,12 @@
     },
 
     checkHash() {
+      const q = new URLSearchParams(location.search);
+      const paramSlug = q.get('work') || q.get('project');
       const hash = location.hash;
-      if (hash && hash.startsWith('#work/')) {
+      if (paramSlug) {
+        this.open(paramSlug);
+      } else if (hash && hash.startsWith('#work/')) {
         const slug = hash.replace('#work/', '');
         this.open(slug);
       } else {

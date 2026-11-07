@@ -5,9 +5,10 @@
   const q = new URLSearchParams(location.search);
   const call = (obj, fn, ...args) => { try { const o = window[obj]; if (o && typeof o[fn] === 'function') return o[fn](...args); } catch (e) { console.error(`[${obj}.${fn}]`, e); } };
   const small = () => matchMedia('(max-width: 640px)').matches;
-  /* deep links (#proof, #work/yulya …) skip the intro so a shared link lands on content; ?swarm=off also skips; ?swarmForce keeps it */
+  /* deep links (#proof, #work/yulya, ?work=yulya, ?section=about …) skip the intro so a shared link lands on content; ?swarm=off also skips; ?swarmForce keeps it */
   const skipIntro = () => html.getAttribute('data-motion') === 'off' || q.get('swarm') === 'off' ||
-    (!!location.hash && !['#', '#home'].includes(location.hash) && !q.has('swarmForce'));
+    (!!location.hash && !['#', '#home'].includes(location.hash) && !q.has('swarmForce')) ||
+    q.has('work') || q.has('project') || q.has('section');
   let introHow = null;
 
   /* runs exactly once when the intro is finished ('live'), aborted ('abort') or never ran ('skip') */
@@ -21,7 +22,9 @@
     call('Reveals', how === 'live' ? 'initQuiet' : 'init');          // 'live': everything was already seen, so nothing is re-hidden
     call('Extras', 'afterIntro', how);             // live stats, idle companions, clock, command palette hint
     window.dispatchEvent(new CustomEvent('portfolio:ready', { detail: { how } }));
-    if (location.hash && how !== 'live') call('Scroll', 'toHash', location.hash, true);
+    const sec = q.get('section');
+    if (sec) call('Scroll', 'toHash', '#' + sec, true);
+    else if (location.hash && how !== 'live') call('Scroll', 'toHash', location.hash, true);
   }
 
   /* small per-layer flourishes that fire the instant an agent finishes a layer */

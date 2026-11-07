@@ -1,3 +1,85 @@
+# robots.txt for https://moheith.tech
+# Optimized for Google Search Console, Googlebot, Bing, Yahoo, DuckDuckGo, Baidu, Yandex, Applebot & Social Crawlers
+
+# ==================== Default Universal Policy ====================
 User-agent: *
 Allow: /
+Allow: /index.html
+Allow: /assets/
+Allow: /css/
+Allow: /js/
+Allow: /favicon.svg
+Allow: /manifest.webmanifest
+Allow: /robots.txt
+Allow: /sitemap.xml
+Disallow: /404.html
+Disallow: /tests/
+Disallow: /tools/
+Disallow: /package.json
+Disallow: /package-lock.json
+Disallow: /.git/
+
+# ==================== Google Search & Services ====================
+User-agent: Googlebot
+Allow: /
+Allow: /assets/
+
+User-agent: Googlebot-Image
+Allow: /assets/img/
+Allow: /assets/icons/
+
+User-agent: Googlebot-Mobile
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# ==================== Microsoft Bing ====================
+User-agent: Bingbot
+Allow: /
+Allow: /assets/
+
+# ==================== Apple Search & Siri ====================
+User-agent: Applebot
+Allow: /
+
+# ==================== DuckDuckGo ====================
+User-agent: DuckDuckBot
+Allow: /
+
+# ==================== Yahoo! ====================
+User-agent: Slurp
+Allow: /
+
+# ==================== Baidu & Yandex ====================
+User-agent: Baiduspider
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+# ==================== Social Media OpenGraph Crawlers ====================
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Discordbot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+User-agent: TelegramBot
+Allow: /
+
+User-agent: Pinterestbot
+Allow: /
+
+# ==================== Host & Sitemap Index ====================
+Host: https://moheith.tech
 Sitemap: https://moheith.tech/sitemap.xml

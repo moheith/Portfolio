@@ -1,2 +1,151 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://moheith.tech/</loc><changefreq>monthly</changefreq><priority>1.0</priority></url></urlset>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- ==================== 1. Primary Canonical Domain ==================== -->
+  <url>
+    <loc>https://moheith.tech/</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://moheith.tech/assets/img/hero-cutout.webp</image:loc>
+      <image:title>Mohieth Mayura S Y — Full Stack Developer &amp; Designer</image:title>
+      <image:caption>Portrait of Mayura, Full Stack Developer, AI Companion creator and UI/Graphics Designer from Bengaluru, India.</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://moheith.tech/assets/img/hero-cutout.png</image:loc>
+      <image:title>Mohieth Mayura S Y High Resolution Cutout</image:title>
+      <image:caption>Portrait cutout of Mohieth Mayura S Y</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://moheith.tech/assets/img/og.jpg</image:loc>
+      <image:title>Mayura — Autonomous Multi-Agent Swarm Portfolio Preview</image:title>
+      <image:caption>Live preview card for Mayura personal portfolio website.</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://moheith.tech/assets/icons/favicon.svg</image:loc>
+      <image:title>Mayura Portfolio Favicon Symbol</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://moheith.tech/assets/icons/apple-touch-icon.png</image:loc>
+      <image:title>Mayura Brand Icon</image:title>
+    </image:image>
+  </url>
+
+  <!-- ==================== 2. Section Entry Points ==================== -->
+  <url>
+    <loc>https://moheith.tech/?section=work</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://moheith.tech/?section=proof</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://moheith.tech/?section=raw</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://moheith.tech/?section=about</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://moheith.tech/?section=journey</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://moheith.tech/?section=contact</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ==================== 3. Selected Projects (All 11 Case Studies) ==================== -->
+  <url>
+    <loc>https://moheith.tech/?work=yulya</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://moheith.tech/?work=yulya-studio</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://moheith.tech/?work=learnexa</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://moheith.tech/?work=yulya-models</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://moheith.tech/?work=desktop-ai-companion</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://moheith.tech/?work=yulya-landing</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://moheith.tech/?work=mascot-website</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://moheith.tech/?work=textlink</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://moheith.tech/?work=yulya-api</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://moheith.tech/?work=graphic-design</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://moheith.tech/?work=brand-identity</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- ==================== 4. Direct View (Swarm Off) ==================== -->
+  <url>
+    <loc>https://moheith.tech/?swarm=off</loc>
+    <lastmod>2026-11-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+</urlset>
