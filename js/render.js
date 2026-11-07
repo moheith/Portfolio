@@ -170,7 +170,7 @@ const Render = (() => {
   function cards(list = CONTENT.projects) {
     const host = $('#cards');
     host.innerHTML = list.map((p) => `
-      <article class="card" data-layer="card" data-slug="${p.slug}" tabindex="0" role="link" aria-label="${esc(p.title)} — open project details">
+      <div class="card" data-layer="card" data-slug="${p.slug}" tabindex="0" role="link">
         <div class="card__media" data-layer="image">
           ${p.img ? `<img class="card__img" src="${p.img}" alt="" loading="lazy" decoding="async" onerror="this.remove()">` : ''}
           ${posterHTML(p)}
@@ -184,7 +184,7 @@ const Render = (() => {
           </div>
           <span class="card__arrow" data-layer="icon">↗</span>
         </div>
-      </article>`).join('');
+      </div>`).join('');
     const c = $('#seeAllLabel'); if (c) c.textContent = `SEE ALL (${list.length}) •`;
   }
 

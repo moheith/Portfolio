@@ -31,7 +31,16 @@ When the page loads, an autonomous swarm of **18 → 30 pastel arrow cursors ("A
 - Offline PWA service worker (`sw.js`, https only), `404.html`, `robots.txt`, `sitemap.xml`, Open Graph image (`assets/img/og.jpg`).
 - `css/polish.css` + `js/polish.js` hold all of this, so your original files stay readable.
 
-**Before going live:** replace `YOURDOMAIN.com` in `index.html`, `robots.txt`, `sitemap.xml`; add a real CV and the `.cv` link; add screenshots to `assets/img/` and reference them in `js/content.js`.
+## Revision 2 (live-site bug sweep)
+- **Scroll drift during the build:** the tour camera could slide back up while cursors were building. It is now monotonic per section (`cameraSection()` + `camMax` in `js/swarm.js`) and the browser's scroll anchoring is off while building. Measured: 0 upward scroll steps across a full 51 s run.
+- **Cursors idling around the mouse after the build:** the old "idle companions" feature is removed on purpose (`setupIdleCompanions` in `js/extras.js` is a no-op). After Go live no agent cursor remains.
+- **Hand / grab cursor under the custom cursor:** the system cursor is now hidden everywhere the custom one is active. Context tags (VIEW, DRAG, OPEN ↗, COPY, CHAT, TOP …), a click ripple and a drag puck are in `js/fx.js` + `css/hover.css`.
+- **Hover animations:** every component has its own personality (spotlight, liquid fill, magnetic, tilt, shine sweep, tooltips on tech tiles…) instead of one shared lift. See `css/hover.css`.
+- Empty state for search/filter ("No projects match…" + *Clear filters*).
+- Modal history: stepping through projects replaces the history entry, closing doesn't add one, and the browser Back button closes the modal.
+- Accessibility: axe-core reports 0 violations (valid card roles, inert mobile menu, matching accessible names, contrast on the wireframe mock-up); one skip link instead of two; the hero role no longer reads "DEVELOPER&DESIGNER".
+
+**Still yours to fill in:** project 11 ("Brand identity — your project") is a placeholder in `js/content.js`; put a real CV at `assets/Mayura-CV.pdf` (the CV button shows a "coming soon" toast until then); add real screenshots to `assets/img/` and set `img:` per project.
 
 ## Run the checks
 ```

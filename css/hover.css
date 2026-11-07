@@ -1,0 +1,234 @@
+/* css/hover.css — loaded after polish.css.
+   1. Cursor system (hides the system cursor everywhere, tags, drag puck, ripple)
+   2. A distinct hover "personality" for every kind of element — nothing is just "lift + turn red" any more:
+        buttons   → liquid fill from the pointer entry point, arrow swap
+        links     → underline draws, text slides
+        cards     → reticle corners, light sheen sweep, spotlight, title underline
+        rows      → spotlight rows (.hl), colour-wipe rows (.crow), accent-bar rows (.tl__item)
+        chips     → spinning conic border          tiles → coin flip + tooltip
+        logos     → focus (others dim)             social → ink-fill pills
+   All pointer effects live inside (hover:hover) and (pointer:fine); keyboard focus gets the key ones too. */
+
+@property --a { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+
+/* ============================================================ 1. CURSOR */
+html.has-cursor,
+html.has-cursor *,
+html.has-cursor *::before,
+html.has-cursor *::after { cursor: none !important; }
+html.has-cursor input, html.has-cursor textarea, html.has-cursor [contenteditable="true"] { cursor: text !important; }
+
+.cur-dot { transition: opacity .2s ease, filter .25s ease; }
+.cur-dot.is-away, .cur-dot.is-text { opacity: 0; }
+.cur-dot .cur-arrow { transform-origin: 4px 3px; transition: transform .28s cubic-bezier(.3, 1.6, .5, 1), opacity .2s ease; }
+.cur-dot.is-hot .cur-arrow { transform: scale(1.16) rotate(-10deg); }
+.cur-dot.is-down .cur-arrow { transform: scale(.84) rotate(0deg); }
+.cur-dot.is-hot { filter: drop-shadow(0 0 2px var(--red, #ff3b30)) drop-shadow(0 0 9px var(--red, #ff3b30)); }
+
+.cur-tag {
+  position: absolute; left: 26px; top: 22px; padding: 6px 9px 5px; border-radius: 999px;
+  background: var(--red, #ff3b30); color: #fff; font: 700 9px/1 var(--f-mono, ui-monospace, monospace); letter-spacing: .14em; white-space: nowrap;
+  opacity: 0; transform: translate(-8px, -6px) scale(.7); transform-origin: 0 0; pointer-events: none;
+  transition: opacity .18s ease, transform .3s cubic-bezier(.3, 1.5, .5, 1);
+}
+.cur-dot.has-tag .cur-tag { opacity: 1; transform: none; }
+.cur-dot.is-flip .cur-tag { left: auto; right: 14px; transform-origin: 100% 0; }
+
+.cur-puck {
+  position: absolute; left: 4px; top: 3px; width: 66px; height: 66px; margin: -33px 0 0 -33px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; gap: 12px; color: #fff; font-size: 13px;
+  background: rgba(12, 12, 16, .55); border: 1px solid rgba(255, 255, 255, .4);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  opacity: 0; transform: scale(.2); pointer-events: none;
+  transition: opacity .2s ease, transform .35s cubic-bezier(.3, 1.5, .5, 1), background .2s ease;
+}
+.cur-puck i { font-style: normal; display: inline-block; }
+.cur-dot.is-grab .cur-puck { opacity: 1; transform: scale(1); }
+.cur-dot.is-grab .cur-arrow { opacity: 0; transform: scale(.3); }
+.cur-dot.is-grab .cur-puck i:first-child { animation: puckL 1.1s ease-in-out infinite alternate; }
+.cur-dot.is-grab .cur-puck i:last-child { animation: puckR 1.1s ease-in-out infinite alternate; }
+.cur-dot.is-grab.is-down .cur-puck { transform: scale(.82); background: var(--red, #ff3b30); border-color: transparent; }
+@keyframes puckL { to { transform: translateX(-4px); } }
+@keyframes puckR { to { transform: translateX(4px); } }
+
+.cur-ripple-layer { position: fixed; inset: 0; pointer-events: none; z-index: 94; overflow: hidden; }
+.cur-ripple { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; border: 1.5px solid var(--red, #ff3b30); animation: curRipple .65s cubic-bezier(.2, .7, .2, 1) forwards; }
+@keyframes curRipple { from { transform: scale(.4); opacity: .95; } to { transform: scale(5); opacity: 0; } }
+
+/* idle companions are gone for good */
+.companion { display: none !important; }
+
+/* ============================================================ 2. HOVER PERSONALITIES */
+@media (hover: hover) and (pointer: fine) {
+
+  /* ---------- primary buttons: liquid fill that grows from where the pointer entered ---------- */
+  html:not(.is-building) .btn--primary { isolation: isolate; }
+  html:not(.is-building) .btn--primary::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; background: #fff;
+    clip-path: circle(0% at var(--mx, 50%) var(--my, 50%)); transition: clip-path .6s cubic-bezier(.2, .8, .2, 1);
+  }
+  html:not(.is-building) .btn--primary:hover::before,
+  html:not(.is-building) .btn--primary:focus-visible::before { clip-path: circle(150% at var(--mx, 50%) var(--my, 50%)); }
+  html:not(.is-building) .btn--primary:hover { background: var(--btn); transform: translateY(-2px); box-shadow: 0 14px 30px -8px rgba(255, 59, 48, .55); }
+  html:not(.is-building) .btn--primary:hover::after { animation: none; opacity: 0; }
+  html:not(.is-building) .btn--primary .btn__label { transition: color .3s ease .05s, letter-spacing .4s ease; }
+  html:not(.is-building) .btn--primary:hover .btn__label, html:not(.is-building) .btn--primary:focus-visible .btn__label { color: #0a0a0e; letter-spacing: .03em; }
+  html:not(.is-building) .btn--primary:hover .btn__arrow { color: #0a0a0e; transform: none; animation: arrowSwap .6s cubic-bezier(.5, 0, .2, 1) both; }
+  html:not(.is-building) .btn--primary:active { transform: translateY(0) scale(.97); transition-duration: .08s; }
+  @keyframes arrowSwap { 0% { transform: translateY(0); opacity: 1; } 42% { transform: translateY(70%); opacity: 0; } 58% { transform: translateY(-70%); opacity: 0; } 100% { transform: none; opacity: 1; } }
+
+  /* ---------- floating "live project" pill: pulsing halo + text slides ---------- */
+  html:not(.is-building) .hero__live:hover .hero__live-ring { animation: halo 1.2s ease-out infinite; }
+  @keyframes halo { 0% { box-shadow: 0 0 0 0 rgba(255, 59, 48, .55), 0 0 25px rgba(255, 59, 48, .6); } 100% { box-shadow: 0 0 0 16px rgba(255, 59, 48, 0), 0 0 25px rgba(255, 59, 48, .6); } }
+  html:not(.is-building) .hero__live-txt b { background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; transition: background-size .45s cubic-bezier(.2, .8, .2, 1), color .2s; padding-bottom: 3px; }
+  html:not(.is-building) .hero__live:hover .hero__live-txt b { background-size: 100% 1px; }
+
+  /* ---------- outline / ghost buttons: border sweep, label stretches ---------- */
+  html:not(.is-building) .hero__cv { position: relative; transition: color .25s, letter-spacing .35s ease, transform .3s cubic-bezier(.3, 1.4, .5, 1); }
+  html:not(.is-building) .hero__cv:hover { letter-spacing: .06em; transform: translateY(-2px); }
+  html:not(.is-building) .hero__cv > span:first-child { display: inline-block; transition: transform .35s cubic-bezier(.3, 1.6, .5, 1); }
+  html:not(.is-building) .hero__cv:hover > span:first-child { transform: translateY(3px); }
+
+  /* ---------- big CTA ring: fills from the bottom, arrow flies out diagonally ---------- */
+  html:not(.is-building) .cta__ring { position: relative; overflow: hidden; isolation: isolate; transition: transform .45s cubic-bezier(.3, 1.4, .5, 1), box-shadow .3s ease; }
+  html:not(.is-building) .cta__ring::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--red); transform: translateY(101%); transition: transform .5s cubic-bezier(.2, .8, .2, 1); border-radius: inherit; }
+  html:not(.is-building) .cta:hover .cta__ring::before { transform: none; }
+  html:not(.is-building) .cta:hover .cta__ring { transform: rotate(45deg) scale(1.08); }
+  html:not(.is-building) .cta__txt { background: linear-gradient(currentColor, currentColor) 0 100% / 0 2px no-repeat; padding-bottom: 5px; transition: background-size .5s cubic-bezier(.2, .8, .2, 1), letter-spacing .4s ease; }
+  html:not(.is-building) .cta:hover .cta__txt { background-size: 100% 2px; letter-spacing: .02em; }
+
+  /* ---------- nav links: underline grows from the centre ---------- */
+  html:not(.is-building) .nav__links a::before {
+    content: ""; position: absolute; left: 50%; bottom: -8px; width: 100%; height: 2px; background: var(--red);
+    transform: translateX(-50%) scaleX(0); transform-origin: 50% 50%; transition: transform .4s cubic-bezier(.2, .8, .2, 1); pointer-events: none;
+  }
+  html:not(.is-building) .nav__links a:hover::before { transform: translateX(-50%) scaleX(.55); }
+  html:not(.is-building) .nav__links a.is-active:hover::before { transform: translateX(-50%) scaleX(0); }
+
+  /* ---------- project cards: reticle corners + light sheen + title underline ---------- */
+  html:not(.is-building) .card__media::before {
+    content: ""; position: absolute; inset: 0; z-index: 6; pointer-events: none;
+    background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .22) 48%, rgba(255, 255, 255, .05) 52%, transparent 62%);
+    transform: translateX(-120%); transition: transform 0s;
+  }
+  html:not(.is-building) .card:hover .card__media::before { transform: translateX(120%); transition: transform .9s cubic-bezier(.2, .7, .2, 1); }
+  html:not(.is-building) .card__media::after {
+    content: ""; position: absolute; inset: 10px; z-index: 6; pointer-events: none; opacity: 0; transform: scale(1.07);
+    transition: opacity .3s ease, transform .45s cubic-bezier(.2, .8, .2, 1);
+    --c: rgba(255, 255, 255, .9);
+    background:
+      linear-gradient(var(--c), var(--c)) 0 0 / 16px 1.5px no-repeat, linear-gradient(var(--c), var(--c)) 0 0 / 1.5px 16px no-repeat,
+      linear-gradient(var(--c), var(--c)) 100% 0 / 16px 1.5px no-repeat, linear-gradient(var(--c), var(--c)) 100% 0 / 1.5px 16px no-repeat,
+      linear-gradient(var(--c), var(--c)) 0 100% / 16px 1.5px no-repeat, linear-gradient(var(--c), var(--c)) 0 100% / 1.5px 16px no-repeat,
+      linear-gradient(var(--c), var(--c)) 100% 100% / 16px 1.5px no-repeat, linear-gradient(var(--c), var(--c)) 100% 100% / 1.5px 16px no-repeat;
+  }
+  html:not(.is-building) .card:hover .card__media::after { opacity: 1; transform: none; }
+  html:not(.is-building) .card .card__poster, html:not(.is-building) .card .card__img { transition: transform .8s cubic-bezier(.2, .7, .2, 1), filter .5s ease; }
+  html:not(.is-building) .card:hover .card__poster, html:not(.is-building) .card:hover .card__img { transform: scale(1.06); filter: saturate(1.15) brightness(1.05); }
+  html:not(.is-building) .card__title { background: linear-gradient(var(--red), var(--red)) 0 100% / 0 1.5px no-repeat; transition: background-size .5s cubic-bezier(.2, .8, .2, 1), transform .3s ease, color .2s; padding-bottom: 3px; }
+  html:not(.is-building) .card:hover .card__title { background-size: 100% 1.5px; }
+
+  /* ---------- highlight rows (.hl): spotlight follows the pointer, red line draws, ↗ appears ---------- */
+  html:not(.is-building) .hl { position: relative; background-image: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 59, 48, .12), transparent 70%); background-repeat: no-repeat; background-size: 100% 100%; background-color: transparent; }
+  html:not(.is-building) .hl { background-size: 0 0; transition: background-size 0s .3s; }
+  html:not(.is-building) .hl:hover { background-size: 100% 100%; transition: none; background-color: transparent; }
+  html:not(.is-building) .hl__line { position: relative; background: var(--line); }
+  html:not(.is-building) .hl__line::after { content: ""; position: absolute; inset: 0; background: var(--red); transform: scaleX(0); transform-origin: 0 50%; transition: transform .55s cubic-bezier(.2, .8, .2, 1); }
+  html:not(.is-building) .hl:hover .hl__line { background: var(--line); }
+  html:not(.is-building) .hl:hover .hl__line::after { transform: scaleX(1); }
+  html:not(.is-building) .hl__title::after { content: "↗"; display: inline-block; margin-left: 8px; color: var(--red); opacity: 0; transform: translate(-8px, 8px); transition: opacity .25s, transform .4s cubic-bezier(.3, 1.5, .5, 1); }
+  html:not(.is-building) .hl:hover .hl__title::after { opacity: 1; transform: none; }
+  html:not(.is-building) .hl .hl__val { transition: transform .4s cubic-bezier(.3, 1.5, .5, 1), color .2s; transform-origin: 100% 100%; }
+  html:not(.is-building) .hl:hover .hl__val { transform: scale(1.12); color: #fff; text-shadow: 0 0 22px rgba(255, 59, 48, .7); }
+
+  /* ---------- tech chips: a red light chases around the border ---------- */
+  html:not(.is-building) .chip { position: relative; isolation: isolate; }
+  html:not(.is-building) .chip::before {
+    content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; pointer-events: none; opacity: 0; transition: opacity .25s;
+    background: conic-gradient(from var(--a), transparent 0 55%, var(--red) 78%, #fff 100%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+  }
+  html:not(.is-building) .chip:hover::before { opacity: 1; animation: spinA 1.3s linear infinite; }
+  html:not(.is-building) .chip:hover { transform: translateY(-2px); box-shadow: 0 8px 22px -8px rgba(255, 59, 48, .5); border-color: rgba(255, 255, 255, .25); background: rgba(255, 255, 255, .05); }
+  @keyframes spinA { to { --a: 360deg; } }
+
+  /* ---------- toolkit tiles: coin flip + tooltip ---------- */
+  html:not(.is-building) .tile { position: relative; overflow: visible; perspective: 300px; }
+  html:not(.is-building) .tile:hover { transform: translateY(-5px); }
+  html:not(.is-building) .tile .tile__ico { transition: transform .7s cubic-bezier(.3, 1.3, .5, 1); }
+  html:not(.is-building) .tile:hover .tile__ico { transform: rotateY(360deg) scale(1.12); }
+  html:not(.is-building) .tile[data-tip]:not([data-tip=""])::after {
+    content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 10px); transform: translate(-50%, 6px) scale(.85); transform-origin: 50% 100%;
+    padding: 6px 9px 5px; border-radius: 3px; background: #fff; color: #0a0a0e; font: 800 9px/1 var(--f-ui); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
+    opacity: 0; pointer-events: none; z-index: 20; transition: opacity .2s, transform .35s cubic-bezier(.3, 1.5, .5, 1);
+  }
+  html:not(.is-building) .tile[data-tip]:not([data-tip=""]):hover::after { opacity: 1; transform: translate(-50%, 0) scale(1); }
+
+  /* ---------- logo strip: spotlight the hovered logo, dim the rest ---------- */
+  html:not(.is-building) .logo { transition: opacity .3s ease, transform .45s cubic-bezier(.3, 1.4, .5, 1), filter .3s ease; filter: grayscale(.6); }
+  html:not(.is-building) .logos__row:hover .logo { opacity: .28; filter: grayscale(1); }
+  html:not(.is-building) .logos__row .logo:hover { opacity: 1; filter: none; transform: translateY(-6px) scale(1.14); }
+
+  /* ---------- contact rows: colour wipe, icon spins, arrow shoots out ---------- */
+  html:not(.is-building) .crow { position: relative; isolation: isolate; border-radius: 4px; }
+  html:not(.is-building) a.crow::before { content: ""; position: absolute; inset: -6px -10px; z-index: -1; border-radius: 6px; background: linear-gradient(90deg, rgba(255, 59, 48, .14), rgba(255, 59, 48, .02)); clip-path: inset(0 100% 0 0); transition: clip-path .5s cubic-bezier(.2, .8, .2, 1); }
+  html:not(.is-building) a.crow:hover::before { clip-path: inset(0); }
+  html:not(.is-building) .crow__ico { transition: transform .6s cubic-bezier(.3, 1.4, .5, 1), background .25s, color .25s, border-color .25s; }
+  html:not(.is-building) a.crow:hover .crow__ico { transform: rotate(360deg) scale(1.1); background: var(--red); color: #fff; border-color: var(--red); }
+  html:not(.is-building) .crow__a { transition: transform .4s cubic-bezier(.3, 1.5, .5, 1), color .2s; display: inline-block; }
+  html:not(.is-building) a.crow:hover .crow__a { transform: translate(5px, -5px); }
+  html:not(.is-building) .crow__txt b { transition: letter-spacing .35s ease; }
+  html:not(.is-building) a.crow:hover .crow__txt b { letter-spacing: .02em; }
+
+  /* ---------- footer socials: ink-fill pills ---------- */
+  html:not(.is-building) .footer__social a { position: relative; z-index: 0; overflow: hidden; padding: 9px 12px; border-radius: 999px; transition: color .25s ease, transform .4s cubic-bezier(.3, 1.5, .5, 1); }
+  html:not(.is-building) .footer__social a::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--red); border-radius: inherit; transform: translateY(102%); transition: transform .45s cubic-bezier(.2, .8, .2, 1); }
+  html:not(.is-building) .footer__social a:hover { color: #fff; transform: translateY(-3px) rotate(-2deg); }
+  html:not(.is-building) .footer__social a:hover::before { transform: none; }
+
+  /* ---------- timeline rows: accent bar grows, role slides, spotlight ---------- */
+  html:not(.is-building) .tl__item { position: relative; background-image: radial-gradient(320px circle at var(--mx, 0) var(--my, 50%), rgba(255, 59, 48, .09), transparent 70%); background-repeat: no-repeat; background-size: 0 0; }
+  html:not(.is-building) .tl__item:hover { background-size: 100% 100%; background-color: transparent; }
+  html:not(.is-building) .tl__item::before { content: ""; position: absolute; left: 0; top: 14%; bottom: 14%; width: 2px; background: var(--red); transform: scaleY(0); transform-origin: 50% 100%; transition: transform .45s cubic-bezier(.2, .8, .2, 1); border-radius: 2px; }
+  html:not(.is-building) .tl__item:hover::before { transform: scaleY(1); }
+
+  /* ---------- process steps ---------- */
+  html:not(.is-building) .step__node { transition: transform .4s cubic-bezier(.3, 1.6, .5, 1), box-shadow .3s; }
+  html:not(.is-building) .step:hover .step__node { transform: scale(1.35); box-shadow: 0 0 0 6px rgba(255, 59, 48, .18), 0 0 18px rgba(255, 59, 48, .7); }
+
+  /* ---------- poster + quote: moving light ---------- */
+  html:not(.is-building) .poster::before, html:not(.is-building) .quote::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0; opacity: 0; transition: opacity .4s;
+    background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, .07), transparent 60%);
+  }
+  html:not(.is-building) .poster:hover::before, html:not(.is-building) .quote:hover::before { opacity: 1; }
+  html:not(.is-building) .quote { position: relative; }
+
+  /* ---------- stats: line draws under the number ---------- */
+  html:not(.is-building) .stat__line { transform-origin: 0 50%; transition: transform .5s cubic-bezier(.2, .8, .2, 1), background .3s; }
+  html:not(.is-building) .stat:hover .stat__line { transform: scaleX(1.4); background: var(--red); }
+
+  /* ---------- tabs: soft pill ---------- */
+  html:not(.is-building) .tab { position: relative; isolation: isolate; }
+  html:not(.is-building) .tab::before { content: ""; position: absolute; inset: -6px -10px 4px; border-radius: 6px; background: rgba(255, 255, 255, .06); opacity: 0; transform: scale(.85); transition: opacity .25s, transform .35s cubic-bezier(.3, 1.5, .5, 1); z-index: -1; }
+  html:not(.is-building) .tab:hover::before { opacity: 1; transform: none; }
+
+  /* ---------- accent dots ---------- */
+  html:not(.is-building) .accent-dot { transition: transform .35s cubic-bezier(.3, 1.8, .5, 1), box-shadow .25s; }
+  html:not(.is-building) .accent-dot:hover { transform: scale(1.5); box-shadow: 0 0 0 4px rgba(255, 255, 255, .14); }
+
+  /* ---------- compare handle ---------- */
+  html:not(.is-building) .compare__handle { transition: transform .3s cubic-bezier(.3, 1.6, .5, 1), box-shadow .3s; }
+  html:not(.is-building) .compare:hover .compare__handle { box-shadow: 0 0 0 8px rgba(255, 59, 48, .18), 0 0 26px rgba(255, 59, 48, .6); }
+}
+
+/* keyboard focus gets the same feedback as hover for the important controls */
+html:not(.is-building) .btn--primary:focus-visible { box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--red); }
+.card:focus-visible .card__media { outline: 2px solid var(--red); outline-offset: 3px; }
+
+/* ---------- reduced motion: keep colour feedback, drop movement ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .cur-ripple, .cur-puck i { animation: none !important; }
+  .card:hover .card__poster, .card:hover .card__img, .tile:hover .tile__ico, a.crow:hover .crow__ico { transform: none !important; }
+  .chip:hover::before { animation: none !important; }
+}

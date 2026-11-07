@@ -169,12 +169,12 @@
       function openMenu() {
         burger.setAttribute('aria-expanded', 'true');
         menu.classList.add('is-open');
-        menu.setAttribute('aria-hidden', 'false');
+        menu.setAttribute('aria-hidden', 'false'); menu.removeAttribute('inert');
       }
       function closeMenu() {
         burger.setAttribute('aria-expanded', 'false');
         menu.classList.remove('is-open');
-        menu.setAttribute('aria-hidden', 'true');
+        menu.setAttribute('aria-hidden', 'true'); menu.setAttribute('inert', '');
       }
 
       burger.addEventListener('click', () => {

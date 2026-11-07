@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="css/components.css">
 <link rel="stylesheet" href="css/swarm.css">
 <link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/hover.css">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Person","name":"Mohieth Mayura S Y","alternateName":"Mayura","jobTitle":"Full Stack Developer & Designer",
  "address":{"@type":"PostalAddress","addressLocality":"Bengaluru","addressCountry":"IN"},
@@ -46,7 +47,6 @@
 </script>
 </head>
 <body>
-<a class="skip-link" href="#main">Skip to content</a>
 <a class="skip" href="#main">Skip to content</a>
 <canvas id="grain" aria-hidden="true"></canvas>
 <div class="vignette" aria-hidden="true"></div>
@@ -71,7 +71,7 @@
     <button class="nav__burger" id="burger" type="button" aria-label="Open menu" aria-expanded="false"><i></i><i></i></button>
   </div>
 </header>
-<div class="menu" id="menu" aria-hidden="true">
+<div class="menu" id="menu" aria-hidden="true" inert>
   <a href="#work">Work</a><a href="#proof">Proof</a><a href="#about">About</a><a href="#journey">Journey</a><a href="#contact">Contact</a>
 </div>
 
@@ -93,14 +93,14 @@
     <p class="hero__hello" data-layer="text">Hello, I'm</p>
     <h2 class="hero__name"><span data-layer="text">MOHIETH</span><i class="hero__period" aria-hidden="true"></i></h2>
     <p class="hero__full" data-layer="text">MOHIETH MAYURA S Y</p>
-    <p class="hero__role"><span class="line" data-layer="text">FULL STACK DEV</span><span class="line" data-layer="text">&amp; DESIGNER</span></p>
+    <p class="hero__role"><span class="line" data-layer="text">FULL STACK DEV</span> <span class="line" data-layer="text">&amp; DESIGNER</span></p>
     <p class="hero__intro" data-layer="text">I design it, I build it, I ship it. From pixel-perfect interfaces to the backends that power them, I turn ideas into products people actually use.</p>
     <a class="btn btn--primary hero__cta" href="#work" data-layer="button"><span class="btn__label">See my work</span><span class="btn__arrow" aria-hidden="true">↓</span></a>
     <p class="hero__loc"><span class="hero__pin" data-layer="icon" aria-hidden="true">⌖</span><span data-layer="text">BENGALURU, INDIA</span></p>
     <i class="hero__bar" data-layer="shape"></i>
   </div>
 
-  <a class="hero__live" href="https://discord.yulya.me" target="_blank" rel="noopener" aria-label="View live project: Yulya">
+  <a class="hero__live" href="https://discord.yulya.me" target="_blank" rel="noopener">
     <span class="hero__live-ring" data-layer="icon" aria-hidden="true">↗</span>
     <span class="hero__live-txt"><b data-layer="text">VIEW LIVE PROJECT</b><span data-layer="text">YULYA · WEB / AI</span></span>
   </a>
@@ -367,7 +367,7 @@
         </div>
       </div>
       <i class="compare__line" id="cmpLine" data-layer="line"></i>
-      <button class="compare__handle" id="cmpHandle" type="button" tabindex="-1" aria-hidden="true" data-layer="shape"><span aria-hidden="true">⇆</span></button>
+      <span class="compare__handle" id="cmpHandle" aria-hidden="true" data-layer="shape"><span aria-hidden="true">⇆</span></span>
       <span class="compare__lab compare__lab--l" data-layer="chip">WIREFRAME</span>
       <span class="compare__lab compare__lab--r" data-layer="chip">FINAL UI</span>
     </div>
@@ -486,13 +486,13 @@
       <p id="clock" data-layer="text">Bengaluru · 00:00 IST</p>
     </div>
     <nav class="footer__social" aria-label="Social links">
-      <a href="https://github.com/moheith" target="_blank" rel="noopener" aria-label="GitHub" data-layer="icon">GH</a>
-      <a href="https://linkedin.com/in/mohieth" target="_blank" rel="noopener" aria-label="LinkedIn" data-layer="icon">IN</a>
-      <a href="https://huggingface.co/moheith" target="_blank" rel="noopener" aria-label="Hugging Face" data-layer="icon">HF</a>
-      <a href="https://ollama.com/moheith" target="_blank" rel="noopener" aria-label="Ollama" data-layer="icon">OL</a>
-      <a href="https://x.com/mohiethh" target="_blank" rel="noopener" aria-label="X" data-layer="icon">X</a>
-      <a href="https://instagram.com/moheith_mayura" target="_blank" rel="noopener" aria-label="Instagram" data-layer="icon">IG</a>
-      <a href="mailto:moheithmayura@gmail.com" aria-label="Email" data-layer="icon">@</a>
+      <a href="https://github.com/moheith" target="_blank" rel="noopener" data-layer="icon"><span aria-hidden="true">GH</span><span class="sr-only">GitHub</span></a>
+      <a href="https://linkedin.com/in/mohieth" target="_blank" rel="noopener" data-layer="icon"><span aria-hidden="true">IN</span><span class="sr-only">LinkedIn</span></a>
+      <a href="https://huggingface.co/moheith" target="_blank" rel="noopener" data-layer="icon"><span aria-hidden="true">HF</span><span class="sr-only">Hugging Face</span></a>
+      <a href="https://ollama.com/moheith" target="_blank" rel="noopener" data-layer="icon"><span aria-hidden="true">OL</span><span class="sr-only">Ollama</span></a>
+      <a href="https://x.com/mohiethh" target="_blank" rel="noopener" data-layer="icon"><span aria-hidden="true">X</span><span class="sr-only">X</span></a>
+      <a href="https://instagram.com/moheith_mayura" target="_blank" rel="noopener" data-layer="icon"><span aria-hidden="true">IG</span><span class="sr-only">Instagram</span></a>
+      <a href="mailto:moheithmayura@gmail.com" data-layer="icon"><span aria-hidden="true">@</span><span class="sr-only">Email</span></a>
     </nav>
   </div>
   <div class="footer__row footer__row--2">
@@ -540,6 +540,7 @@
 <script src="js/compare.js" defer></script>
 <script src="js/journey.js" defer></script>
 <script src="js/extras.js" defer></script>
+<script src="js/fx.js" defer></script>
 <script src="js/polish.js" defer></script>
 <script src="js/main.js" defer></script>
 </body>

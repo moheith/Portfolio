@@ -137,6 +137,20 @@
   const isOff = (v) => v.x > innerWidth + 4 || v.x + v.w < -4 || v.y > innerHeight + 260 || v.y + v.h < -260;
 
   const secName = (el) => { const s = el.closest('[data-swarm-section]'); return s ? s.dataset.swarmSection : 'page'; };
+  /* The camera only ever moves FORWARD through the page while the swarm builds. It leaves a section once ~everything in it is either
+     built or already being built by an agent. (The old rule — "first section that isn't 100% built" — dragged the camera back up whenever
+     one agent was still typing in an earlier section, then crept down again: the up/down drift.) */
+  function cameraSection() {
+    const secs = [...S.sections.entries()].filter(([n]) => n !== 'nav').map(([, v]) => v);
+    if (!secs.length) return null;
+    S.camIdx = Math.min(S.camIdx || 0, secs.length - 1);
+    while (S.camIdx < secs.length - 1) {
+      const s = secs[S.camIdx];
+      let free = 0; for (const l of S.layers) if (l.section === s.name && !l.claimed && !l.fixed) free++;
+      if (s.built >= s.total || (free === 0 && s.built >= s.total * 0.55)) S.camIdx++; else break;
+    }
+    return secs[S.camIdx];
+  }
   function getActiveSection() {
     for (const [name, s] of S.sections.entries()) {
       if (name === 'nav') continue;
@@ -598,7 +612,7 @@
     if (S.stop) return; let target = null;
     if (S.tourOverride) target = S.tourOverride();
     else if (S.tour && !S.userScrolled) {
-      const curSec = getActiveSection();
+      const curSec = cameraSection();
       if (!curSec || !curSec.el) {
         target = document.documentElement.scrollHeight - innerHeight;
       } else {
@@ -629,6 +643,10 @@
       }
     }
     if (target == null) return;
+    if (!S.tourOverride) {                                             // within one section the camera never backs up
+      if (S.camSec !== S.camIdx) { S.camSec = S.camIdx; S.camMax = -1; }
+      if (target < S.camMax) target = S.camMax; else S.camMax = target;
+    }
     const max = document.documentElement.scrollHeight - innerHeight; target = clamp(target, 0, Math.max(0, max));
     const d = target - scrollY; if (Math.abs(d) < 0.6) return;
     const step = clamp(d * (1 - Math.exp(-dt / 360)), -1.9 * dt, 1.9 * dt); window.scrollTo(0, scrollY + step);
@@ -661,7 +679,7 @@
     if (!root) { console.error('[swarm] #swarm-root missing'); html.classList.remove('is-building'); return; }
     window.__swarmStarted = true; html.classList.add('is-building'); S.stop = false; const run = ++S.run;
     R = mulberry(S.cfg.seed); S.speed = S.cfg.speed || 1; document.documentElement.style.setProperty('--sw-speed', S.speed);
-    S.pace = 1.8; S.t = 0; S.real = 0; S.userScrolled = false; S.tourOverride = null; S.orbit = null; S.tour = true; S.agents = []; loops = []; S.guideOwner = null; S.lastClaim = 0;
+    S.camIdx = 0; S.camSec = -1; S.camMax = -1; S.pace = 1.8; S.t = 0; S.real = 0; S.userScrolled = false; S.tourOverride = null; S.orbit = null; S.tour = true; S.agents = []; loops = []; S.guideOwner = null; S.lastClaim = 0;
     S.downWaiting = new Set(); S.downGateUntil = 0;
     try { await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))]); } catch (e) { /* ignore */ }
     window.scrollTo(0, 0);

@@ -72,6 +72,20 @@
       this.wireCardClicks();
       this.wireTilt();
 
+      // empty state
+      const host = document.getElementById('cards');
+      if (host && !activeFilteredList.length) {
+        host.innerHTML = `<div class="work__empty" role="status"><b>No projects match${q ? ' “' + Render.esc(searchQuery) + '”' : ''}.</b><span>Try another word, or clear the filters.</span><button type="button" class="work__clear">Clear filters</button></div>`;
+        host.querySelector('.work__clear').addEventListener('click', () => {
+          const inp = document.querySelector('#search, .work__search input, input[type=search]');
+          if (inp) inp.value = '';
+          searchQuery = '';
+          const all = document.querySelector('.tab[data-filter="All"]');
+          if (all) all.click(); else this.filter();
+          if (inp) inp.focus();
+        });
+      }
+
       // Highlight matched letters in card titles if search query is active
       if (q) {
         document.querySelectorAll('.card__title').forEach(titleEl => {
@@ -191,6 +205,9 @@
       if (hash && hash.startsWith('#work/')) {
         const slug = hash.replace('#work/', '');
         this.open(slug);
+      } else {
+        const m = document.getElementById('modal');
+        if (m && m.classList.contains('is-open') && m._close) m._close(true);
       }
     },
 
@@ -232,22 +249,24 @@
         </div>
       `;
 
+      const wasOpen = modal.classList.contains('is-open');
       modal.classList.add('is-open');
       modal.setAttribute('aria-hidden', 'false');
       document.body.style.overflow = 'hidden';
 
-      if (history.pushState) history.pushState(null, '', `#work/${slug}`);
+      if (location.hash !== `#work/${slug}`) { if (wasOpen && history.replaceState) history.replaceState(null, '', `#work/${slug}`); else if (history.pushState) history.pushState(null, '', `#work/${slug}`); }
 
-      const close = () => {
+      const close = (fromHistory) => {
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
         modal.innerHTML = '';
         document.body.style.overflow = '';
-        if (history.pushState) history.pushState(null, '', '#work');
+        if (fromHistory !== true && history.replaceState) history.replaceState(null, '', '#work');
         if (lastFocusedEl && lastFocusedEl.focus) lastFocusedEl.focus();
       };
 
-      modal.querySelector('.modal__close').addEventListener('click', close);
+      modal._close = close;
+      modal.querySelector('.modal__close').addEventListener('click', () => close());
       modal.querySelector('.modal__backdrop').addEventListener('click', close);
 
       const onKeyDown = (e) => {

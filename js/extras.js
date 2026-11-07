@@ -430,51 +430,8 @@
         }).catch(() => {});
     },
 
-    setupIdleCompanions() {
-      if (window.matchMedia && window.matchMedia('(hover: none)').matches) return;
-      if (document.documentElement.getAttribute('data-motion') === 'off') return;
-
-      const hero = document.getElementById('home');
-      if (!hero) return;
-
-      let idleTimer = null;
-      let companions = [];
-      let lastMove = performance.now();
-
-      const clearCompanions = () => {
-        companions.forEach(c => c.remove());
-        companions = [];
-      };
-
-      const spawn = (mx, my) => {
-        clearCompanions();
-        const colors = ['#5eead4', '#fb923c', '#ffffff', '#a78bfa', '#7dd3fc', '#fda4af'];
-        colors.forEach((col, i) => {
-          const div = document.createElement('div');
-          div.className = 'companion';
-          div.innerHTML = `<svg viewBox="0 0 22 22" fill="none"><path d="M3 2 L3 19 L7.6 14.8 L10.6 21.6 L13.4 20.4 L10.4 13.6 L16.6 13.6 Z" fill="${col}" stroke="#fff" stroke-width="1.4"/></svg>`;
-          const angle = (i / colors.length) * Math.PI * 2;
-          const dist = 60 + (i % 2) * 20;
-          const x = mx + Math.cos(angle) * dist;
-          const y = my + Math.sin(angle) * dist;
-          div.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-          hero.appendChild(div);
-          companions.push(div);
-        });
-      };
-
-      hero.addEventListener('mousemove', (e) => {
-        const now = performance.now();
-        if (now - lastMove > 50 && companions.length > 0) {
-          clearCompanions();
-        }
-        lastMove = now;
-        clearTimeout(idleTimer);
-        idleTimer = setTimeout(() => {
-          spawn(e.clientX, e.clientY);
-        }, 4000);
-      }, { passive: true });
-    }
+    /* idle companions removed on purpose: cursors standing around the pointer looked messy */
+    setupIdleCompanions() {}
   };
 
   window.Extras = Extras;
