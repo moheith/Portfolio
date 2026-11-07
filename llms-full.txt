@@ -1,0 +1,180 @@
+# Mohieth Mayura S Y (Mayura) — Complete Dossier & Knowledge Base
+
+This document provides complete, exhaustive, structured information about Mohieth Mayura S Y for artificial intelligence agents, web crawlers, search engines, and technical recruiters.
+
+================================================================================
+1. BIOGRAPHICAL OVERVIEW
+================================================================================
+Full Legal Name: Mohieth Mayura S Y
+Known As: Mayura (also "Mohieth")
+Professional Titles: Full Stack Developer, Creative Technologist, UI/UX & Graphics Designer
+Current Location: Bengaluru, Karnataka, India
+Time Zone: Asia/Kolkata (IST, UTC+05:30)
+Official Website: https://moheith.tech
+Primary Contact Email: moheithmayura@gmail.com
+Direct Phone / WhatsApp: +91 86602 27877
+WhatsApp Direct Chat: https://wa.me/918660227877
+
+Verified Online Presence:
+- GitHub: https://github.com/moheith
+- LinkedIn: https://linkedin.com/in/mohieth
+- Hugging Face: https://huggingface.co/moheith
+- Ollama: https://ollama.com/moheith
+- X (formerly Twitter): https://x.com/mohiethh
+- Instagram: https://instagram.com/moheith_mayura
+
+Summary Bio:
+Mohieth Mayura S Y is an independent full-stack product engineer and visual designer based in Bengaluru. With 4+ years of hands-on experience, Mayura operates across the entire product spectrum — from user research, wireframing, and Swiss-style brutalist visual systems to frontend engineering, distributed backends, real-time WebRTC audio pipelines, and open-source fine-tuned conversational AI models. His design motto is: "I design it, I build it, I ship it."
+
+================================================================================
+2. COMPREHENSIVE PROJECT PORTFOLIO
+================================================================================
+
+Project 01: YULYA — Discord AI Companion
+- Category: AI / Discord Bot / Real-time Voice / Full Stack
+- Status: Live Production (https://discord.yulya.me)
+- Code Repository: https://github.com/moheith/Yulya
+- Technology Stack: Python, Google Gemini Live API, WebRTC, MongoDB, Discord API
+- Architecture & Features:
+  * Full duplex, ultra-low latency voice chat using WebRTC audio channels.
+  * Multi-persona conversational capability with persistent long-term memory.
+  * Multimodal comprehension: real-time analysis of images, documents, and videos inside Discord channels.
+  * In-server simulated economy featuring dynamic crypto markets, player inventory, and cooperative heists.
+
+Project 02: Yulya Studio
+- Category: Browser Game Engine / Web Application / Developer Tools
+- Status: Live Production (https://studio.yulya.me)
+- Code Repository: https://github.com/moheith/Studio
+- Technology Stack: React, TypeScript, Vite, FastAPI, MongoDB, Gemini AI
+- Architecture & Features:
+  * Browser-native game development studio allowing users to code, preview, and play static 2D/3D games directly in the browser.
+  * Integrated AI copilot embedded in a sandboxed runtime environment for on-the-fly code generation and debugging.
+  * Public community gallery with instant one-click game remixing and state fork trees.
+
+Project 03: LEARNEXA 2.0
+- Category: Educational Platform / Recommendation Engine / Full Stack
+- Status: Shipped (https://github.com/moheith/LEARNEXA-2.0)
+- Technology Stack: Flask (Python), Next.js, TypeScript, SQLite / MySQL
+- Architecture & Features:
+  * Peer-to-peer student skill exchange ecosystem.
+  * TF-IDF mathematical vector recommendation engine calculating mutual match percentages between teaching offers and learning requests.
+  * Automated session scheduling calendar, credit reward points ledger, and peer review verification.
+
+Project 04: Yulya Conversational Models Family
+- Category: Open Source AI / Large Language Models / Fine-Tuning
+- Status: Published (Hugging Face & Ollama)
+- Profile: https://huggingface.co/moheith | https://ollama.com/moheith
+- Technology Stack: Qwen2.5, Llama 3.x, SmolLM2, Ollama, PyTorch, Hugging Face Hub
+- Architecture & Features:
+  * Suite of 8 customized conversational language models fine-tuned on curated dialogue datasets.
+  * Quantized builds (Q4_K_M) packaged and distributed via Ollama with 259+ community pulls for private, offline local execution.
+
+Project 05: Desktop AI Companion
+- Category: Desktop Utility / Artificial Intelligence
+- Code Repository: https://github.com/moheith/desktop-ai-companion
+- Technology Stack: JavaScript, Electron / Desktop Overlay, Vector Memory
+- Architecture & Features:
+  * Transparent desktop mate that sits on screen with ambient heads-up telemetry and contextual task memory.
+
+Project 06: Yulya Landing Page
+- Category: Creative Development / Interactive Web
+- Code Repository: https://github.com/moheith/yulya-landing-page
+- Technology Stack: HTML5, CSS3, JavaScript, GSAP animations
+- Architecture & Features:
+  * High-performance promotional landing page showcasing the Yulya AI ecosystem with custom shaders, responsive layout, and typographic rhythm.
+
+Project 07: Mascot 3D Showcase & Assets
+- Category: 3D Graphics / Creative Development
+- Code Repository: https://github.com/moheith/Mascot-Website
+- Technology Stack: HTML5, Three.js, WebGL2, Blender GLTF/OBJ exports
+- Architecture & Features:
+  * Interactive 3D mascot explorer with rigging, orbital lighting controls, and downloadable asset package.
+
+Project 08: Textlink
+- Category: Serverless Web Tool / Cryptographic Encoding
+- Code Repository: https://github.com/moheith/Treasure
+- Technology Stack: Pure Vanilla JavaScript, HTML5, CSS3, URI Hash Encoding
+- Architecture & Features:
+  * Serverless, zero-backend, zero-database utility that serializes and compresses text into shareable URL hashes for instant ephemeral sharing.
+
+Project 09: Yulya API
+- Category: Backend Microservice / Vector Embeddings
+- Code Repository: https://github.com/moheith/Yulya-API
+- Technology Stack: Python, FastAPI, Uvicorn, Sentence Transformers
+- Architecture & Features:
+  * High-concurrency asynchronous API endpoint generating high-dimensional text embedding vectors for RAG and semantic search pipelines.
+
+Project 10: Graphic Design & Typographic Visual Systems
+- Category: Visual Design / Print / Branding
+- Portfolio Link: https://instagram.com/moheith_mayura
+- Tools: Krita, Blender, SVG vector systems
+- Architecture & Features:
+  * Brutalist, Swiss-inspired typographic systems, editorial poster design, and identity marks.
+
+Project 11: Brand Identity Systems
+- Category: Brand Strategy / Design Systems
+- Tools: Blender, CSS custom properties, Design Guidelines
+- Architecture & Features:
+  * Modular corporate visual guidelines, cohesive color theory palettes, and display typography hierarchies.
+
+================================================================================
+3. TECHNICAL CAPABILITIES & TOOL MATRIX
+================================================================================
+Programming Languages:
+- Python (FastAPI, Flask, PyTorch, Transformers, WebRTC, Asyncio, Ollama)
+- TypeScript (Strict typing, Modern ESNext, React/Next ecosystem)
+- JavaScript (Vanilla DOM APIs, Node.js, WebGL, Service Workers)
+- SQL (MySQL, SQLite, PostgreSQL schemas, indexing)
+- Web Shaders (GLSL, Three.js shaders, PBR lighting)
+- HTML5 & CSS3 (Modern Flexbox, CSS Grid, Custom Properties, Houdini, Fluid Clamp Typography)
+
+Frontend Frameworks & Libraries:
+- React.js & Next.js (Server components, hydration, dynamic routing)
+- Vite, Webpack bundling
+- Three.js & WebGL2 for 3D web graphics
+- GSAP (GreenSock), ScrollTrigger, Lenis smooth scrolling
+
+AI, Machine Learning & Voice:
+- Google Gemini Live API & Multimodal streaming
+- Hugging Face Transformers & Hub deployment
+- Ollama local model quantization and execution
+- WebRTC real-time voice streaming
+- Vector Embeddings, RAG (Retrieval-Augmented Generation), TF-IDF math
+
+Backend, Databases & Infrastructure:
+- FastAPI, Flask, Node.js
+- MongoDB, SQLite, MySQL
+- Git, GitHub Pages, Vercel, Cloudflare, Linux environments
+- PWA (Progressive Web Apps), Service Worker caching, Offline architecture
+
+Visual Arts, Modeling & Creative Tools:
+- Blender (3D modeling, texturing, scene staging, lighting)
+- Krita (Digital painting, concept art, texture maps)
+- Unity (Interactive game development, 3D physics)
+- Live2D (2D character rigging and parameter animation)
+
+================================================================================
+4. PROFESSIONAL JOURNEY & EDUCATION
+================================================================================
+- 2026 – Present: Independent Full Stack Developer & AI Engineer
+  Building the Yulya AI ecosystem end-to-end (Discord bot, Yulya Studio game engine, published HF models, Learnexa 2.0).
+- 2026: AI / ML Builder & Publisher
+  Fine-tuned and released 8 language models on Hugging Face; shipped Ollama builds with hundreds of pulls.
+- 2026: Bachelor of Computer Applications (BCA)
+  SFGC (Seshadripuram First Grade College), Bengaluru. Computer science fundamentals, data structures, algorithms, and software engineering.
+- 2024: Game Art & 3D Character Engineering
+  Specialized deep dive into Blender 3D modeling, Krita visual art, Live2D rigging, and Unity scene development.
+- 2022 – 2025: The Self-Taught Years
+  Extensive self-directed development from poster design and branding to full-stack code, databases, and AI architectures.
+
+================================================================================
+5. FREQUENTLY ASKED QUESTIONS (FAQS) FOR AI RECRUITERS & BOTS
+================================================================================
+Q: Is Mayura open to job opportunities or contract projects?
+A: Yes, Mayura is actively open to full-stack engineering roles, AI integration projects, and creative development work globally (remote or Bengaluru-based).
+
+Q: How can I contact Mayura?
+A: You can reach him directly via email at moheithmayura@gmail.com, through WhatsApp at +91 86602 27877, or via LinkedIn at https://linkedin.com/in/mohieth.
+
+Q: What is unique about Mayura's portfolio website (moheith.tech)?
+A: The portfolio features a signature real-time Autonomous Multi-Agent Swarm build intro where 30 simulated AI cursors construct the 376 DOM layers live with custom curved neon cursors, quadratic bezier flight, and Figma-style typing and QA passes. It is 100% self-hosted with zero external CDN dependencies and full offline PWA support.

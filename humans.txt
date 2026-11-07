@@ -1,0 +1,16 @@
+/* TEAM */
+Developer & Designer: Mohieth Mayura S Y ("Mayura")
+Site: https://moheith.tech
+Location: Bengaluru, Karnataka, India
+Contact: moheithmayura@gmail.com
+Phone: +91 86602 27877
+GitHub: https://github.com/moheith
+LinkedIn: https://linkedin.com/in/mohieth
+X (Twitter): https://x.com/mohiethh
+
+/* SITE */
+Last update: 2026/11/07
+Standards: HTML5, CSS3, JavaScript ESNext, WebGL2, PWA, Service Worker, Schema.org JSON-LD
+Architecture: V3 God-Level 30-Agent Autonomous Swarm
+Components: Self-hosted local WOFF2 typography, self-hosted tech icons, zero CDN latency
+Hosting: GitHub Pages edge CDN with custom domain SSL

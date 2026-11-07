@@ -20,6 +20,9 @@
 <link rel="preload" as="image" href="assets/img/hero-cutout.webp" type="image/webp">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/anton-latin-400-normal.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/plus-jakarta-sans-latin-wght-normal.woff2" crossorigin>
+<link rel="author" href="humans.txt">
+<link rel="alternate" type="text/markdown" title="LLM &amp; AI Knowledge Base" href="llms.txt">
+<link rel="alternate" type="text/markdown" title="Exhaustive AI Knowledge Dossier" href="llms-full.txt">
 <link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
@@ -41,19 +44,34 @@
       "inLanguage": "en"
     },
     {
+      "@type": "ProfilePage",
+      "@id": "https://moheith.tech/#profilepage",
+      "url": "https://moheith.tech/",
+      "name": "Mohieth Mayura S Y — Full Stack Developer & Designer Portfolio",
+      "isPartOf": { "@id": "https://moheith.tech/#website" },
+      "about": { "@id": "https://moheith.tech/#person" },
+      "mainEntity": { "@id": "https://moheith.tech/#person" }
+    },
+    {
       "@type": "Person",
       "@id": "https://moheith.tech/#person",
       "name": "Mohieth Mayura S Y",
-      "alternateName": ["Mayura", "moheith"],
+      "alternateName": ["Mayura", "moheith", "MOHIETH"],
       "url": "https://moheith.tech/",
       "image": "https://moheith.tech/assets/img/hero-cutout.png",
       "jobTitle": "Full Stack Developer & Designer",
+      "description": "Full Stack Developer and visual designer from Bengaluru, India. Creator of Yulya (Discord AI Companion & Ecosystem), Yulya Studio (in-browser AI game studio), and Learnexa 2.0.",
       "email": "mailto:moheithmayura@gmail.com",
+      "telephone": "+918660227877",
       "address": {
         "@type": "PostalAddress",
         "addressLocality": "Bengaluru",
         "addressRegion": "Karnataka",
         "addressCountry": "IN"
+      },
+      "alumniOf": {
+        "@type": "EducationalOrganization",
+        "name": "SFGC (Seshadripuram First Grade College)"
       },
       "sameAs": [
         "https://github.com/moheith",
@@ -67,14 +85,103 @@
         "Full Stack Development",
         "Artificial Intelligence",
         "Gemini Live",
-        "WebRTC",
+        "WebRTC Real-time Voice",
         "TypeScript",
+        "JavaScript",
         "Python",
+        "FastAPI",
+        "Flask",
         "React",
         "Next.js",
-        "FastAPI",
+        "Three.js",
+        "WebGL2",
+        "PBR Shaders",
+        "MongoDB",
+        "SQLite",
+        "MySQL",
+        "LLM Fine-tuning",
+        "Ollama",
+        "Hugging Face",
+        "Unity",
+        "Blender",
+        "Krita",
+        "Live2D",
         "UI/UX Design",
-        "Graphic Design"
+        "Graphic Design",
+        "Typography"
+      ]
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://moheith.tech/#projects",
+      "name": "Featured Software & Engineering Projects by Mayura",
+      "itemListElement": [
+        {
+          "@type": "SoftwareApplication",
+          "position": 1,
+          "name": "YULYA — Discord AI Companion",
+          "description": "Living AI companion for Discord: real-time voice chat with custom personas, persistent memory, image and video understanding, and in-server crypto economy.",
+          "applicationCategory": "MultimediaApplication",
+          "operatingSystem": "Discord / Web",
+          "url": "https://discord.yulya.me",
+          "author": { "@id": "https://moheith.tech/#person" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "position": 2,
+          "name": "Yulya Studio",
+          "description": "AI-assisted browser game studio: write, preview and remix static games in the browser with a sandboxed assistant and public gallery.",
+          "applicationCategory": "DeveloperApplication",
+          "operatingSystem": "Web Browser",
+          "url": "https://studio.yulya.me",
+          "author": { "@id": "https://moheith.tech/#person" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "position": 3,
+          "name": "LEARNEXA 2.0",
+          "description": "Skill-exchange platform for students: list skills, TF-IDF vector matching recommendations, schedule sessions, and earn reward points.",
+          "applicationCategory": "EducationalApplication",
+          "operatingSystem": "Web Browser",
+          "url": "https://github.com/moheith/LEARNEXA-2.0",
+          "author": { "@id": "https://moheith.tech/#person" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "position": 4,
+          "name": "Yulya Models",
+          "description": "Family of 8 fine-tuned conversational language models published on Hugging Face, with local-run packaging on Ollama.",
+          "applicationCategory": "AI/ML Models",
+          "url": "https://huggingface.co/moheith",
+          "author": { "@id": "https://moheith.tech/#person" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "position": 5,
+          "name": "Desktop AI Companion",
+          "description": "Desktop mate with conversational memory and HUD overlay.",
+          "applicationCategory": "UtilityApplication",
+          "url": "https://github.com/moheith/desktop-ai-companion",
+          "author": { "@id": "https://moheith.tech/#person" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "position": 6,
+          "name": "Textlink",
+          "description": "Turns any text into a unique shareable link. Single file, no backend, zero database.",
+          "applicationCategory": "UtilityApplication",
+          "url": "https://github.com/moheith/Treasure",
+          "author": { "@id": "https://moheith.tech/#person" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "position": 7,
+          "name": "Yulya API",
+          "description": "High-throughput asynchronous FastAPI microservice for generating vector embedding files.",
+          "applicationCategory": "DeveloperApplication",
+          "url": "https://github.com/moheith/Yulya-API",
+          "author": { "@id": "https://moheith.tech/#person" }
+        }
       ]
     }
   ]
@@ -195,6 +302,25 @@
 
   <div class="slider" id="slider">
     <div class="slider__track" id="cards"><!-- filled by render.js --></div>
+    <noscript>
+      <div class="work__noscript">
+        <h3>All Projects by Mohieth Mayura S Y</h3>
+        <ul>
+          <li><strong>YULYA — DISCORD AI COMPANION</strong>: Real-time voice chat, persistent memory, in-server simulated economy. Stack: Python, Gemini Live, WebRTC, MongoDB. <a href="https://discord.yulya.me">Live</a> · <a href="https://github.com/moheith/Yulya">GitHub</a></li>
+          <li><strong>YULYA STUDIO</strong>: In-browser AI game studio and remix gallery. Stack: React, TypeScript, Vite, FastAPI, MongoDB, Gemini. <a href="https://studio.yulya.me">Live</a> · <a href="https://github.com/moheith/Studio">GitHub</a></li>
+          <li><strong>LEARNEXA 2.0</strong>: Skill exchange platform with TF-IDF match recommendations. Stack: Flask, Next.js, TypeScript, SQLite/MySQL. <a href="https://github.com/moheith/LEARNEXA-2.0">GitHub</a></li>
+          <li><strong>YULYA MODELS</strong>: 8 fine-tuned conversational models on Hugging Face and Ollama. Stack: Qwen2.5, Llama 3.x, SmolLM2, Ollama. <a href="https://huggingface.co/moheith">Hugging Face</a> · <a href="https://ollama.com/moheith">Ollama</a></li>
+          <li><strong>DESKTOP AI COMPANION</strong>: Desktop mate with AI memory and telemetry HUD. Stack: JavaScript. <a href="https://github.com/moheith/desktop-ai-companion">GitHub</a></li>
+          <li><strong>YULYA LANDING PAGE</strong>: Showcase landing page for the Yulya AI ecosystem. Stack: HTML, CSS, JavaScript. <a href="https://github.com/moheith/yulya-landing-page">GitHub</a></li>
+          <li><strong>MASCOT WEBSITE</strong>: 3D mascot assets, rigging, and animation showcase. Stack: HTML, Three.js. <a href="https://github.com/moheith/Mascot-Website">GitHub</a></li>
+          <li><strong>TEXTLINK</strong>: Ephemeral text-to-link sharing without backend or database. Stack: HTML, CSS, JavaScript. <a href="https://github.com/moheith/Treasure">GitHub</a></li>
+          <li><strong>YULYA API</strong>: High-throughput FastAPI microservice generating vector embeddings. Stack: Python, FastAPI. <a href="https://github.com/moheith/Yulya-API">GitHub</a></li>
+          <li><strong>GRAPHIC DESIGN — SELECTED WORKS</strong>: Brutalist Swiss posters, logos, and visual systems. <a href="https://instagram.com/moheith_mayura">Instagram</a></li>
+          <li><strong>BRAND IDENTITY</strong>: Brand guidelines and design systems.</li>
+        </ul>
+        <p>Full AI &amp; developer knowledge base: <a href="llms.txt">llms.txt</a> | <a href="llms-full.txt">llms-full.txt</a></p>
+      </div>
+    </noscript>
   </div>
   <div class="slider__ctrl">
     <button class="sbtn" id="prev" type="button" aria-label="Previous"><span data-layer="icon" aria-hidden="true">‹</span></button>

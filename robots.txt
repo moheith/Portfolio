@@ -1,10 +1,14 @@
 # robots.txt for https://moheith.tech
-# Optimized for Google Search Console, Googlebot, Bing, Yahoo, DuckDuckGo, Baidu, Yandex, Applebot & Social Crawlers
+# Optimized for Google Search Console, AI Crawlers, Search Engines & Semantic Bots
+# Full LLM & AI Knowledge Base available at: https://moheith.tech/llms.txt and https://moheith.tech/llms-full.txt
 
 # ==================== Default Universal Policy ====================
 User-agent: *
 Allow: /
 Allow: /index.html
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /humans.txt
 Allow: /assets/
 Allow: /css/
 Allow: /js/
@@ -19,7 +23,41 @@ Disallow: /package.json
 Disallow: /package-lock.json
 Disallow: /.git/
 
-# ==================== Google Search & Services ====================
+# ==================== AI, LLM & Semantic Search Crawlers ====================
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: Diffbot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+# ==================== Major Search Engines ====================
 User-agent: Googlebot
 Allow: /
 Allow: /assets/
@@ -31,34 +69,26 @@ Allow: /assets/icons/
 User-agent: Googlebot-Mobile
 Allow: /
 
-User-agent: Google-Extended
-Allow: /
-
-# ==================== Microsoft Bing ====================
 User-agent: Bingbot
 Allow: /
 Allow: /assets/
 
-# ==================== Apple Search & Siri ====================
 User-agent: Applebot
 Allow: /
 
-# ==================== DuckDuckGo ====================
 User-agent: DuckDuckBot
 Allow: /
 
-# ==================== Yahoo! ====================
 User-agent: Slurp
 Allow: /
 
-# ==================== Baidu & Yandex ====================
 User-agent: Baiduspider
 Allow: /
 
 User-agent: YandexBot
 Allow: /
 
-# ==================== Social Media OpenGraph Crawlers ====================
+# ==================== Social Media Unfurlers & Preview Crawlers ====================
 User-agent: Twitterbot
 Allow: /
 
@@ -80,6 +110,6 @@ Allow: /
 User-agent: Pinterestbot
 Allow: /
 
-# ==================== Host & Sitemap Index ====================
+# ==================== Host & Sitemaps ====================
 Host: https://moheith.tech
 Sitemap: https://moheith.tech/sitemap.xml

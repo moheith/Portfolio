@@ -1,0 +1,39 @@
+# Mohieth Mayura S Y (Mayura)
+
+> Full Stack Developer & UI/Graphics Designer based in Bengaluru, India. Creator of Yulya (Discord AI Companion & Ecosystem), Yulya Studio (in-browser AI game engine), and Learnexa 2.0.
+
+## Overview
+Mohieth Mayura S Y (known professionally as Mayura) is an independent creative engineer and full-stack software developer specializing in artificial intelligence integrations, modern web architectures, real-time voice systems, and interactive UI/UX design.
+
+- **Location**: Bengaluru, Karnataka, India (UTC+05:30 IST)
+- **Portfolio Website**: https://moheith.tech
+- **Email**: moheithmayura@gmail.com
+- **Phone / WhatsApp**: +91 86602 27877
+- **Full Dossier for LLMs**: https://moheith.tech/llms-full.txt
+
+## Primary Links & Social Profiles
+- **GitHub**: https://github.com/moheith (13 public repositories across AI and web applications)
+- **LinkedIn**: https://linkedin.com/in/mohieth
+- **Hugging Face**: https://huggingface.co/moheith (8 fine-tuned models: Qwen2.5, Llama 3.x, SmolLM2)
+- **Ollama**: https://ollama.com/moheith (259+ pulls for local persona runs)
+- **X (Twitter)**: https://x.com/mohiethh
+- **Instagram**: https://instagram.com/moheith_mayura
+
+## Core Competencies & Skills
+- **Languages**: Python, TypeScript, JavaScript, SQL, HTML5, CSS3, GLSL shaders
+- **Backend & AI**: FastAPI, Flask, WebRTC, Gemini Live voice streaming, Hugging Face transformers, Ollama local model builds, TF-IDF matching, MongoDB, SQLite, MySQL
+- **Frontend & Creative**: React, Next.js, Vite, Three.js, GSAP, CSS Grid/Flexbox, PBR Shaders, WebGL2
+- **Design & 3D Tools**: Blender, Krita, Unity, Live2D, Typography, Design Systems
+
+## Key Shipped Projects
+- [Yulya — Discord AI Companion](https://discord.yulya.me): Real-time voice companion with custom personas, persistent vector memory, WebRTC, and in-server simulated crypto economy.
+- [Yulya Studio](https://studio.yulya.me): AI-assisted browser game studio for writing, running, and remixing games with sandboxed simulation.
+- [LEARNEXA 2.0](https://github.com/moheith/LEARNEXA-2.0): Skill-exchange marketplace matching students through TF-IDF algorithms built on Flask and Next.js.
+- [Yulya Models](https://huggingface.co/moheith): Family of 8 fine-tuned conversational language models published on Hugging Face and Ollama.
+- [Desktop AI Companion](https://github.com/moheith/desktop-ai-companion): Overlay desktop assistant with conversational memory.
+- [Textlink](https://github.com/moheith/Treasure): Serverless, database-free ephemeral text-to-URL encoding tool.
+- [Yulya API](https://github.com/moheith/Yulya-API): High-throughput FastAPI embedding microservice.
+
+## Contact & Working Together
+Mayura is available for full-stack engineering roles, AI product development, creative web design, and contract projects.
+Contact directly via [moheithmayura@gmail.com](mailto:moheithmayura@gmail.com) or [WhatsApp](https://wa.me/918660227877).
