@@ -292,6 +292,7 @@
       div.className = 'terminal';
       div.setAttribute('aria-hidden', 'true');
       div.setAttribute('inert', '');
+      div.style.display = 'none';
       div.setAttribute('role', 'dialog');
       div.setAttribute('aria-modal', 'true');
       div.setAttribute('aria-label', 'Interactive Developer Terminal');
@@ -339,6 +340,8 @@
       this.isOpen = true;
       if (window.Scroll && Scroll.stop) Scroll.stop();
       document.documentElement.classList.add('term-open');
+      el.style.display = '';
+      void el.offsetWidth;
       el.classList.add('is-open');
       el.removeAttribute('inert');
       el.setAttribute('aria-hidden', 'false');
@@ -361,6 +364,7 @@
       el.setAttribute('aria-hidden', 'true');
       el.setAttribute('inert', '');
       el.classList.remove('is-max');
+      clearTimeout(this._hideT); this._hideT = setTimeout(() => { if (!this.isOpen) el.style.display = 'none'; }, 320);
       document.documentElement.classList.remove('term-open');
       if (window.Scroll && Scroll.start && !document.documentElement.classList.contains('is-building')) Scroll.start();
       if (this.lastFocus && this.lastFocus.focus && document.contains(this.lastFocus)) this.lastFocus.focus({ preventScroll: true });

@@ -11,14 +11,18 @@
   let mode = null, refs = {};
 
   const stack = () => `<span class="stack">${COLORS.slice(0, 5).map((c) => `<i style="background:${c}"></i>`).join('')}</span>`;
-  const speaker = () => `<button type="button" data-a="sound" aria-label="Toggle sound" title="Sound">${S.sound ? ICON_ON : ICON_OFF}</button>`;
+  const unlocked = () => !!(window.SoundFX && window.SoundFX.isUnlocked && window.SoundFX.isUnlocked());
+  /* sound is always on; browsers just need one click to allow it, so this button is that click (any other click / key also works) */
+  const speaker = () => unlocked()
+    ? `<button type="button" data-a="sound" class="spk is-on" tabindex="-1" aria-label="Sound on" title="Sound on">${ICON_ON}<span class="spk__bars" aria-hidden="true"><i></i><i></i><i></i></span></button>`
+    : `<button type="button" data-a="sound" class="spk is-off" aria-label="Turn sound on" title="Click to turn sound on">${ICON_OFF}<span class="spk__txt">Sound</span></button>`;
   const close = () => `<button type="button" data-a="close" aria-label="Skip the intro" title="Skip">${X}</button>`;
 
   function render(next) {
     if (next === mode) return; mode = next; hud.classList.add('on');
-    if (next === 'scan') hud.innerHTML = `<span class="txt">Scanning page…</span><span class="track indet"><i></i></span><button type="button" data-a="tour" class="ghost">Tour</button><button type="button" data-a="speed">${S.speed}x</button>${close()}`;
-    else if (next === 'build') hud.innerHTML = `${stack()}<span class="txt"><b id="hAg">${S.agents.length}</b> agents</span><span class="div"></span><span class="txt"><b id="hBu">0</b> / <span id="hTo">${S.total}</span> layers</span><span class="track"><i id="hBar"></i></span><button type="button" data-a="tour" id="hTour" class="${S.tour ? 'pill' : 'ghost'}">${S.tour ? 'Touring' : 'Tour'}</button><button type="button" data-a="speed" id="hSp">${S.speed}x</button>${close()}`;
-    else if (next === 'done') hud.innerHTML = `<span class="txt">Rebuilt by <b>${S.agents.length} agents</b> in <b>${S.doneSeconds.toFixed(1)}s</b></span><span class="track wide"><i style="width:100%"></i></span><button type="button" data-a="live" class="pill">Go live</button><button type="button" data-a="replay" class="ghost">Replay</button>${close()}`;
+    if (next === 'scan') hud.innerHTML = `<span class="txt">Scanning page…</span><span class="track indet"><i></i></span><button type="button" data-a="tour" class="ghost">Tour</button><button type="button" data-a="speed">${S.speed}x</button>${speaker()}${close()}`;
+    else if (next === 'build') hud.innerHTML = `${stack()}<span class="txt"><b id="hAg">${S.agents.length}</b> agents</span><span class="div"></span><span class="txt"><b id="hBu">0</b> / <span id="hTo">${S.total}</span> layers</span><span class="track"><i id="hBar"></i></span><button type="button" data-a="tour" id="hTour" class="${S.tour ? 'pill' : 'ghost'}">${S.tour ? 'Touring' : 'Tour'}</button><button type="button" data-a="speed" id="hSp">${S.speed}x</button>${speaker()}${close()}`;
+    else if (next === 'done') hud.innerHTML = `<span class="txt">Rebuilt by <b>${S.agents.length} agents</b> in <b>${S.doneSeconds.toFixed(1)}s</b></span><span class="track wide"><i style="width:100%"></i></span><button type="button" data-a="live" class="pill">Go live</button><button type="button" data-a="replay" class="ghost">Replay</button>${speaker()}${close()}`;
     refs = { ag: hud.querySelector('#hAg'), bu: hud.querySelector('#hBu'), to: hud.querySelector('#hTo'), bar: hud.querySelector('#hBar'), tour: hud.querySelector('#hTour'), sp: hud.querySelector('#hSp') };
     const first = hud.querySelector('button'); /* keep keyboard focus predictable */
   }
@@ -35,13 +39,14 @@
   S.on('agents', (n) => { if (refs.ag) refs.ag.textContent = n; });
   S.on('tour', (on) => { if (refs.tour) { refs.tour.textContent = on ? 'Touring' : 'Tour'; refs.tour.className = on ? 'pill' : 'ghost'; } });
   S.on('speed', (v) => { if (refs.sp) refs.sp.textContent = v + 'x'; hud.querySelectorAll('[data-a="speed"]').forEach((b) => { b.textContent = v + 'x'; }); });
-  S.on('sound', () => { hud.querySelectorAll('[data-a="sound"]').forEach((b) => { b.innerHTML = S.sound ? ICON_ON : ICON_OFF; }); });
+  const refreshSpeaker = () => hud.querySelectorAll('[data-a="sound"]').forEach((b) => { b.outerHTML = speaker(); });
+  window.addEventListener('sfx:unlock', refreshSpeaker);
 
   hud.addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b) return; const a = b.dataset.a;
     if (a === 'tour') S.setTour(!S.tour);
     else if (a === 'speed') S.setSpeed(SPEEDS[(SPEEDS.indexOf(S.speed) + 1) % SPEEDS.length]);
-    else if (a === 'sound') S.setSound(!S.sound);
+    else if (a === 'sound') { if (window.SoundFX && SoundFX.unlock) SoundFX.unlock(); }
     else if (a === 'close') S.abort();
     else if (a === 'live') S.goLive();
     else if (a === 'replay') S.replay();

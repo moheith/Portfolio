@@ -1,7 +1,7 @@
 /* js/sound.js — procedural audio for the whole site (no audio files, everything is synthesised with Web Audio).
 
-   Always on. Browsers only allow audio after a first click / key press / tap, so until then a small hint is shown
-   and the first gesture unlocks everything (the build soundtrack joins in at the right place when that happens).
+   Always on. Browsers only allow audio after a first click / key press / tap: the speaker button in the build bar (js/hud.js)
+   is that click, and any other click or key press works too — the first gesture unlocks everything (the build soundtrack joins in at the right place when that happens).
 
    Design
    • One shared signal chain: voices → master → soft limiter → speakers, plus a short synthetic room reverb on a send.
@@ -241,22 +241,14 @@
   };
 
   /* ------------------------------------------------------------------ unlock (browsers need one user gesture) */
-  let hint = null, wired = false;
-  function showHint() {
-    if (hint || unlocked || !document.body) return;
-    hint = document.createElement('div'); hint.id = 'audioHint'; hint.setAttribute('role', 'status');
-    hint.innerHTML = '<i aria-hidden="true">♪</i><span>Click anywhere for sound</span>';
-    document.body.appendChild(hint); requestAnimationFrame(() => hint && hint.classList.add('is-on'));
-  }
-  function hideHint() {
-    if (!hint) return; const h = hint; hint = null; h.classList.remove('is-on'); setTimeout(() => h.remove(), 500);
-  }
+  let wired = false;
   function unlock() {
     if (unlocked) return;
     if (!graph()) return;
     const go = () => {
       if (ctx.state !== 'running') return;
-      unlocked = true; hideHint();
+      unlocked = true;
+      try { window.dispatchEvent(new Event('sfx:unlock')); } catch (e) {}
       ['pointerdown', 'keydown', 'touchend'].forEach((ev) => removeEventListener(ev, unlock, true));
       UI.unlock();
       const st = window.Swarm && Swarm.state;
@@ -268,10 +260,10 @@
   function wireSwarm() {
     if (wired) return true; const S = window.Swarm; if (!S || !S.on) return false; wired = true;
     S.on('state', (s) => {
-      if (s === 'scan') { B.reset(); if (!unlocked) showHint(); else B.startPad(); }
+      if (s === 'scan') { B.reset(); if (unlocked) B.startPad(); }
       else if (s === 'build') { if (unlocked) B.startPad(); }
       else if (s === 'finale') B.finale();
-      else if (s === 'live' || s === 'abort') { B.stopPad(0.8); hideHint(); }
+      else if (s === 'live' || s === 'abort') { B.stopPad(0.8); }
     });
     S.on('progress', (b, t) => { if (t) B.padProgress(b / t); });
     S.on('layer', (el, type) => B.layer(el, type));
@@ -292,11 +284,11 @@
       });
       this.attach();
       if (!wireSwarm()) { let tries = 0; const iv = setInterval(() => { if (wireSwarm() || ++tries > 40) clearInterval(iv); }, 100); }
-      /* the build starts at once; show the hint if audio is still locked */
-      setTimeout(() => { if (!unlocked && document.documentElement.classList.contains('is-building')) showHint(); }, 400);
       window.SoundFX = this;
     },
     isEnabled() { return !muted; },
+    isUnlocked() { return unlocked; },
+    unlock,
     enable() { muted = false; if (master) master.gain.value = 0.9; unlock(); UI.confirm(); },
     disable() { muted = true; if (master) master.gain.value = 0; B.stopPad(0.2); },
     toggle() { muted ? this.enable() : this.disable(); },

@@ -90,7 +90,9 @@ const Polish = (() => {
   /* ---------------------------------------------------------------- 6. service worker */
   function worker() {
     if (!('serviceWorker' in navigator) || location.protocol !== 'https:') return;
-    addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    const had = !!navigator.serviceWorker.controller; let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (had && !reloaded && !document.documentElement.classList.contains('is-building')) { reloaded = true; location.reload(); } });
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}));
   }
 
   function init() {
