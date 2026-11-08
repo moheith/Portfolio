@@ -39,7 +39,7 @@
       seed: 7, speed: 1,
       scanMs: 800, scatterMs: 420, previewMs: 700
     },
-    speed: 1, pace: 1, tour: true, sound: false,
+    speed: 1, pace: 1, tour: true, sound: true,
     t: 0, real: 0,                                           // virtual ms (speed-scaled) and real ms (clamped), since the engine started
     state: 'idle',                                           // idle | scan | build | finale | live | abort
     agents: [], layers: [], sections: new Map(),
@@ -99,25 +99,18 @@
   const sleep = (ms) => tween(ms, null);
   const flush = () => { const p = [...pending]; pending.clear(); tasks.clear(); p.forEach((r) => r()); };
 
-  /* ======================================================================= 3. SOUND (default OFF) */
+  /* ======================================================================= 3. SOUND (always on — see js/sound.js) */
+  /* all audio lives in js/sound.js (SoundFX.build); this is just the thin bridge the choreography calls */
+  const FX = () => (window.SoundFX && window.SoundFX.build) || null;
   const Sound = {
-    ctx: null, last: 0,
-    enable() { if (!this.ctx) { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; } } if (this.ctx.state === 'suspended') this.ctx.resume(); },
-    tone(freq, dur, type, gain, when = 0) {
-      if (!S.sound || !this.ctx) return; const c = this.ctx, o = c.createOscillator(), g = c.createGain();
-      o.type = type; o.frequency.value = freq; g.gain.value = gain; o.connect(g); g.connect(c.destination);
-      const t0 = c.currentTime + when; g.gain.setValueAtTime(gain, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur); o.start(t0); o.stop(t0 + dur + 0.02);
-    },
-    tick() { const n = performance.now(); if (n - this.last < 70) return; this.last = n; this.tone(1800, 0.012, 'square', 0.03); },
-    whoosh() {
-      if (!S.sound || !this.ctx) return; const c = this.ctx, len = c.sampleRate * 0.4, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
-      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
-      const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(); s.buffer = buf; f.type = 'bandpass'; f.frequency.value = 900; g.gain.value = 0.05;
-      s.connect(f); f.connect(g); g.connect(c.destination); s.start();
-    },
-    chime() { this.tone(659, 0.35, 'sine', 0.06); this.tone(988, 0.5, 'sine', 0.06, 0.16); }
+    enable() {},
+    tick() { const f = FX(); if (f) f.type(); },
+    whoosh() { const f = FX(); if (f) f.sweep(); },
+    chime() { /* the finale chord is triggered by the 'finale' state event */ },
+    click(x) { const f = FX(); if (f) f.click(x); },
+    drag(x) { const f = FX(); if (f) f.drag(x); }
   };
-  S.setSound = (on) => { S.sound = !!on; if (on) Sound.enable(); emit('sound', S.sound); };
+  S.setSound = (on) => { S.sound = !!on; emit('sound', S.sound); };
 
   /* ======================================================================= 4. DOM HELPERS */
   const layerEl = () => $('#sw-layer'), agentsEl = () => $('#sw-agents');
@@ -246,7 +239,7 @@
     }
     setMode(m) { this.mode = m; this.el.dataset.mode = m; }
     draw() { this.el.style.transform = `translate(${this.x.toFixed(1)}px,${this.y.toFixed(1)}px) rotate(${this.mode === 'arrow' || this.mode === 'grab' ? this.rot.toFixed(1) : 0}deg)`; }
-    click() { this.el.classList.add('is-click'); setTimeout(() => this.el.classList.remove('is-click'), 140 / Math.max(1, S.speed)); ripple(this.x, this.y); }
+    click() { Sound.click(this.x); this.el.classList.add('is-click'); setTimeout(() => this.el.classList.remove('is-click'), 140 / Math.max(1, S.speed)); ripple(this.x, this.y); }
     /* curved flight (quadratic bezier); the target is a function so it can follow a scrolling page */
     async flyTo(getT, ms) {
       this.track = null; this.setMode('arrow'); this.idle = false;
@@ -409,7 +402,7 @@
 
   /* ---- box drawing: drag from the top-left corner to the bottom-right, optionally resize/move afterwards ---- */
   async function drawBox(a, L, box, variant, chk) {
-    a.setMode('cross'); a.track = () => box.corner(); a.idle = false;
+    a.setMode('cross'); a.track = () => box.corner(); a.idle = false; Sound.drag(a.x);
     const tgtX = variant === 'resize' ? 0.6 + L.rnd() * 0.12 : 1, tgtY = variant === 'resize' ? 0.62 + L.rnd() * 0.12 : 1;
     if (variant === 'move') { box.ox = 22 + L.rnd() * 20; box.oy = 14 + L.rnd() * 14; }
     const vert = variant === 'line' && L.h > L.w * 3;                      // vertical hairlines are dragged top -> bottom

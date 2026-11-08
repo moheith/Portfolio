@@ -74,7 +74,8 @@ const Polish = (() => {
     b.addEventListener('click', () => { if (typeof Scroll !== 'undefined' && Scroll.to) Scroll.to(0); else window.scrollTo({ top: 0, behavior: 'smooth' }); });
     document.body.appendChild(b);
     let tick = false;
-    const upd = () => { tick = false; b.classList.toggle('is-on', scrollY > innerHeight * 0.9 && !document.documentElement.classList.contains('is-building')); };
+    const ft = document.getElementById('footer');
+    const upd = () => { tick = false; b.classList.toggle('is-on', scrollY > innerHeight * 0.9 && !document.documentElement.classList.contains('is-building')); const r = ft && ft.getBoundingClientRect(); b.classList.toggle('is-hidden-by-footer', !!r && r.top < innerHeight - 80); };
     addEventListener('scroll', () => { if (!tick) { tick = true; requestAnimationFrame(upd); } }, { passive: true });
     if (typeof Swarm !== 'undefined' && Swarm.on) Swarm.on('state', upd);
     upd();

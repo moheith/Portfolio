@@ -19,7 +19,7 @@
   <div class="term__row"><span class="term__cmd">contact</span><span class="term__desc">Direct channels (Email, WhatsApp, GitHub, LinkedIn, X)</span></div>
   <div class="term__row"><span class="term__cmd">email</span><span class="term__desc">Copy primary email address to clipboard</span></div>
   <div class="term__row"><span class="term__cmd">vcard</span><span class="term__desc">Save contact card (.vcf) directly to device</span></div>
-  <div class="term__row"><span class="term__cmd">sound [on|off]</span><span class="term__desc">Toggle procedural Web Audio UI synthesizer</span></div>
+  <div class="term__row"><span class="term__cmd">sound [on|off]</span><span class="term__desc">Mute or unmute the site sound (always on by default)</span></div>
   <div class="term__row"><span class="term__cmd">theme &lt;name&gt;</span><span class="term__desc">Switch accent: crimson | blue | violet | amber</span></div>
   <div class="term__row"><span class="term__cmd">clear</span><span class="term__desc">Clear terminal display history</span></div>
   <div class="term__row"><span class="term__cmd">exit</span><span class="term__desc">Close the developer terminal</span></div>
@@ -172,7 +172,7 @@
     },
 
     sound: {
-      desc: 'Toggle or set sound (sound on / sound off)',
+      desc: 'Mute or unmute all site sound (sound off / sound on)',
       exec: (args) => {
         if (!window.SoundFX) return 'Sound module loading...';
         const arg = (args[0] || '').toLowerCase();
@@ -313,7 +313,7 @@
               <button class="term__btn term__btn--close" id="termCloseBtn" type="button">✕</button>
             </div>
           </div>
-          <div class="term__body" id="termBody">
+          <div class="term__body" id="termBody" data-lenis-prevent tabindex="-1">
             <div class="term__welcome">
               <div class="term__banner">MOHIETH MAYURA S Y — TERMINAL SHELL v2.6.0</div>
               <div class="term__subbanner">Full-stack software developer & systems designer from Bengaluru, India.</div>
@@ -337,6 +337,8 @@
       if (document.documentElement.classList.contains('is-building')) return;   // never over the swarm intro
       this.lastFocus = document.activeElement;
       this.isOpen = true;
+      if (window.Scroll && Scroll.stop) Scroll.stop();
+      document.documentElement.classList.add('term-open');
       el.classList.add('is-open');
       el.removeAttribute('inert');
       el.setAttribute('aria-hidden', 'false');
@@ -358,6 +360,9 @@
       el.classList.remove('is-open');
       el.setAttribute('aria-hidden', 'true');
       el.setAttribute('inert', '');
+      el.classList.remove('is-max');
+      document.documentElement.classList.remove('term-open');
+      if (window.Scroll && Scroll.start && !document.documentElement.classList.contains('is-building')) Scroll.start();
       if (this.lastFocus && this.lastFocus.focus && document.contains(this.lastFocus)) this.lastFocus.focus({ preventScroll: true });
       if (window.SoundFX) SoundFX.playModalClose();
     },
@@ -488,6 +493,12 @@
       if (termToggle) termToggle.addEventListener('click', () => this.toggle());
       if (closeBtn) closeBtn.addEventListener('click', () => this.close());
       if (closeDot) closeDot.addEventListener('click', () => this.close());
+      const minDot = document.querySelector('.term__dot--min'), maxDot = document.querySelector('.term__dot--max');
+      if (minDot) minDot.addEventListener('click', () => this.close());
+      if (maxDot) maxDot.addEventListener('click', () => { drawer.classList.toggle('is-max'); if (window.SoundFX) SoundFX.playTab(); });
+      const bodyEl = document.getElementById('termBody');
+      if (bodyEl && input) bodyEl.addEventListener('click', () => { if (!String(window.getSelection && window.getSelection()).length) input.focus({ preventScroll: true }); });
+      if (drawer) drawer.addEventListener('wheel', (e) => { if (!e.target.closest('#termBody')) e.preventDefault(); }, { passive: false });
       if (clearBtn) clearBtn.addEventListener('click', () => this.clear());
 
       // Click outside terminal window closes it
@@ -500,6 +511,8 @@
       // Global shortcut: Backtick / Tilde opens terminal when not typing
       window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && this.isOpen) {
+          const pal = document.getElementById('palette');
+          if (e.defaultPrevented || (pal && pal.classList.contains('is-open'))) return;
           e.preventDefault();
           this.close();
         } else if (e.key === 'Tab' && this.isOpen) {

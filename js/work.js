@@ -261,6 +261,7 @@
       if (location.hash !== `#work/${slug}`) { if (wasOpen && history.replaceState) history.replaceState(null, '', `#work/${slug}`); else if (history.pushState) history.pushState(null, '', `#work/${slug}`); }
 
       const close = (fromHistory) => {
+        if (modal.classList.contains('is-open') && window.SoundFX) SoundFX.playModalClose();
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
         modal.innerHTML = '';

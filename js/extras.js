@@ -216,7 +216,7 @@
             <span class="palette__prompt">&gt;</span>
             <input class="palette__input" type="text" placeholder="Type a command or jump to..." autofocus autocomplete="off">
           </div>
-          <ul class="palette__list"></ul>
+          <ul class="palette__list" data-lenis-prevent role="listbox"></ul>
           <div class="palette__footer">
             <span>↑↓ to navigate</span>
             <span>↵ to select</span>
@@ -233,7 +233,6 @@
         { label: 'Terminal: cat resume', sub: 'Shell', run: () => { window.Terminal && Terminal.open(); setTimeout(() => Terminal.execute('cat resume'), 120); } },
         { label: 'Terminal: skills matrix', sub: 'Shell', run: () => { window.Terminal && Terminal.open(); setTimeout(() => Terminal.execute('skills'), 120); } },
         { label: 'Terminal: projects directory', sub: 'Shell', run: () => { window.Terminal && Terminal.open(); setTimeout(() => Terminal.execute('projects'), 120); } },
-        { label: 'Toggle UI Sound FX', sub: 'Audio', run: () => window.SoundFX && SoundFX.toggle() },
         { label: 'Jump to Hero', sub: 'Section', run: () => window.Scroll && Scroll.to('#home') },
         { label: 'Jump to Selected Work', sub: 'Section', run: () => window.Scroll && Scroll.to('#work') },
         { label: 'Jump to Proof of Work', sub: 'Section', run: () => window.Scroll && Scroll.to('#proof') },
@@ -280,18 +279,28 @@
           </li>
         `).join('');
 
+        const act = list.querySelector('.is-active'); if (act && act.scrollIntoView) act.scrollIntoView({ block: 'nearest' });
         list.querySelectorAll('.palette__item').forEach(item => {
+          item.addEventListener('mousemove', () => {
+            const idx = +item.getAttribute('data-idx');
+            if (idx === selectedIndex) return;
+            selectedIndex = idx;
+            list.querySelectorAll('.palette__item').forEach((n) => n.classList.toggle('is-active', n === item));
+          });
           item.addEventListener('click', () => {
             const idx = +item.getAttribute('data-idx');
             if (filteredActions[idx]) {
-              filteredActions[idx].run();
+              const act = filteredActions[idx];
               close();
+              setTimeout(() => act.run(), 0);
             }
           });
         });
       };
 
+      let prevFocus = null;
       const open = () => {
+        prevFocus = document.activeElement && document.activeElement !== document.body ? document.activeElement : null;
         palette.classList.add('is-open');
         palette.setAttribute('aria-hidden', 'false');
         input.value = '';
@@ -302,8 +311,14 @@
       };
 
       const close = () => {
+        if (!palette.classList.contains('is-open')) return;
         palette.classList.remove('is-open');
         palette.setAttribute('aria-hidden', 'true');
+        input.blur();
+        const termIn = document.getElementById('termInput');
+        const back = (window.Terminal && Terminal.isOpen && termIn) ? termIn : prevFocus;
+        if (back && back.focus && document.contains(back)) back.focus({ preventScroll: true });
+        prevFocus = null;
       };
 
       input.addEventListener('input', () => {
@@ -327,11 +342,15 @@
         } else if (e.key === 'Enter') {
           e.preventDefault();
           if (filteredActions[selectedIndex]) {
-            filteredActions[selectedIndex].run();
+            const act = filteredActions[selectedIndex];
             close();
+            setTimeout(() => act.run(), 0);
           }
         } else if (e.key === 'Escape') {
+          e.preventDefault(); e.stopPropagation();
           close();
+        } else if (e.key === 'Tab') {
+          e.preventDefault();
         }
       });
 
@@ -340,10 +359,11 @@
       });
 
       window.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-          e.preventDefault();
+        if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'k') {
+          e.preventDefault(); e.stopPropagation();
+          if (e.repeat) return;
           palette.classList.contains('is-open') ? close() : open();
-        } else if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+        } else if (e.key === '/' && !e.ctrlKey && !e.metaKey && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName) && !document.activeElement.isContentEditable) {
           e.preventDefault();
           open();
         }
