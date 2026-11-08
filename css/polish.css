@@ -513,3 +513,20 @@ html:not(.is-building):not([data-motion="off"]) #heroImg {
   color: #38bdf8;
   font-weight: 500;
 }
+
+/* ---------------------------------------------------------------- 12. nav: the extra Sound / Terminal buttons collided with the centred links at 861–1180px */
+.nav__right { gap: 16px; }
+.nav__term { margin-right: 4px; }
+@media (max-width: 1180px) {
+  .nav__links { gap: 20px; }
+  .nav__right { gap: 10px; }
+  .nav__sound-text, .nav__motion > span:not(.nav__tri) {
+    position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+}
+@media (max-width: 860px) { .nav__sound-text { position: absolute; } }
+
+/* terminal title bar: never wraps over the traffic-light dots on phones */
+.term__title-bar { min-width: 0; overflow: hidden; }
+.term__headline { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 480px) { .term__icon { display: none; } }

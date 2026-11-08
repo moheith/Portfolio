@@ -3,6 +3,7 @@
    Zero forbidden words. Full keyboard navigation, command history, and Web Audio integration. */
 (() => {
   'use strict';
+  const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   const COMMANDS = {
     help: {
@@ -164,7 +165,7 @@
       exec: () => {
         if (window.Polish && Polish.vcard) {
           Polish.vcard();
-          return '<span class="term__success">✓ Generating and downloading Mohieth_Mayura.vcf ...</span>';
+          return '<span class="term__success">✓ Generating and downloading mohieth-mayura.vcf ...</span>';
         }
         return '<span class="term__err">vCard generator unavailable.</span>';
       }
@@ -193,7 +194,7 @@
         const theme = (args[0] || '').toLowerCase();
         const valid = ['crimson', 'blue', 'violet', 'amber'];
         if (!valid.includes(theme)) {
-          return `<span class="term__err">Unknown theme '${theme}'. Valid choices: crimson, blue, violet, amber.</span>`;
+          return `<span class="term__err">Unknown theme '${esc(theme)}'. Valid choices: crimson, blue, violet, amber.</span>`;
         }
         if (window.Extras && Extras.switchAccent) {
           Extras.switchAccent(theme);
@@ -256,7 +257,7 @@
     const clean = slug.toLowerCase().trim();
     const p = (window.CONTENT && CONTENT.projects) ? CONTENT.projects.find(x => x.slug === clean || x.title.toLowerCase().includes(clean)) : null;
     if (!p) {
-      return `<span class="term__err">Project '${slug}' not found. Type 'projects' for the full list.</span>`;
+      return `<span class="term__err">Project '${esc(slug)}' not found. Type 'projects' for the full list.</span>`;
     }
     return `
 <div class="term__box">
@@ -290,7 +291,9 @@
       div.id = 'terminalDrawer';
       div.className = 'terminal';
       div.setAttribute('aria-hidden', 'true');
+      div.setAttribute('inert', '');
       div.setAttribute('role', 'dialog');
+      div.setAttribute('aria-modal', 'true');
       div.setAttribute('aria-label', 'Interactive Developer Terminal');
 
       div.innerHTML = `
@@ -330,9 +333,12 @@
 
     open() {
       const el = document.getElementById('terminalDrawer');
-      if (!el) return;
+      if (!el || this.isOpen) return;
+      if (document.documentElement.classList.contains('is-building')) return;   // never over the swarm intro
+      this.lastFocus = document.activeElement;
       this.isOpen = true;
       el.classList.add('is-open');
+      el.removeAttribute('inert');
       el.setAttribute('aria-hidden', 'false');
 
       const input = document.getElementById('termInput');
@@ -347,9 +353,12 @@
     close() {
       const el = document.getElementById('terminalDrawer');
       if (!el) return;
+      if (!this.isOpen) return;
       this.isOpen = false;
       el.classList.remove('is-open');
       el.setAttribute('aria-hidden', 'true');
+      el.setAttribute('inert', '');
+      if (this.lastFocus && this.lastFocus.focus && document.contains(this.lastFocus)) this.lastFocus.focus({ preventScroll: true });
       if (window.SoundFX) SoundFX.playModalClose();
     },
 
@@ -388,7 +397,7 @@
       // Print prompt echo
       const entry = document.createElement('div');
       entry.className = 'term__entry';
-      entry.innerHTML = `<div class="term__echo"><span class="term__echo-user">mayura@bengaluru</span>:<span class="term__echo-dir">~</span>$ <span class="term__echo-cmd">${trimmed}</span></div>`;
+      entry.innerHTML = `<div class="term__echo"><span class="term__echo-user">mayura@bengaluru</span>:<span class="term__echo-dir">~</span>$ <span class="term__echo-cmd">${esc(trimmed)}</span></div>`;
 
       // Clear special case
       if (root === 'clear') {
@@ -409,7 +418,7 @@
         responseHTML = COMMANDS[root].exec(args);
         if (responseHTML && window.SoundFX) SoundFX.playConfirm();
       } else {
-        responseHTML = `<div class="term__err">zsh: command not found: ${root}. Type 'help' for available commands.</div>`;
+        responseHTML = `<div class="term__err">zsh: command not found: ${esc(root)}. Type 'help' for available commands.</div>`;
         if (window.SoundFX) SoundFX.playError();
       }
 
@@ -493,7 +502,13 @@
         if (e.key === 'Escape' && this.isOpen) {
           e.preventDefault();
           this.close();
-        } else if ((e.key === '`' || e.key === '~') && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+        } else if (e.key === 'Tab' && this.isOpen) {
+          const f = [...drawer.querySelectorAll('button, input')].filter((x) => x.offsetParent !== null);
+          if (!f.length) return;
+          const first = f[0], last = f[f.length - 1];
+          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        } else if ((e.key === '`' || e.key === '~') && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName) && !document.activeElement.isContentEditable && !e.ctrlKey && !e.metaKey && !e.altKey) {
           e.preventDefault();
           this.toggle();
         }

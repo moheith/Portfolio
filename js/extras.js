@@ -351,8 +351,9 @@
     },
 
     switchAccent(name) {
-      const dot = document.querySelector(`.accent-dot[data-accent="${name}"]`);
-      if (dot) dot.click();
+      const i = Object.keys(ACCENT_PRESETS).indexOf(name);
+      const dots = document.querySelectorAll('.accent-dot');
+      if (i >= 0 && dots[i]) dots[i].click();
     },
 
     setupKeyboardShortcuts() {
