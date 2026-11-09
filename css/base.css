@@ -539,10 +539,12 @@ small[data-layer="text"] {
 
 /* 3. While building: nothing may move on its own */
 html.is-building .hero__giant,
-html.is-building .hero__photo,
 html.is-building [data-parallax] {
   transform: none !important;
 }
+/* the portrait is centred with translateX(-50%); "none" would shove it to the right half of the screen during the build */
+html.is-building .hero__photo { transform: translateX(-50%) !important; }
+@media (max-width: 640px) { html.is-building .hero__photo { transform: none !important; } }
 html.is-building .logos__row {
   animation: none !important;
   transform: none !important;

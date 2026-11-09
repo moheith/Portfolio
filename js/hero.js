@@ -78,7 +78,8 @@
           giant.style.transform = `translate3d(${mouseParallaxX}px, ${mouseParallaxY + scrollY * 0.15}px, 0)`;
         }
         if (photo) {
-          photo.style.transform = `translate3d(calc(-44% + ${mouseParallaxX * 0.5}px), ${scrollY * 0.05}px, 0)`;
+          const base = window.innerWidth <= 640 ? '0px' : '-50%'; /* centred on desktop, in-flow on phones */
+          photo.style.transform = `translate3d(calc(${base} + ${mouseParallaxX * 0.5}px), ${scrollY * 0.05}px, 0)`;
         }
 
         requestAnimationFrame(loop);

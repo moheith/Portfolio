@@ -223,11 +223,12 @@
       const modal = document.getElementById('modal');
       if (!modal) return;
 
-      const mediaHtml = p.video
+      const gallery = (typeof Gallery !== 'undefined' && p.shots && p.shots.length) ? Gallery.html(p) : '';
+      const mediaHtml = gallery || (p.video
         ? `<video src="${p.video}" controls playsinline autoplay loop></video>`
         : p.img
           ? `<img src="${p.img}" alt="${Render.esc(p.title)}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'modal__poster',innerHTML:'<span class=card__initials>${p.n}</span>'}))">`
-          : `<div class="modal__poster card__media--inline">${Render.posterHTML(p)}</div>`;
+          : `<div class="modal__poster card__media--inline">${Render.posterHTML(p)}</div>`);
 
       const liveBtn = p.url
         ? `<a class="btn btn--primary" href="${p.url}" target="_blank" rel="noopener"><span>Live Project ↗</span></a>`
@@ -242,7 +243,7 @@
         <div class="modal__backdrop" aria-hidden="true"></div>
         <div class="modal__box" role="document">
           <button class="modal__close" type="button" aria-label="Close modal">✕</button>
-          <div class="modal__media">${mediaHtml}</div>
+          <div class="modal__media${gallery ? ' modal__media--gal' : ''}">${mediaHtml}</div>
           <div class="modal__content">
             <span class="modal__meta">${Render.esc(p.meta)} · ${Render.esc(p.tag || '')}</span>
             <h2 class="modal__title">${Render.esc(p.title)}</h2>
