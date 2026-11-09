@@ -28,6 +28,7 @@ const CONTENT = {
     { slug: "yulya", n: "01", title: "YULYA — DISCORD AI COMPANION", meta: "AI / WEB · 2026", tag: "LIVE · AI / DISCORD",
       cats: ["AI / ML", "Discord", "Full-Stack"], stack: "Python · Gemini Live · WebRTC · MongoDB",
       desc: "A living AI companion for Discord: voice chat with custom personas, persistent memory, image and video understanding, and a simulated server economy with crypto markets and heists.",
+      preview: "assets/img/work/yulya/preview.webp",
       img: "assets/img/work/yulya/card.webp",
       shots: [
         { src: "assets/img/work/yulya/chat.webp", thumb: "assets/img/work/yulya/chat-t.webp", w: 636, h: 720, cap: "Natural conversation: Yulya remembers who you are and answers in her own voice." },
@@ -41,6 +42,7 @@ const CONTENT = {
     { slug: "yulya-studio", n: "02", title: "YULYA STUDIO", meta: "WEB APP · 2026", tag: "WEB APP · AI",
       cats: ["Full-Stack", "Web Apps", "AI / ML"], stack: "React · TypeScript · Vite · FastAPI · MongoDB · Gemini",
       desc: "An AI-assisted browser game studio: write, preview and remix static games in the browser with a sandboxed assistant, a public gallery and one-click remixing.",
+      preview: "assets/img/work/yulya-studio/preview.webp",
       img: "assets/img/work/yulya-studio/card.webp",
       shots: [
         { src: "assets/img/work/yulya-studio/spaceship.webp", thumb: "assets/img/work/yulya-studio/spaceship-t.webp", w: 656, h: 734, cap: "Spaceship Shooter — a full game made inside Studio with the AI co-pilot." },
@@ -56,6 +58,7 @@ const CONTENT = {
     { slug: "yulya-models", n: "04", title: "YULYA MODELS", meta: "AI / ML · 2026", tag: "AI / ML",
       cats: ["AI / ML", "Open Source"], stack: "Qwen2.5 · Llama 3.x · SmolLM2 · Ollama",
       desc: "A family of 8 fine-tuned conversational models published on Hugging Face, plus a local-run build on Ollama.",
+      preview: "assets/img/work/yulya-models/preview.webp",
       img: "assets/img/work/yulya-models/card.webp",
       shots: [
         { src: "assets/img/work/yulya-models/hf.webp", thumb: "assets/img/work/yulya-models/hf-t.webp", w: 698, h: 727, cap: "Hugging Face collection: Llama 3.1 8B, Qwen2.5 7B and Qwen2.5 1.5B fine-tunes." }
@@ -63,14 +66,16 @@ const CONTENT = {
       url: "https://huggingface.co/moheith", repo: "https://ollama.com/moheith", video: "" },
     { slug: "desktop-ai-companion", n: "05", title: "DESKTOP AI COMPANION", meta: "AI / DESKTOP", tag: "AI · JAVASCRIPT",
       cats: ["AI / ML", "Full-Stack"], stack: "JavaScript", desc: "A desktop mate with AI memory.",
+      preview: "assets/img/work/desktop-ai-companion/preview.webp",
       img: "assets/img/work/desktop-ai-companion/card.webp",
       shots: [
-        { src: "assets/img/work/desktop-ai-companion/mic.webp", thumb: "assets/img/work/desktop-ai-companion/mic-t.webp", w: 902, h: 684, cap: "Voice: wake word, hold-to-talk, auto-stop on silence and auto-send." },
-        { src: "assets/img/work/desktop-ai-companion/mascot.webp", thumb: "assets/img/work/desktop-ai-companion/mascot-t.webp", w: 902, h: 684, cap: "Pick any Live2D mascot — Haru, Mao, Natori, Ren, Rice and more." }
+        { src: "assets/img/work/desktop-ai-companion/mic.webp", thumb: "assets/img/work/desktop-ai-companion/mic-t.webp", w: 1219, h: 744, cap: "Voice: wake word, hold-to-talk, auto-stop on silence and auto-send." },
+        { src: "assets/img/work/desktop-ai-companion/mascot.webp", thumb: "assets/img/work/desktop-ai-companion/mascot-t.webp", w: 1219, h: 744, cap: "Pick any Live2D mascot — Haru, Mao, Natori, Ren, Rice and more." }
       ],
       url: "", repo: "https://github.com/moheith/desktop-ai-companion", video: "" },
     { slug: "yulya-landing", n: "06", title: "YULYA LANDING PAGE", meta: "WEB / DESIGN", tag: "DESIGN · WEB",
       cats: ["Design", "Web Apps"], stack: "HTML · CSS · JavaScript", desc: "The landing page for the Yulya organisation.",
+      preview: "assets/img/work/yulya-landing/preview.webp",
       img: "assets/img/work/yulya-landing/card.webp",
       shots: [
         { src: "assets/img/work/yulya-landing/hero.webp", thumb: "assets/img/work/yulya-landing/hero-t.webp", w: 1533, h: 725, cap: "discord.yulya.me — the living neural network landing page." },
