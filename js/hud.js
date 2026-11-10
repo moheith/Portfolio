@@ -12,10 +12,14 @@
 
   const stack = () => `<span class="stack">${COLORS.slice(0, 5).map((c) => `<i style="background:${c}"></i>`).join('')}</span>`;
   const unlocked = () => !!(window.SoundFX && window.SoundFX.isUnlocked && window.SoundFX.isUnlocked());
-  /* sound is always on; browsers just need one click to allow it, so this button is that click (any other click / key also works) */
-  const speaker = () => unlocked()
-    ? `<button type="button" data-a="sound" class="spk is-on" tabindex="-1" aria-label="Sound on" title="Sound on">${ICON_ON}<span class="spk__bars" aria-hidden="true"><i></i><i></i><i></i></span></button>`
-    : `<button type="button" data-a="sound" class="spk is-off" aria-label="Turn sound on" title="Click to turn sound on">${ICON_OFF}<span class="spk__txt">Sound</span></button>`;
+  /* Sound is on by default, but browsers need one click before audio can play: until then this button is that click.
+     After that it is a real mute / unmute toggle (the choice is remembered). */
+  const isMuted = () => !!(window.SoundFX && window.SoundFX.isEnabled && !window.SoundFX.isEnabled());
+  const speaker = () => {
+    if (isMuted()) return `<button type="button" data-a="sound" class="spk is-muted" aria-pressed="true" aria-label="Sound is off. Turn sound on" title="Sound off. Click to turn on">${ICON_OFF}<span class="spk__txt">Muted</span></button>`;
+    if (!unlocked()) return `<button type="button" data-a="sound" class="spk is-off" aria-label="Turn sound on" title="Click to turn sound on">${ICON_OFF}<span class="spk__txt">Sound</span></button>`;
+    return `<button type="button" data-a="sound" class="spk is-on" aria-pressed="false" aria-label="Sound is on. Mute" title="Sound on. Click to mute">${ICON_ON}<span class="spk__bars" aria-hidden="true"><i></i><i></i><i></i></span></button>`;
+  };
   const close = () => `<button type="button" data-a="close" aria-label="Skip the intro" title="Skip">${X}</button>`;
 
   function render(next) {
@@ -41,12 +45,13 @@
   S.on('speed', (v) => { if (refs.sp) refs.sp.textContent = v + 'x'; hud.querySelectorAll('[data-a="speed"]').forEach((b) => { b.textContent = v + 'x'; }); });
   const refreshSpeaker = () => hud.querySelectorAll('[data-a="sound"]').forEach((b) => { b.outerHTML = speaker(); });
   window.addEventListener('sfx:unlock', refreshSpeaker);
+  window.addEventListener('sfx:mute', refreshSpeaker);
 
   hud.addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b) return; const a = b.dataset.a;
     if (a === 'tour') S.setTour(!S.tour);
     else if (a === 'speed') S.setSpeed(SPEEDS[(SPEEDS.indexOf(S.speed) + 1) % SPEEDS.length]);
-    else if (a === 'sound') { if (window.SoundFX && SoundFX.unlock) SoundFX.unlock(); }
+    else if (a === 'sound') { if (window.SoundFX) { if (isMuted() || !unlocked()) SoundFX.enable(); else SoundFX.disable(); } }
     else if (a === 'close') S.abort();
     else if (a === 'live') S.goLive();
     else if (a === 'replay') S.replay();

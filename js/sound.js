@@ -240,6 +240,11 @@
     reset() { B.stopPad(0.4); B.progress = 0; B.section = 0; B.density = 0; }
   };
 
+  /* ------------------------------------------------------------------ mute state (remembered) */
+  const KEY = 'mayura-sfx';
+  const remember = (m) => { try { if (m) localStorage.setItem(KEY, 'off'); else localStorage.removeItem(KEY); } catch (e) {} };
+  const announce = () => { try { window.dispatchEvent(new Event('sfx:mute')); } catch (e) {} };
+
   /* ------------------------------------------------------------------ unlock (browsers need one user gesture) */
   let wired = false;
   function unlock() {
@@ -276,6 +281,7 @@
   /* ------------------------------------------------------------------ public API */
   const SoundFX = {
     init() {
+      try { muted = localStorage.getItem(KEY) === 'off'; } catch (e) {}
       if (!AC) return;
       ['pointerdown', 'keydown', 'touchend'].forEach((ev) => addEventListener(ev, unlock, true));
       document.addEventListener('visibilitychange', () => {
@@ -289,8 +295,20 @@
     isEnabled() { return !muted; },
     isUnlocked() { return unlocked; },
     unlock,
-    enable() { muted = false; if (master) master.gain.value = 0.9; unlock(); UI.confirm(); },
-    disable() { muted = true; if (master) master.gain.value = 0; B.stopPad(0.2); },
+    /* mute / unmute (HUD speaker, terminal `sound on|off`, Ctrl+K). The choice is remembered on this device. */
+    enable() {
+      muted = false; remember(false);
+      if (master) master.gain.setTargetAtTime(0.9, ctx.currentTime, 0.03);
+      unlock();
+      if (unlocked) { const st = window.Swarm && Swarm.state; if (st === 'scan' || st === 'build') B.startPad(); UI.confirm(); }
+      announce();
+    },
+    disable() {
+      muted = true; remember(true);
+      if (master && ctx) master.gain.setTargetAtTime(0, ctx.currentTime, 0.02);
+      B.stopPad(0.2);
+      announce();
+    },
     toggle() { muted ? this.enable() : this.disable(); },
     playHover(el) { UI.hover(el); },
     playClick() { UI.click(); },

@@ -3,7 +3,7 @@
    Fonts, images, icons, video, vendor libraries: cache-first (they are big and never change under the same name).
    Bump V to purge every old cache on the next visit. (v2 was cache-first for everything, which served visitors stale CSS/JS
    next to fresh HTML after a deploy: the unstyled terminal at the bottom of the page.) */
-const V = 'mayura-v3';
+const V = 'mayura-v4';
 const STATIC = /\.(?:woff2?|ttf|png|jpe?g|webp|avif|gif|svg|ico|mp4|webm|mp3|ogg|wav)$|\/assets\/vendor\//i;
 self.addEventListener('install', () => { self.skipWaiting(); });
 self.addEventListener('activate', (e) => e.waitUntil(

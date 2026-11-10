@@ -579,7 +579,10 @@ html.term-open body { overflow: hidden; }
 #sw-hud button.spk { gap: 7px; }
 #sw-hud button.spk.is-off { color: #fff; border: 1px solid rgba(255,255,255,.28); animation: spkPulse 1.8s ease-in-out infinite; }
 #sw-hud button.spk.is-off .spk__txt { font: 700 10px/1 var(--f-ui); letter-spacing: .1em; text-transform: uppercase; }
-#sw-hud button.spk.is-on { color: #fff; pointer-events: none; }
+#sw-hud button.spk.is-on { color: #fff; }
+#sw-hud button.spk.is-on:hover { color: var(--red, #ff3b30); }
+#sw-hud button.spk.is-muted { color: #ff8a80; border: 1px solid rgba(255,138,128,.4); }
+#sw-hud button.spk.is-muted .spk__txt { font: 700 10px/1 var(--f-ui); letter-spacing: .1em; text-transform: uppercase; }
 .spk__bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 11px; }
 .spk__bars i { width: 2px; background: currentColor; border-radius: 1px; height: 30%; animation: spkBar .9s ease-in-out infinite; }
 .spk__bars i:nth-child(2) { animation-delay: -.3s; } .spk__bars i:nth-child(3) { animation-delay: -.6s; }
