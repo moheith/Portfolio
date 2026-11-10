@@ -386,6 +386,7 @@
   <div class="slider__ctrl">
     <button class="sbtn" id="prev" type="button" aria-label="Previous"><span data-layer="icon" aria-hidden="true">‹</span></button>
     <button class="sbtn" id="next" type="button" aria-label="Next"><span data-layer="icon" aria-hidden="true">›</span></button>
+    <div class="slider__prog" aria-hidden="true"><i></i></div>
     <span class="slider__count"><span id="seeAllLabel" data-layer="text">SEE ALL (11) •</span></span>
   </div>
 </section>
@@ -419,35 +420,181 @@
 <!-- ===================== 5. FROM SKETCH TO SHIPPED ===================== -->
 <section class="raw" id="raw" data-swarm-section="raw" data-guide="left">
   <div class="raw__left">
-    <p class="eyebrow raw__eyebrow" data-layer="text">A LOOK UNDER THE SURFACE</p>
-    <h2 class="h-display raw__title"><span class="line" data-layer="text">FROM SKETCH.</span><span class="line accent" data-layer="text">TO SHIPPED.</span></h2>
-    <p class="raw__text" data-layer="text">One product, two states of mind. On the left, the blueprint of Yulya Studio, traced from the real interface. On the right, the live thing: files, code, a playable game and an AI co-pilot, all in one browser tab.</p>
+    <p class="eyebrow" data-layer="text">A LOOK UNDER THE SURFACE</p>
+    <h2 class="h-display"><span class="line" data-layer="text">FROM SKETCH.</span><span class="line accent" data-layer="text">TO SHIPPED.</span></h2>
+    <p class="raw__text" data-layer="text">One product. Many layers. See how a rough wireframe turns into a living interface.</p>
     <p class="raw__meta"><span data-layer="text">YULYA STUDIO / 2026</span><span data-layer="text">UI / UX · FRONTEND · BACKEND</span></p>
   </div>
   <div class="raw__right">
-    <div class="compare" id="compare" data-layer="image" role="slider" tabindex="0" aria-label="Drag to compare the wireframe blueprint with the shipped Yulya Studio interface" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+    <div class="compare" id="compare" data-layer="image" role="slider" tabindex="0" aria-label="Wireframe versus final UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
       <div class="compare__final" id="cmpFinal">
-        <img src="assets/img/work/yulya-studio/editor.webp" width="1535" height="698" alt="Yulya Studio: file explorer, code editor, live game preview and AI co-pilot in one window" draggable="false" decoding="async">
+        <div class="fakeui" aria-hidden="true">
+          <div class="fakeui__chrome">
+            <div class="fakeui__chromegroup">
+              <div class="fakeui__dots"><span class="fakeui__dot fakeui__dot--r"></span><span class="fakeui__dot fakeui__dot--y"></span><span class="fakeui__dot fakeui__dot--g"></span></div>
+              <div class="fakeui__tabs">
+                <span class="fakeui__tab fakeui__tab--active">GameWorld.ts</span>
+                <span class="fakeui__tab">Scene.viewport</span>
+                <span class="fakeui__tab">Shaders.glsl</span>
+              </div>
+            </div>
+            <div class="fakeui__url"><span>🔒</span> https://studio.yulya.me/editor</div>
+            <span class="fakeui__status fakeui__status--live">● LIVE (60.0 FPS · 0.4ms)</span>
+          </div>
+          <div class="fakeui__toolbar">
+            <div class="fakeui__toolgroup">
+              <span class="fakeui__toolbtn fakeui__toolbtn--play">▶ RUN_SIM</span>
+              <span class="fakeui__toolbtn">❚❚ PAUSE</span>
+              <span class="fakeui__toolbtn">↺ RESET</span>
+            </div>
+            <div class="fakeui__toolgroup">
+              <span class="fakeui__toolbadge">VIEWPORT: 3D PERSPECTIVE</span>
+              <span class="fakeui__toolbadge">CAM: [0.0, 4.2, 12.0]</span>
+              <span class="fakeui__toolbadge fakeui__toolbadge--accent">PBR: ACTIVE</span>
+            </div>
+          </div>
+          <div class="fakeui__inner">
+            <div class="fakeui__side">
+              <div class="fakeui__sidehead">SCENE HIERARCHY</div>
+              <div class="fakeui__tree">
+                <div class="fakeui__treeitem fakeui__treeitem--active"><span class="fakeui__tag fakeui__tag--ts">TS</span> GameWorld.ts</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag fakeui__tag--gl">GL</span> ParticleSystem.ts</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag fakeui__tag--ai">AI</span> NeuralCompanion.ts</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag fakeui__tag--bin">BIN</span> yulya_core.onnx</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag fakeui__tag--pbr">PBR</span> KeyLight_Core</div>
+              </div>
+            </div>
+            <div class="fakeui__main">
+              <div class="fakeui__canvas">
+                <canvas class="gp" data-mode="final" aria-hidden="true"></canvas>
+                <svg class="fakeui__gizmo" viewBox="0 0 40 40">
+                  <line x1="20" y1="20" x2="36" y2="20" stroke="#ef4444" stroke-width="1.8" />
+                  <line x1="20" y1="20" x2="20" y2="4" stroke="#22c55e" stroke-width="1.8" />
+                  <line x1="20" y1="20" x2="10" y2="30" stroke="#3b82f6" stroke-width="1.8" />
+                  <circle cx="20" cy="20" r="2.2" fill="#ffffff" />
+                  <text x="36" y="23" fill="#ef4444" font-size="6" font-weight="bold">X</text>
+                  <text x="18" y="4" fill="#22c55e" font-size="6" font-weight="bold">Y</text>
+                  <text x="6" y="34" fill="#3b82f6" font-size="6" font-weight="bold">Z</text>
+                </svg>
+                <div class="fakeui__telemetry">
+                  <span>BOUNDS: 800×480 · FOV: 60°</span>
+                  <span>ENTITIES: 2,480 · DRAW CALLS: 14 · MEM: 38MB</span>
+                </div>
+              </div>
+              <div class="fakeui__editor">
+                <div class="fakeui__code">
+                  <div class="fakeui__codeline"><span class="fakeui__ln">01</span><span class="fakeui__k">import</span> { Engine3D, NeuralAgent } <span class="fakeui__k">from</span> <span class="fakeui__s">'@yulya/core'</span>;</div>
+                  <div class="fakeui__codeline"><span class="fakeui__ln">02</span><span class="fakeui__k">const</span> world = <span class="fakeui__k">new</span> <span class="fakeui__f">Engine3D</span>({ <span class="fakeui__p">fps</span>: <span class="fakeui__n">60</span>, <span class="fakeui__p">renderer</span>: <span class="fakeui__s">'webgl2'</span> });</div>
+                  <div class="fakeui__codeline"><span class="fakeui__ln">03</span><span class="fakeui__k">const</span> companion = <span class="fakeui__k">await</span> world.<span class="fakeui__f">spawn</span>(NeuralAgent, { <span class="fakeui__p">model</span>: <span class="fakeui__s">'yulya-v3'</span> });</div>
+                  <div class="fakeui__codeline"><span class="fakeui__ln">04</span>companion.<span class="fakeui__f">onTick</span>((dt) =&gt; companion.<span class="fakeui__f">evaluatePhysics</span>(dt));<span class="fakeui__cursor"></span></div>
+                </div>
+              </div>
+            </div>
+            <div class="fakeui__panel">
+              <div class="fakeui__panelhead">INSPECTOR · ENTITY_01</div>
+              <div class="fakeui__sectitle">TRANSFORM (3D)</div>
+              <div class="fakeui__row">
+                <span class="fakeui__rowlabel">POS</span>
+                <div class="fakeui__pills">
+                  <span class="fakeui__axis fakeui__axis--x">0.0</span>
+                  <span class="fakeui__axis fakeui__axis--y">4.2</span>
+                  <span class="fakeui__axis fakeui__axis--z">12.0</span>
+                </div>
+              </div>
+              <div class="fakeui__sectitle">NEURAL ATTENTION</div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">WEIGHTS</span><span class="fakeui__rowval fakeui__rowval--active">98.4% ACTIVE</span></div>
+              <div class="fakeui__sectitle">MATERIAL & SHADING</div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">SHADER PBR</span><span class="fakeui__toggle fakeui__toggle--on"></span></div>
+              <div class="fakeui__sectitle">PERFORMANCE METRICS</div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">GPU LATENCY</span><div class="fakeui__meter"><div class="fakeui__meterbar"></div></div></div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">PHYSICS TICK</span><span class="fakeui__rowval">16.6ms FIXED</span></div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="compare__wire" id="cmpWire" aria-hidden="true">
-        <img src="assets/img/work/yulya-studio/blueprint.webp" width="1535" height="698" alt="" draggable="false" decoding="async">
+      <div class="compare__wire" id="cmpWire">
+        <div class="fakeui fakeui--wire" aria-hidden="true">
+          <div class="fakeui__chrome">
+            <div class="fakeui__chromegroup">
+              <div class="fakeui__dots"><span class="fakeui__dot"></span><span class="fakeui__dot"></span><span class="fakeui__dot"></span></div>
+              <div class="fakeui__tabs">
+                <span class="fakeui__tab fakeui__tab--active">GameWorld.ts</span>
+                <span class="fakeui__tab">Scene.viewport</span>
+                <span class="fakeui__tab">Shaders.glsl</span>
+              </div>
+            </div>
+            <div class="fakeui__url"><span>[CAD]</span> studio.yulya.me/editor</div>
+            <span class="fakeui__status fakeui__status--wire">WIREFRAME / CAD</span>
+          </div>
+          <div class="fakeui__toolbar">
+            <div class="fakeui__toolgroup">
+              <span class="fakeui__toolbtn">▶ RUN_SIM</span>
+              <span class="fakeui__toolbtn">❚❚ PAUSE</span>
+              <span class="fakeui__toolbtn">↺ RESET</span>
+            </div>
+            <div class="fakeui__toolgroup">
+              <span class="fakeui__toolbadge">BOUNDS: 800×480</span>
+              <span class="fakeui__toolbadge">ORTHOGRAPHIC</span>
+              <span class="fakeui__toolbadge">GRID: 24px CAD</span>
+            </div>
+          </div>
+          <div class="fakeui__inner">
+            <div class="fakeui__side">
+              <div class="fakeui__sidehead">SCHEMATIC GRAPH</div>
+              <div class="fakeui__tree">
+                <div class="fakeui__treeitem fakeui__treeitem--active"><span class="fakeui__tag">DIR</span> /src/engine</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag">OBJ</span> GameWorld.ts</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag">OBJ</span> ParticleSystem.ts</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag">OBJ</span> NeuralCompanion.ts</div>
+                <div class="fakeui__treeitem"><span class="fakeui__tag">OBJ</span> KeyLight_Core</div>
+              </div>
+            </div>
+            <div class="fakeui__main">
+              <div class="fakeui__canvas">
+                <canvas class="gp" data-mode="wire" aria-hidden="true"></canvas>
+                <svg class="fakeui__gizmo" viewBox="0 0 40 40">
+                  <line x1="20" y1="20" x2="36" y2="20" stroke="#38bdf8" stroke-dasharray="2,2" stroke-width="1.5" />
+                  <line x1="20" y1="20" x2="20" y2="4" stroke="#38bdf8" stroke-dasharray="2,2" stroke-width="1.5" />
+                  <line x1="20" y1="20" x2="10" y2="30" stroke="#38bdf8" stroke-dasharray="2,2" stroke-width="1.5" />
+                  <circle cx="20" cy="20" r="2.2" stroke="#38bdf8" fill="none" />
+                  <text x="36" y="23" fill="#38bdf8" font-size="6">X</text>
+                  <text x="18" y="4" fill="#38bdf8" font-size="6">Y</text>
+                  <text x="6" y="34" fill="#38bdf8" font-size="6">Z</text>
+                </svg>
+                <div class="fakeui__telemetry">
+                  <span>BOUNDS: 800×480 · AXIS: (0,0)</span>
+                  <span>WIREFRAME MESH: 48.2K · MEM: 38MB</span>
+                </div>
+              </div>
+              <div class="fakeui__editor">
+                <div class="fakeui__skel fakeui__skel--short"></div>
+                <div class="fakeui__skel fakeui__skel--med"></div>
+                <div class="fakeui__skel fakeui__skel--long"></div>
+                <div class="fakeui__skel fakeui__skel--med"></div>
+              </div>
+            </div>
+            <div class="fakeui__panel">
+              <div class="fakeui__panelhead">PROPERTIES · MESH_01</div>
+              <div class="fakeui__sectitle">GEOMETRY (CAD)</div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">POS</span><span class="fakeui__rowval">[ 0.0 , 4.2 , 12.0 ]</span></div>
+              <div class="fakeui__sectitle">COLLISION / SIM</div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">SIMULATION</span><span class="fakeui__toggle"></span></div>
+              <div class="fakeui__sectitle">SHADING MODEL</div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">RENDER</span><span class="fakeui__rowval">WIREFRAME 1px</span></div>
+              <div class="fakeui__sectitle">MEMORY BUFFER</div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">BUFFER</span><div class="fakeui__meter"><div class="fakeui__meterbar"></div></div></div>
+              <div class="fakeui__sectitle">FRAME BUDGET</div>
+              <div class="fakeui__row"><span class="fakeui__rowlabel">FRAME CAP</span><span class="fakeui__rowval">60 FPS CAD</span></div>
+            </div>
+          </div>
+        </div>
       </div>
-      <ul class="compare__pins" aria-hidden="true">
-        <li class="pin" style="--x:11%;--y:30%" data-x="11"><i></i><span>File explorer</span></li>
-        <li class="pin" style="--x:34%;--y:42%" data-x="34"><i></i><span>Code editor</span></li>
-        <li class="pin" style="--x:62%;--y:50%" data-x="62"><i></i><span>Playable preview</span></li>
-        <li class="pin pin--l" style="--x:88%;--y:30%" data-x="88"><i></i><span>AI co-pilot</span></li>
-        <li class="pin" style="--x:27%;--y:88%" data-x="27"><i></i><span>Console</span></li>
-      </ul>
       <i class="compare__line" id="cmpLine" data-layer="line"></i>
       <span class="compare__handle" id="cmpHandle" aria-hidden="true" data-layer="shape"><span aria-hidden="true">⇆</span></span>
-      <span class="compare__lab compare__lab--l" data-layer="chip">BLUEPRINT</span>
-      <span class="compare__lab compare__lab--r" data-layer="chip">SHIPPED</span>
+      <span class="compare__lab compare__lab--l" data-layer="chip">WIREFRAME</span>
+      <span class="compare__lab compare__lab--r" data-layer="chip">FINAL UI</span>
     </div>
-    <div class="compare__foot">
-      <p class="compare__hint" data-layer="text">DRAG TO SEE THE PROCESS</p>
-      <a class="compare__cta" href="https://studio.yulya.me" target="_blank" rel="noopener" data-layer="button"><span>Open Yulya Studio</span><span aria-hidden="true">↗</span></a>
-    </div>
+    <p class="compare__hint" data-layer="text">DRAG TO SEE THE PROCESS</p>
   </div>
 </section>
 
@@ -614,6 +761,7 @@
 <script src="js/hero.js" defer></script>
 <script src="js/gallery.js" defer></script>
 <script src="js/work.js" defer></script>
+<script src="js/gamepreview.js" defer></script>
 <script src="js/compare.js" defer></script>
 <script src="js/journey.js" defer></script>
 <script src="js/extras.js" defer></script>
