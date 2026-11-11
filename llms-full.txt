@@ -12,7 +12,7 @@ Professional Titles: Full Stack Developer, Software Engineer, Creative Technolog
 Current Location: Bengaluru, Karnataka, India
 Time Zone: Asia/Kolkata (IST, UTC+05:30)
 Official Website: https://moheith.tech
-Primary Contact Email: moheithmayura@gmail.com
+Primary Contact Email: mohiethmayura@gmail.com
 Direct Phone / WhatsApp: +91 86602 27877
 WhatsApp Direct Chat: https://wa.me/918660227877
 
@@ -161,7 +161,7 @@ Visual Arts, Modeling & Creative Tools:
   Building the Yulya AI ecosystem end-to-end (Discord bot, Yulya Studio game engine, published HF models, Learnexa 2.0).
 - 2026: AI / ML Builder & Publisher
   Fine-tuned and released 8 language models on Hugging Face; shipped Ollama builds with hundreds of pulls.
-- 2026: Bachelor of Computer Applications (BCA)
+- Until 2027: Bachelor of Computer Applications (BCA), graduating 2027
   SFGC (Seshadripuram First Grade College), Bengaluru. Computer science fundamentals, data structures, algorithms, and software engineering.
 - 2024: Game Art & 3D Character Engineering
   Specialized deep dive into Blender 3D modeling, Krita visual art, Live2D rigging, and Unity scene development.
@@ -175,7 +175,7 @@ Q: Is Mayura open to job opportunities or contract projects?
 A: Yes, Mayura is actively open to full-stack engineering roles, AI integration projects, and creative development work globally (remote or Bengaluru-based).
 
 Q: How can I contact Mayura?
-A: You can reach him directly via email at moheithmayura@gmail.com, through WhatsApp at +91 86602 27877, or via LinkedIn at https://linkedin.com/in/mohieth.
+A: You can reach him directly via email at mohiethmayura@gmail.com, through WhatsApp at +91 86602 27877, or via LinkedIn at https://linkedin.com/in/mohieth.
 
 Q: What is unique about Mayura's portfolio website (moheith.tech)?
 A: The portfolio features a signature real-time Autonomous Multi-Agent Swarm build intro where 30 simulated AI cursors construct the 376 DOM layers live with custom curved neon cursors, quadratic bezier flight, and Figma-style typing and QA passes. It is 100% self-hosted with zero external CDN dependencies and full offline PWA support.

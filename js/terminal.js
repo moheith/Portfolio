@@ -111,7 +111,7 @@
       exec: () => `
 <div class="term__resume">
   <div class="term__resume-h">MOHIETH MAYURA S Y — TECHNICAL RÉSUMÉ</div>
-  <div class="term__resume-sub">Bengaluru, Karnataka, India | moheithmayura@gmail.com | https://moheith.tech</div>
+  <div class="term__resume-sub">Bengaluru, Karnataka, India | mohiethmayura@gmail.com | https://moheith.tech</div>
   <hr class="term__divider">
   <div class="term__resume-sec">
     <strong>PROFESSIONAL PROFILE</strong>
@@ -140,7 +140,7 @@
       exec: () => `
 <div class="term__box">
   <div class="term__title">GET IN TOUCH</div>
-  <p>• <strong>Email:</strong> <a href="mailto:moheithmayura@gmail.com" class="term__link">moheithmayura@gmail.com</a></p>
+  <p>• <strong>Email:</strong> <a href="mailto:mohiethmayura@gmail.com" class="term__link">mohiethmayura@gmail.com</a></p>
   <p>• <strong>WhatsApp:</strong> <a href="https://wa.me/918660227877" target="_blank" rel="noopener" class="term__link">+91 86602 27877</a></p>
   <p>• <strong>GitHub:</strong> <a href="https://github.com/moheith" target="_blank" rel="noopener" class="term__link">github.com/moheith</a></p>
   <p>• <strong>LinkedIn:</strong> <a href="https://linkedin.com/in/mohieth" target="_blank" rel="noopener" class="term__link">linkedin.com/in/mohieth</a></p>
@@ -153,10 +153,10 @@
       desc: 'Copy email address to clipboard',
       exec: () => {
         if (navigator.clipboard) {
-          navigator.clipboard.writeText('moheithmayura@gmail.com').catch(() => {});
+          navigator.clipboard.writeText('mohiethmayura@gmail.com').catch(() => {});
         }
         if (window.Extras && Extras.toast) Extras.toast('Email copied ✓');
-        return '<span class="term__success">✓ Email address copied to clipboard: moheithmayura@gmail.com</span>';
+        return '<span class="term__success">✓ Email address copied to clipboard: mohiethmayura@gmail.com</span>';
       }
     },
 

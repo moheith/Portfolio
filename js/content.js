@@ -6,7 +6,7 @@ const CONTENT = {
   meta: {
     name: "MOHIETH MAYURA S Y", short: "MOHIETH", initial: "MAYURA",
     city: "Bengaluru, India", cityShort: "BENGALURU, INDIA", tz: "Asia/Kolkata", tzLabel: "IST",
-    email: "moheithmayura@gmail.com", phoneDisplay: "+91 86602 27877", whatsapp: "918660227877",
+    email: "mohiethmayura@gmail.com", phoneDisplay: "+91 86602 27877", whatsapp: "918660227877",
     instagram: "@moheith_mayura",
     cv: "assets/Mayura-CV.pdf",              /* placeholder: the file does not exist yet */
     showreel: "",                             /* empty on purpose: no showreel video yet */
@@ -128,7 +128,7 @@ const CONTENT = {
 
   /* ---------- About → education column: [title, sub, tag] ---------- */
   education: [
-    ["SFGC", "Bachelor of Computer Applications (BCA)", ""],
+    ["SFGC", "Bachelor of Computer Applications (BCA)", "2027"],
     ["Self-directed learning", "Full stack, AI/ML, graphic design and game art — learned by shipping real projects", "4+ yrs"]
   ],
 
@@ -156,7 +156,7 @@ const CONTENT = {
      "Building Yulya end to end: a live Discord AI companion with voice, memory and an in-server economy, plus Yulya Studio and LEARNEXA 2.0. Design, frontend, backend, data and deployment, all in one pair of hands."],
     ["2026", "AI / ML Builder", "Hugging Face · Ollama",
      "Fine-tuned and published a family of 8 conversational models across Qwen2.5, Llama 3.x and SmolLM2, then shipped the persona to Ollama so anyone can run it locally."],
-    ["2026", "BCA — SFGC", "Bachelor of Computer Applications",
+    ["UNTIL 2027", "BCA — SFGC", "Bachelor of Computer Applications · graduating 2027",
      "Formal computer-science foundations, studied alongside hands-on product work and a growing list of shipped projects."],
     ["2024", "Game & Character Art", "Unity · Blender · Krita · Live2D",
      "Explored the creative side of tech: modelling in Blender, painting in Krita, rigging expressive Live2D characters and building interactive scenes in Unity. It shaped the visual taste behind everything I build."],

@@ -5,7 +5,7 @@ Roles: Full Stack Developer, Software Engineer, Systems & UI Designer, Creative 
 Creator: Yulya (Discord AI Companion), Yulya Studio, Learnexa 2.0
 Site: https://moheith.tech
 Location: Bengaluru, Karnataka, India
-Contact: moheithmayura@gmail.com
+Contact: mohiethmayura@gmail.com
 Phone: +91 86602 27877
 GitHub: https://github.com/moheith
 LinkedIn: https://linkedin.com/in/mohieth
