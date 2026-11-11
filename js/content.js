@@ -128,7 +128,7 @@ const CONTENT = {
 
   /* ---------- About → education column: [title, sub, tag] ---------- */
   education: [
-    ["SFGC", "Bachelor of Computer Applications (BCA)", "2027"],
+    ["SFGC", "Bachelor of Computer Applications (BCA)", "2024 – 27"],
     ["Self-directed learning", "Full stack, AI/ML, graphic design and game art — learned by shipping real projects", "4+ yrs"]
   ],
 
@@ -156,7 +156,7 @@ const CONTENT = {
      "Building Yulya end to end: a live Discord AI companion with voice, memory and an in-server economy, plus Yulya Studio and LEARNEXA 2.0. Design, frontend, backend, data and deployment, all in one pair of hands."],
     ["2026", "AI / ML Builder", "Hugging Face · Ollama",
      "Fine-tuned and published a family of 8 conversational models across Qwen2.5, Llama 3.x and SmolLM2, then shipped the persona to Ollama so anyone can run it locally."],
-    ["UNTIL 2027", "BCA — SFGC", "Bachelor of Computer Applications · graduating 2027",
+    ["2024 · 2027", "BCA — SFGC", "Bachelor of Computer Applications · three-year degree, graduating 2027",
      "Formal computer-science foundations, studied alongside hands-on product work and a growing list of shipped projects."],
     ["2024", "Game & Character Art", "Unity · Blender · Krita · Live2D",
      "Explored the creative side of tech: modelling in Blender, painting in Krita, rigging expressive Live2D characters and building interactive scenes in Unity. It shaped the visual taste behind everything I build."],

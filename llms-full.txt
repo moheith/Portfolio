@@ -161,7 +161,7 @@ Visual Arts, Modeling & Creative Tools:
   Building the Yulya AI ecosystem end-to-end (Discord bot, Yulya Studio game engine, published HF models, Learnexa 2.0).
 - 2026: AI / ML Builder & Publisher
   Fine-tuned and released 8 language models on Hugging Face; shipped Ollama builds with hundreds of pulls.
-- Until 2027: Bachelor of Computer Applications (BCA), graduating 2027
+- 2024 to 2027: Bachelor of Computer Applications (BCA), a three-year degree, graduating 2027
   SFGC (Seshadripuram First Grade College), Bengaluru. Computer science fundamentals, data structures, algorithms, and software engineering.
 - 2024: Game Art & 3D Character Engineering
   Specialized deep dive into Blender 3D modeling, Krita visual art, Live2D rigging, and Unity scene development.
