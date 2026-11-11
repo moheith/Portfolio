@@ -8,7 +8,7 @@ const CONTENT = {
     city: "Bengaluru, India", cityShort: "BENGALURU, INDIA", tz: "Asia/Kolkata", tzLabel: "IST",
     email: "mohiethmayura@gmail.com", phoneDisplay: "+91 86602 27877", whatsapp: "918660227877",
     instagram: "@moheith_mayura",
-    cv: "assets/Mayura-CV.pdf",              /* placeholder: the file does not exist yet */
+    cv: "assets/Mayura-CV.pdf",
     showreel: "",                             /* empty on purpose: no showreel video yet */
     liveProject: "https://discord.yulya.me",
     domain: "https://moheith.tech",

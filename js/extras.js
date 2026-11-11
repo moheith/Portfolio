@@ -120,12 +120,8 @@
 
     setupCvLinks() {
       const links = document.querySelectorAll('#cvLink, #resumeLink, a[href$=".pdf"]');
-      links.forEach(l => {
-        l.addEventListener('click', (e) => {
-          e.preventDefault();
-          this.toast('CV coming soon');
-        });
-      });
+      /* the CV exists now (assets/Mayura-CV.pdf): let the links download it normally */
+      links.forEach(l => { l.setAttribute('download', 'Mohieth-Mayura-S-Y-CV.pdf'); });
     },
 
     setupQuickBrief() {
